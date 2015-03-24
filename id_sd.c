@@ -937,7 +937,7 @@ SD_SetMusicMode(SMMode mode)
 
     SD_FadeOutMusic();
     while (SD_MusicPlaying())
-        SDL_Delay(5);
+        rarch_sleep(5);
 
     switch (mode)
     {
@@ -1282,7 +1282,7 @@ void
 SD_WaitSoundDone(void)
 {
     while (SD_SoundPlaying())
-        SDL_Delay(5);
+        rarch_sleep(5);
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,7 @@ CCFLAGS += $(CFLAGS)
 CCFLAGS += -std=gnu99
 CCFLAGS += -Werror-implicit-function-declaration
 CCFLAGS += -Wimplicit-int
-CCFLAGS += -Wsequence-point
+CCFLAGS += -Wsequence-point -Iinclude
 
 CXXFLAGS += $(CFLAGS)
 

@@ -24,6 +24,8 @@
 
 #endif
 
+#include "retro_miscellaneous.h"
+
 
 #if !defined O_BINARY
 #   define O_BINARY 0
