@@ -89,7 +89,8 @@ int     param_joystickindex = 0;
 
 int     param_joystickhat = -1;
 int     param_samplerate = 44100;
-int     param_audiobuffer = 2048 / (44100 / param_samplerate);
+//int     param_audiobuffer = 2048 / (44100 / param_samplerate);
+int     param_audiobuffer;
 
 int     param_mission = 0;
 boolean param_goodtimes = false;

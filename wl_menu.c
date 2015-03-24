@@ -23,7 +23,7 @@ extern int numEpisodesMissing;
 //
 // PRIVATE PROTOTYPES
 //
-int CP_ReadThis (int);
+int CP_ReadThis (int unused);
 
 #ifdef SPEAR
 #define STARTITEM       newgame
@@ -652,7 +652,7 @@ DrawMainMenu (void)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_ReadThis (int)
+CP_ReadThis (int unused)
 {
     StartCPMusic (CORNER_MUS);
     HelpScreens ();
@@ -938,7 +938,7 @@ CP_CheckQuick (ScanCode scancode)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_EndGame (int)
+CP_EndGame (int unused)
 {
     int res;
 #ifdef JAPAN
@@ -969,7 +969,7 @@ CP_EndGame (int)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_ViewScores (int)
+CP_ViewScores (int unused)
 {
     fontnumber = 0;
 
@@ -1004,7 +1004,7 @@ CP_ViewScores (int)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_NewGame (int)
+CP_NewGame (int unused)
 {
     int which, episode;
 
@@ -1219,7 +1219,7 @@ DrawNewGameDiff (int w)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_Sound (int)
+CP_Sound (int unused)
 {
     int which;
 
@@ -1811,7 +1811,7 @@ CP_SaveGame (int quick)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_Control (int)
+CP_Control (int unused)
 {
     int which;
 
@@ -1920,7 +1920,7 @@ DrawMouseSens (void)
 // ADJUST MOUSE SENSITIVITY
 //
 int
-MouseSensitivity (int)
+MouseSensitivity (int unused)
 {
     ControlInfo ci;
     int exit = 0, oldMA;
@@ -2069,7 +2069,7 @@ int8_t order[4] = { RUN, OPEN, FIRE, STRAFE };
 
 
 int
-CustomControls (int)
+CustomControls (int unused)
 {
     int which;
 
@@ -2796,7 +2796,7 @@ DrawCustKeys (int hilight)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_ChangeView (int)
+CP_ChangeView (int unused)
 {
     int exit = 0, oldview, newview;
     ControlInfo ci;
@@ -2907,7 +2907,7 @@ DrawChangeView (int view)
 //
 ////////////////////////////////////////////////////////////////////
 int
-CP_Quit (int)
+CP_Quit (int unused)
 {
 #ifdef JAPAN
     if (GetYorN (7, 11, C_QUITMSGPIC))

@@ -1,6 +1,7 @@
 #ifndef __ID_PM__
 #define __ID_PM__
 
+#include "boolean.h"
 
 #define PMPageSize 4096
 
