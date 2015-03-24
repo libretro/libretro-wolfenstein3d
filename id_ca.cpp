@@ -282,7 +282,7 @@ void CAL_CarmackExpand (byte *source, word *dest, int length)
 
     while (length>0)
     {
-        ch = READWORD(inptr);
+        ch = READWORD(&inptr);
         chhigh = ch>>8;
         if (chhigh == NEARTAG)
         {
@@ -314,7 +314,7 @@ void CAL_CarmackExpand (byte *source, word *dest, int length)
             }
             else
             {
-                offset = READWORD(inptr);
+                offset = READWORD(&inptr);
                 copyptr = dest + offset;
                 length -= count;
                 if(length<0) return;
@@ -762,8 +762,8 @@ void CA_CacheAdlibSoundChunk (int chunk)
     CHECKMALLOCRESULT(sound);
 
     byte *ptr = (byte *) bufferseg;
-    sound->common.length = READLONGWORD(ptr);
-    sound->common.priority = READWORD(ptr);
+    sound->common.length = READLONGWORD(&ptr);
+    sound->common.priority = READWORD(&ptr);
     sound->inst.mChar = *ptr++;
     sound->inst.cChar = *ptr++;
     sound->inst.mScale = *ptr++;
