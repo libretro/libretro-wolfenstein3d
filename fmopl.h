@@ -1,6 +1,7 @@
 #ifndef __FMOPL_H_
 #define __FMOPL_H_
 
+
 #define HAS_YM3812 1
 
 /* --- select emulation chips --- */
@@ -31,6 +32,9 @@ typedef INT16 OPLSAMPLE;
 typedef INT8 OPLSAMPLE;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef void (*OPL_TIMERHANDLER)(int channel,double interval_Sec);
 typedef void (*OPL_IRQHANDLER)(int param,int irq);
@@ -110,5 +114,8 @@ void Y8950SetUpdateHandler (int which, OPL_UPDATEHANDLER UpdateHandler, int para
 
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FMOPL_H_ */
