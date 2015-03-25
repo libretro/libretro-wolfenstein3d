@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include "wl_def.h"
-#include "crt.h"
 #pragma hdrstop
 
 // Uncomment the following line, if you get destination out of bounds
@@ -21,8 +20,8 @@ boolean fullscreen = false;
 
 
 boolean usedoublebuffering = true;
-unsigned screenWidth = 640;
-unsigned screenHeight = 480;
+unsigned screenWidth = 320;
+unsigned screenHeight = 200;
 unsigned screenBits = -1;      // use "best" color depth according to libSDL
 
 
@@ -96,14 +95,10 @@ void    VL_SetVGAPlaneMode (void)
         screenBits = vidInfo->vfmt->BitsPerPixel;
     }
 
-    //Fab's CRT Hack
-    //Adjust height so the screen is 4:3 aspect ratio
-    screenHeight=screenWidth * 3.0/4.0;
-    
     screen = SDL_SetVideoMode(screenWidth, screenHeight, screenBits,
           (usedoublebuffering ? SDL_HWSURFACE | SDL_DOUBLEBUF : 0)
         | (screenBits == 8 ? SDL_HWPALETTE : 0)
-        | (fullscreen ? SDL_FULLSCREEN : 0) | SDL_OPENGL | SDL_OPENGLBLIT);
+        | (fullscreen ? SDL_FULLSCREEN : 0));
     
     
     if(!screen)
@@ -118,13 +113,6 @@ void    VL_SetVGAPlaneMode (void)
     SDL_SetColors(screen, gamepal, 0, 256);
     memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
 
-    //Fab's CRT Hack
-    CRT_Init(screenWidth);
-    
-    //Fab's CRT Hack
-    screenWidth=320;
-    screenHeight=200;
-    
     screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
         screenHeight, 8, 0, 0, 0, 0);
     if(!screenBuffer)
