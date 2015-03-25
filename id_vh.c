@@ -113,10 +113,10 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 =============================================================================
 */
 
-void VH_UpdateScreen()
+void VH_UpdateScreen(void)
 {
-    SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-    SDL_Flip(screen);
+   SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+   SDL_Flip(screen);
 }
 
 
@@ -365,8 +365,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
         {
             VL_UnlockSurface(source_copy);
             SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
-            SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-            SDL_Flip(screen);
+            VH_UpdateScreen();
+
             SDL_FreeSurface(source_copy);
             SDL_FreeSurface(screen_copy);
             return true;
@@ -426,8 +426,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
         VL_UnlockSurface(screen_copy);
         SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
-        SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-        SDL_Flip(screen);
+        VH_UpdateScreen();
 
         frame++;
         Delay(frame - GetTimeCount());        // don't go too fast
@@ -437,8 +436,7 @@ finished:
     VL_UnlockSurface(source_copy);
     VL_UnlockSurface(screen_copy);
     SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
-    SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-    SDL_Flip(screen);
+    VH_UpdateScreen();
     SDL_FreeSurface(source_copy);
     SDL_FreeSurface(screen_copy);
     return false;
