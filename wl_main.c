@@ -1233,23 +1233,6 @@ static void InitGame()
     US_Startup ();
 
     // TODO: Will any memory checking be needed someday??
-#ifdef NOTYET
-#ifndef SPEAR
-    if (mminfo.mainmem < 235000L)
-#else
-    if (mminfo.mainmem < 257000L && !MS_CheckParm("debugmode"))
-#endif
-    {
-        byte *screen;
-
-        CA_CacheGrChunk (ERRORSCREEN);
-        screen = grsegs[ERRORSCREEN];
-        ShutdownId();
-/*        memcpy((byte *)0xb8000,screen+7+7*160,17*160);
-        gotoxy (1,23);*/
-        exit(1);
-    }
-#endif
 
 
 //
@@ -1300,11 +1283,6 @@ static void InitGame()
     if(!didjukebox)
 #endif
         FinishSignon();
-
-#ifdef NOTYET
-    vdisp = (byte *) (0xa0000+PAGE1START);
-    vbuf = (byte *) (0xa0000+PAGE2START);
-#endif
 }
 
 //===========================================================================
@@ -1397,9 +1375,6 @@ void NewViewSize (int width)
 
 void Quit (const char *errorStr, ...)
 {
-#ifdef NOTYET
-    byte *screen;
-#endif
     char error[256];
     if(errorStr != NULL)
     {
@@ -1415,13 +1390,7 @@ void Quit (const char *errorStr, ...)
         ShutdownId();
         if (error && *error)
         {
-#ifdef NOTYET
-            SetTextCursor(0,0);
-#endif
             puts(error);
-#ifdef NOTYET
-            SetTextCursor(0,2);
-#endif
             VW_WaitVBL(100);
         }
         exit(1);
@@ -1429,46 +1398,16 @@ void Quit (const char *errorStr, ...)
 
     if (!error || !*error)
     {
-#ifdef NOTYET
-        #ifndef JAPAN
-        CA_CacheGrChunk (ORDERSCREEN);
-        screen = grsegs[ORDERSCREEN];
-        #endif
-#endif
         WriteConfig ();
     }
-#ifdef NOTYET
-    else
-    {
-        CA_CacheGrChunk (ERRORSCREEN);
-        screen = grsegs[ERRORSCREEN];
-    }
-#endif
 
     ShutdownId ();
 
     if (error && *error)
     {
-#ifdef NOTYET
-        memcpy((byte *)0xb8000,screen+7,7*160);
-        SetTextCursor(9,3);
-#endif
         puts(error);
-#ifdef NOTYET
-        SetTextCursor(0,7);
-#endif
         VW_WaitVBL(200);
         exit(1);
-    }
-    else
-    if (!error || !(*error))
-    {
-#ifdef NOTYET
-        #ifndef JAPAN
-        memcpy((byte *)0xb8000,screen+7,24*160); // 24 for SPEAR/UPLOAD compatibility
-        #endif
-        SetTextCursor(0,23);
-#endif
     }
 
     exit(0);
