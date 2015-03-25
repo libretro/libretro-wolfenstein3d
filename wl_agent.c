@@ -118,14 +118,15 @@ void CheckWeaponChange (void)
     }
     else
     {
-        for(int i = wp_knife; i <= gamestate.bestweapon; i++)
-        {
-            if (buttonstate[bt_readyknife + i - wp_knife])
-            {
-                newWeapon = i;
-                break;
-            }
-        }
+       unsigned i;
+       for(i = wp_knife; i <= gamestate.bestweapon; i++)
+       {
+          if (buttonstate[bt_readyknife + i - wp_knife])
+          {
+             newWeapon = i;
+             break;
+          }
+       }
     }
 
     if(newWeapon != -1)

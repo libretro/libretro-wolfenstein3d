@@ -158,12 +158,13 @@ void    VL_SetVGAPlaneMode (void)
 
 void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors)
 {
-    for(int i=0; i<numColors; i++)
-    {
-        destpal[i].r = *srcpal++ * 255 / 63;
-        destpal[i].g = *srcpal++ * 255 / 63;
-        destpal[i].b = *srcpal++ * 255 / 63;
-    }
+   unsigned i;
+   for(i=0; i<numColors; i++)
+   {
+      destpal[i].r = *srcpal++ * 255 / 63;
+      destpal[i].g = *srcpal++ * 255 / 63;
+      destpal[i].b = *srcpal++ * 255 / 63;
+   }
 }
 
 /*
@@ -521,6 +522,7 @@ void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
 void VL_MemToLatch(byte *source, int width, int height,
     SDL_Surface *destSurface, int x, int y)
 {
+   unsigned ysrc, xsrc;
     assert(x >= 0 && (unsigned) x + width <= screenWidth
             && y >= 0 && (unsigned) y + height <= screenHeight
             && "VL_MemToLatch: Destination rectangle out of bounds!");
@@ -528,9 +530,9 @@ void VL_MemToLatch(byte *source, int width, int height,
     VL_LockSurface(destSurface);
     int pitch = destSurface->pitch;
     byte *dest = (byte *) destSurface->pixels + y * pitch + x;
-    for(int ysrc = 0; ysrc < height; ysrc++)
+    for(ysrc = 0; ysrc < height; ysrc++)
     {
-        for(int xsrc = 0; xsrc < width; xsrc++)
+        for(xsrc = 0; xsrc < width; xsrc++)
         {
             dest[ysrc * pitch + xsrc] = source[(ysrc * (width >> 2) + (xsrc >> 2))
                 + (xsrc & 3) * (width >> 2) * height];
@@ -554,20 +556,21 @@ void VL_MemToLatch(byte *source, int width, int height,
 
 void VL_MemToScreenScaledCoord (byte *source, int width, int height, int destx, int desty)
 {
+   unsigned i, j, m, n, scj, sci;
     assert(destx >= 0 && destx + width * scaleFactor <= screenWidth
             && desty >= 0 && desty + height * scaleFactor <= screenHeight
             && "VL_MemToScreenScaledCoord: Destination rectangle out of bounds!");
 
     VL_LockSurface(curSurface);
     byte *vbuf = (byte *) curSurface->pixels;
-    for(int j=0,scj=0; j<height; j++, scj+=scaleFactor)
+    for(j=0,scj=0; j<height; j++, scj+=scaleFactor)
     {
-        for(int i=0,sci=0; i<width; i++, sci+=scaleFactor)
+        for(i=0,sci=0; i<width; i++, sci+=scaleFactor)
         {
             byte col = source[(j*(width>>2)+(i>>2))+(i&3)*(width>>2)*height];
-            for(unsigned m=0; m<scaleFactor; m++)
+            for(m=0; m<scaleFactor; m++)
             {
-                for(unsigned n=0; n<scaleFactor; n++)
+                for(n=0; n<scaleFactor; n++)
                 {
                     vbuf[(scj+m+desty)*curPitch+sci+n+destx] = col;
                 }
@@ -593,20 +596,21 @@ void VL_MemToScreenScaledCoord (byte *source, int width, int height, int destx, 
 void VL_MemToScreenScaledCoord2 (byte *source, int origwidth, int origheight, int srcx, int srcy,
                                 int destx, int desty, int width, int height)
 {
+   unsigned i, j, sci, scj, m, n;
     assert(destx >= 0 && destx + width * scaleFactor <= screenWidth
             && desty >= 0 && desty + height * scaleFactor <= screenHeight
             && "VL_MemToScreenScaledCoord: Destination rectangle out of bounds!");
 
     VL_LockSurface(curSurface);
     byte *vbuf = (byte *) curSurface->pixels;
-    for(int j=0,scj=0; j<height; j++, scj+=scaleFactor)
+    for(j=0,scj=0; j<height; j++, scj+=scaleFactor)
     {
-        for(int i=0,sci=0; i<width; i++, sci+=scaleFactor)
+        for(i=0,sci=0; i<width; i++, sci+=scaleFactor)
         {
             byte col = source[((j+srcy)*(origwidth>>2)+((i+srcx)>>2))+((i+srcx)&3)*(origwidth>>2)*origheight];
-            for(unsigned m=0; m<scaleFactor; m++)
+            for(m=0; m<scaleFactor; m++)
             {
-                for(unsigned n=0; n<scaleFactor; n++)
+                for(n=0; n<scaleFactor; n++)
                 {
                     vbuf[(scj+m+desty)*curPitch+sci+n+destx] = col;
                 }
@@ -629,6 +633,7 @@ void VL_MemToScreenScaledCoord2 (byte *source, int origwidth, int origheight, in
 void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest)
 {
+   unsigned i, j, sci, m, n, scj;
    assert(scxdest >= 0 && scxdest + width * scaleFactor <= screenWidth
          && scydest >= 0 && scydest + height * scaleFactor <= screenHeight
          && "VL_LatchToScreenScaledCoord: Destination rectangle out of bounds!");
@@ -639,14 +644,14 @@ void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
 
    VL_LockSurface(curSurface);
    byte *vbuf = (byte *) curSurface->pixels;
-   for(int j=0,scj=0; j<height; j++, scj+=scaleFactor)
+   for(j=0,scj=0; j<height; j++, scj+=scaleFactor)
    {
-      for(int i=0,sci=0; i<width; i++, sci+=scaleFactor)
+      for(i=0,sci=0; i<width; i++, sci+=scaleFactor)
       {
          byte col = src[(ysrc + j)*srcPitch + xsrc + i];
-         for(unsigned m=0; m<scaleFactor; m++)
+         for(m=0; m<scaleFactor; m++)
          {
-            for(unsigned n=0; n<scaleFactor; n++)
+            for(n=0; n<scaleFactor; n++)
             {
                vbuf[(scydest+scj+m)*curPitch+scxdest+sci+n] = col;
             }

@@ -16,6 +16,7 @@ void VWB_DrawPropString(const char* string)
     int         width, step, height;
     byte        *source, *dest;
     byte        ch;
+    unsigned     i, sy, sx;
 
     byte *vbuf = LOCK();
 
@@ -29,12 +30,12 @@ void VWB_DrawPropString(const char* string)
         source = ((byte *)font)+font->location[ch];
         while (width--)
         {
-            for(int i=0;i<height;i++)
+            for(i=0;i<height;i++)
             {
                 if(source[i*step])
                 {
-                    for(unsigned sy=0; sy<scaleFactor; sy++)
-                        for(unsigned sx=0; sx<scaleFactor; sx++)
+                    for(sy=0; sy<scaleFactor; sy++)
+                        for(sx=0; sx<scaleFactor; sx++)
                             dest[(scaleFactor*i+sy)*curPitch+sx]=fontcolor;
                 }
             }
@@ -345,6 +346,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
     unsigned x, y, frame, pixperframe;
     int32_t  rndval, lastrndval;
     int      first = 1;
+    unsigned i, p;
 
     lastrndval = 0;
     pixperframe = width * height / frames;
@@ -378,9 +380,9 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
         // When using double buffering, we have to copy the pixels of the last AND the current frame.
         // Only for the first frame, there is no "last frame"
-        for(int i = first; i < 2; i++)
+        for(i = first; i < 2; i++)
         {
-            for(unsigned p = 0; p < pixperframe; p++)
+            for(p = 0; p < pixperframe; p++)
             {
                 //
                 // seperate random value into x/y pair

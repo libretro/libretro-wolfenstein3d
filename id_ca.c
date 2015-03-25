@@ -445,6 +445,8 @@ void CAL_SetupGrFile (void)
     char fname[13];
     int handle;
     byte *compseg;
+    const byte* d = NULL;
+    int32_t* i    = NULL;
 
 #ifdef GRHEADERLINKED
 
@@ -495,8 +497,8 @@ void CAL_SetupGrFile (void)
     read(handle, data, sizeof(data));
     close(handle);
 
-    const byte* d = data;
-    for (int32_t* i = grstarts; i != endof(grstarts); ++i)
+    d = data;
+    for (i = grstarts; i != endof(grstarts); ++i)
     {
         const int32_t val = d[0] | d[1] << 8 | d[2] << 16;
         *i = (val == 0x00FFFFFF ? -1 : val);
@@ -975,8 +977,10 @@ void CA_CacheScreen (int chunk)
     int32_t    pos,compressed,expanded;
     memptr  bigbufferseg;
     int32_t    *source;
-    int             next;
-
+    int         next;
+    unsigned   x, y, scx, scy;
+    unsigned   i, j;
+    byte *vbuf = NULL;
 //
 // load the chunk into a buffer
 //
@@ -1003,14 +1007,14 @@ void CA_CacheScreen (int chunk)
     CHECKMALLOCRESULT(pic);
     CAL_HuffExpand((byte *) source, pic, expanded, grhuffman);
 
-    byte *vbuf = LOCK();
-    for(int y = 0, scy = 0; y < 200; y++, scy += scaleFactor)
+    vbuf = LOCK();
+    for(y = 0, scy = 0; y < 200; y++, scy += scaleFactor)
     {
-        for(int x = 0, scx = 0; x < 320; x++, scx += scaleFactor)
+        for(x = 0, scx = 0; x < 320; x++, scx += scaleFactor)
         {
             byte col = pic[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200];
-            for(unsigned i = 0; i < scaleFactor; i++)
-                for(unsigned j = 0; j < scaleFactor; j++)
+            for(i = 0; i < scaleFactor; i++)
+                for(j = 0; j < scaleFactor; j++)
                     vbuf[(scy + i) * curPitch + scx + j] = col;
         }
     }

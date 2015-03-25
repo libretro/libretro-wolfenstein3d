@@ -28,7 +28,6 @@ CFLAGS += -Wwrite-strings
 CFLAGS += -Wcast-align
 
 CCFLAGS += $(CFLAGS)
-CCFLAGS += -std=gnu99
 CCFLAGS += -Werror-implicit-function-declaration
 CCFLAGS += -Wimplicit-int
 CCFLAGS += -Wsequence-point -Iinclude

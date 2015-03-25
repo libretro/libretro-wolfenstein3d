@@ -342,44 +342,11 @@ extern statetype s_player;
 
 boolean SaveTheGame(FILE *file,int x,int y)
 {
-//    struct diskfree_t dfree;
-//    int32_t avail,size,checksum;
     int checksum;
     objtype *ob;
     objtype nullobj;
     statobj_t nullstat;
-
-/*    if (_dos_getdiskfree(0,&dfree))
-        Quit("Error in _dos_getdiskfree call");
-
-    avail = (int32_t)dfree.avail_clusters *
-                  dfree.bytes_per_sector *
-                  dfree.sectors_per_cluster;
-
-    size = 0;
-    for (ob = player; ob ; ob=ob->next)
-        size += sizeof(*ob);
-    size += sizeof(nullobj);
-
-    size += sizeof(gamestate) +
-            sizeof(LRstruct)*LRpack +
-            sizeof(tilemap) +
-            sizeof(actorat) +
-            sizeof(laststatobj) +
-            sizeof(statobjlist) +
-            sizeof(doorposition) +
-            sizeof(pwallstate) +
-            sizeof(pwalltile) +
-            sizeof(pwallx) +
-            sizeof(pwally) +
-            sizeof(pwalldir) +
-            sizeof(pwallpos);
-
-    if (avail < size)
-    {
-        Message(STR_NOSPACE1"\n"STR_NOSPACE2);
-        return false;
-    }*/
+    unsigned i, j;
 
     checksum = 0;
 
@@ -396,10 +363,9 @@ boolean SaveTheGame(FILE *file,int x,int y)
     checksum = DoChecksum((byte *)tilemap,sizeof(tilemap),checksum);
     DiskFlopAnim(x,y);
 
-    int i;
     for(i=0;i<MAPSIZE;i++)
     {
-        for(int j=0;j<MAPSIZE;j++)
+        for(j=0;j<MAPSIZE;j++)
         {
             word actnum;
             objtype *objptr=actorat[i][j];
@@ -496,6 +462,7 @@ boolean LoadTheGame(FILE *file,int x,int y)
     int32_t checksum,oldchecksum;
     objtype nullobj;
     statobj_t nullstat;
+    int actnum=0, i, j;
 
     checksum = 0;
 
@@ -516,10 +483,9 @@ boolean LoadTheGame(FILE *file,int x,int y)
 
     DiskFlopAnim(x,y);
 
-    int actnum=0, i;
     for(i=0;i<MAPSIZE;i++)
     {
-        for(int j=0;j<MAPSIZE;j++)
+        for(j=0;j<MAPSIZE;j++)
         {
             fread (&actnum,sizeof(word),1,file);
             checksum = DoChecksum((byte *) &actnum,sizeof(word),checksum);
@@ -1566,8 +1532,9 @@ void CheckParameters(int argc, char *argv[])
     bool hasError = false, showHelp = false;
     bool sampleRateGiven = false, audioBufferGiven = false;
     int defaultSampleRate = param_samplerate;
+    unsigned i;
 
-    for(int i = 1; i < argc; i++)
+    for(i = 1; i < argc; i++)
     {
         char *arg = argv[i];
 #ifndef SPEAR

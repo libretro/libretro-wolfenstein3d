@@ -64,12 +64,14 @@ void VL_Plot            (int x, int y, int color);
 void VL_Hlin            (unsigned x, unsigned y, unsigned width, int color);
 void VL_Vlin            (int x, int y, int height, int color);
 void VL_BarScaledCoord  (int scx, int scy, int scwidth, int scheight, int color);
-void inline VL_Bar      (int x, int y, int width, int height, int color)
+
+static inline void VL_Bar      (int x, int y, int width, int height, int color)
 {
     VL_BarScaledCoord(scaleFactor*x, scaleFactor*y,
         scaleFactor*width, scaleFactor*height, color);
 }
-void inline VL_ClearScreen(int color)
+
+static inline void VL_ClearScreen(int color)
 {
     SDL_FillRect(curSurface, NULL, color);
 }
@@ -83,7 +85,7 @@ void VL_MemToScreenScaledCoord  (byte *source, int width, int height, int scx, i
 void VL_MemToScreenScaledCoord2  (byte *source, int origwidth, int origheight, int srcx, int srcy,
                                     int destx, int desty, int width, int height);
 
-void inline VL_MemToScreen (byte *source, int width, int height, int x, int y)
+static inline void VL_MemToScreen (byte *source, int width, int height, int x, int y)
 {
     VL_MemToScreenScaledCoord(source, width, height, scaleFactor*x, scaleFactor*y);
 }
@@ -93,17 +95,19 @@ void VL_MaskedToScreen (byte *source, int width, int height, int x, int y);
 void VL_LatchToScreenScaledCoord (SDL_Surface *source, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest);
 
-void inline VL_LatchToScreen (SDL_Surface *source, int xsrc, int ysrc,
+static inline void VL_LatchToScreen (SDL_Surface *source, int xsrc, int ysrc,
     int width, int height, int xdest, int ydest)
 {
     VL_LatchToScreenScaledCoord(source,xsrc,ysrc,width,height,
         scaleFactor*xdest,scaleFactor*ydest);
 }
-void inline VL_LatchToScreenScaledCoord2(SDL_Surface *source, int scx, int scy)
+
+static inline void VL_LatchToScreenScaledCoord2(SDL_Surface *source, int scx, int scy)
 {
     VL_LatchToScreenScaledCoord(source,0,0,source->w,source->h,scx,scy);
 }
-void inline VL_LatchToScreen2(SDL_Surface *source, int x, int y)
+
+static inline void VL_LatchToScreen2(SDL_Surface *source, int x, int y)
 {
     VL_LatchToScreenScaledCoord(source,0,0,source->w,source->h,
         scaleFactor*x,scaleFactor*y);

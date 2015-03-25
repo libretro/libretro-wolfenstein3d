@@ -2169,16 +2169,19 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
 
                         if (result)
                         {
-                            for (int z = 0; z < 4; z++)
-                                if (order[which] == buttonmouse[z])
-                                {
-                                    buttonmouse[z] = bt_nobutton;
-                                    break;
-                                }
+                           unsigned z;
+                           for (z = 0; z < 4; z++)
+                           {
+                              if (order[which] == buttonmouse[z])
+                              {
+                                 buttonmouse[z] = bt_nobutton;
+                                 break;
+                              }
+                           }
 
-                            buttonmouse[result - 1] = order[which];
-                            picked = 1;
-                            SD_PlaySound (SHOOTDOORSND);
+                           buttonmouse[result - 1] = order[which];
+                           picked = 1;
+                           SD_PlaySound (SHOOTDOORSND);
                         }
                         break;
 
@@ -2194,18 +2197,19 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
 
                         if (result)
                         {
-                            for (int z = 0; z < 4; z++)
-                            {
-                                if (order[which] == buttonjoy[z])
-                                {
-                                    buttonjoy[z] = bt_nobutton;
-                                    break;
-                                }
-                            }
+                           unsigned z;
+                           for (z = 0; z < 4; z++)
+                           {
+                              if (order[which] == buttonjoy[z])
+                              {
+                                 buttonjoy[z] = bt_nobutton;
+                                 break;
+                              }
+                           }
 
-                            buttonjoy[result - 1] = order[which];
-                            picked = 1;
-                            SD_PlaySound (SHOOTDOORSND);
+                           buttonjoy[result - 1] = order[which];
+                           picked = 1;
+                           SD_PlaySound (SHOOTDOORSND);
                         }
                         break;
 
@@ -2605,15 +2609,16 @@ DrawCustMouse (int hilight)
 void
 PrintCustJoy (int i)
 {
-    for (int j = 0; j < 4; j++)
-    {
-        if (order[i] == buttonjoy[j])
-        {
-            PrintX = CST_START + CST_SPC * i;
-            US_Print (mbarray[j]);
-            break;
-        }
-    }
+   unsigned j;
+   for (j = 0; j < 4; j++)
+   {
+      if (order[i] == buttonjoy[j])
+      {
+         PrintX = CST_START + CST_SPC * i;
+         US_Print (mbarray[j]);
+         break;
+      }
+   }
 }
 
 void
@@ -3039,9 +3044,10 @@ void SetupSaveGames()
 {
     char name[13];
     char savepath[300];
+    unsigned i;
 
     strcpy(name, SaveName);
-    for(int i = 0; i < 10; i++)
+    for(i = 0; i < 10; i++)
     {
         name[7] = '0' + i;
 

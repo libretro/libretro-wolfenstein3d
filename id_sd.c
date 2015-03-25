@@ -188,6 +188,7 @@ Sint16 GetSample(float csample, byte *samples, int size)
 
 void SD_PrepareSound(int which)
 {
+   unsigned i;
     if(DigiList == NULL)
         Quit("SD_PrepareSound(%i): DigiList not initialized!\n", which);
 
@@ -219,7 +220,7 @@ void SD_PrepareSound(int which)
         + sizeof(wavechunk));
     float cursample = 0.F;
     float samplestep = (float) ORIGSAMPLERATE / (float) param_samplerate;
-    for(int i=0; i<destsamples; i++, cursample+=samplestep)
+    for(i=0; i<destsamples; i++, cursample+=samplestep)
     {
         newsamples[i] = GetSample((float)size * (float)i / (float)destsamples,
             origsamples, size);
@@ -300,6 +301,7 @@ SDL_SetupDigi(void)
     int i;
     for(i = 0; i < NumDigi; i++)
     {
+       unsigned page;
         // Calculate the size of the digi from the sizes of the pages between
         // the start page and the start page of the next sound
 
@@ -320,7 +322,7 @@ SDL_SetupDigi(void)
         else lastPage = ChunksInFile - 1;
 
         int size = 0;
-        for(int page = PMSoundStart + DigiList[i].startpage; page < lastPage; page++)
+        for(page = PMSoundStart + DigiList[i].startpage; page < lastPage; page++)
             size += PM_GetPageSize(page);
 
         // Don't include padding of sound info page, if padding was added
@@ -458,7 +460,8 @@ SDL_StartAL(void)
 static boolean
 SDL_DetectAdLib(void)
 {
-    for (int i = 1; i <= 0xf5; i++)       // Zero all the registers
+   unsigned i;
+    for (i = 1; i <= 0xf5; i++)       // Zero all the registers
         alOut(i, 0);
 
     alOut(1, 0x20);             // Set WSE=1
@@ -741,13 +744,14 @@ SD_Startup(void)
 void
 SD_Shutdown(void)
 {
+   unsigned i;
     if (!SD_Started)
         return;
 
     SD_MusicOff();
     SD_StopSound();
 
-    for(int i = 0; i < STARTMUSIC - STARTDIGISOUNDS; i++)
+    for(i = 0; i < STARTMUSIC - STARTDIGISOUNDS; i++)
     {
         if(SoundChunks[i]) Mix_FreeChunk(SoundChunks[i]);
         if(SoundBuffers[i]) free(SoundBuffers[i]);
@@ -973,6 +977,7 @@ SD_ContinueMusic(int chunk, int startoffs)
 
     if (MusicMode == smm_AdLib)
     {
+       unsigned i;
         int32_t chunkLen = CA_CacheAudioChunk(chunk);
         sqHack = (word *)(void *) audiosegs[chunk];     // alignment is correct
         if(*sqHack == 0) sqHackLen = sqHackSeqLen = chunkLen;
@@ -987,7 +992,7 @@ SD_ContinueMusic(int chunk, int startoffs)
         // fast forward to correct position
         // (needed to reconstruct the instruments)
 
-        for(int i = 0; i < startoffs; i += 2)
+        for(i = 0; i < startoffs; i += 2)
         {
             byte reg = *(byte *)sqHackPtr;
             byte val = *(((byte *)sqHackPtr) + 1);
