@@ -1528,57 +1528,53 @@ void CalcViewVariables()
 
 void    ThreeDRefresh (void)
 {
-//
-// clear out the traced array
-//
-    memset(spotvis,0,maparea);
-    spotvis[player->tilex][player->tiley] = 1;       // Detect all sprites over player fix
+   //
+   // clear out the traced array
+   //
+   memset(spotvis,0,maparea);
+   spotvis[player->tilex][player->tiley] = 1;       // Detect all sprites over player fix
 
-    vbuf = VL_LockSurface(screenBuffer);
-    vbuf+=screenofs;
-    vbufPitch = bufferPitch;
+   vbuf = VL_LockSurface(screenBuffer);
+   vbuf+=screenofs;
+   vbufPitch = bufferPitch;
 
-    CalcViewVariables();
+   CalcViewVariables();
 
-//
-// follow the walls from there to the right, drawing as we go
-//
-    VGAClearScreen ();
+   //
+   // follow the walls from there to the right, drawing as we go
+   //
+   VGAClearScreen ();
 
-    WallRefresh ();
-
-    
-
-//
-// draw all the scaled images
-//
-    
-    DrawScaleds();                  // draw scaled stuff
+   WallRefresh ();
 
 
-    DrawPlayerWeapon ();    // draw player's hands
 
-    if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
-        ShowActStatus();
+   //
+   // draw all the scaled images
+   //
 
-    VL_UnlockSurface(screenBuffer);
-    vbuf = NULL;
+   DrawScaleds();                  // draw scaled stuff
 
-//
-// show screen and time last cycle
-//
 
-    if (fizzlein)
-    {
-        FizzleFade(screenBuffer, 0, 0, screenWidth, screenHeight, 20, false);
-        fizzlein = false;
+   DrawPlayerWeapon ();    // draw player's hands
 
-        lasttimecount = GetTimeCount();          // don't make a big tic count
-    }
-    else
-    {
-        
-        SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-        SDL_Flip(screen);
-    }
+   if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
+      ShowActStatus();
+
+   VL_UnlockSurface(screenBuffer);
+   vbuf = NULL;
+
+   //
+   // show screen and time last cycle
+   //
+
+   if (fizzlein)
+   {
+      FizzleFade(screenBuffer, 0, 0, screenWidth, screenHeight, 20, false);
+      fizzlein = false;
+
+      lasttimecount = GetTimeCount();          // don't make a big tic count
+   }
+   else
+      VH_UpdateScreen();
 }

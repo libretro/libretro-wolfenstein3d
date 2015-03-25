@@ -205,8 +205,7 @@ void VL_SetColor    (int color, int red, int green, int blue)
    curpal[color] = col;
 
    SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
-   SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-   SDL_Flip(screen);
+   VH_UpdateScreen();
 }
 
 //===========================================================================
@@ -243,10 +242,7 @@ void VL_SetPalette (SDL_Color *palette, bool forceupdate)
 
    SDL_SetPalette(curSurface, SDL_LOGPAL, palette, 0, 256);
    if(forceupdate)
-   {
-      SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-      SDL_Flip(screen);
-   }
+      VH_UpdateScreen();
 }
 
 
