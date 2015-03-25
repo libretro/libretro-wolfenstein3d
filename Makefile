@@ -37,10 +37,10 @@ CXXFLAGS += $(CFLAGS)
 
 LDFLAGS += $(LDFLAGS_SDL)
 ifeq ($(UNAME), Darwin)
-	LDFLAGS += -lSDL_mixer -framework OpenGL
+	LDFLAGS += -lSDL_mixer
 endif
 ifeq ($(UNAME), Linux)
-	LDFLAGS += -lSDL_mixer -lGL
+	LDFLAGS += -lSDL_mixer
 endif
 
 SRCS :=
