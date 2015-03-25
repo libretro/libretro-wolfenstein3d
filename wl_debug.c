@@ -122,26 +122,6 @@ void CountObjects (void)
 */
 void PictureGrabber (void)
 {
-    static char fname[] = "WSHOT000.BMP";
-
-    for(int i = 0; i < 1000; i++)
-    {
-        fname[7] = i % 10 + '0';
-        fname[6] = (i / 10) % 10 + '0';
-        fname[5] = i / 100 + '0';
-        int file = open(fname, O_RDONLY | O_BINARY);
-        if(file == -1) break;       // file does not exist, so use that filename
-        close(file);
-    }
-
-    // overwrites WSHOT999.BMP if all wshot files exist
-
-    SDL_SaveBMP(curSurface, fname);
-
-    CenterWindow (18,2);
-    US_PrintCentered ("Screenshot taken");
-    VW_UpdateScreen();
-    IN_Ack();
 }
 
 
