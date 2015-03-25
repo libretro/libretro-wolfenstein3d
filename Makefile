@@ -67,7 +67,6 @@ SRCS += wl_state.cpp
 SRCS += wl_text.cpp
 SRCS += crt.cpp
 
-DEPS = $(filter %.d, $(SRCS:.c=.d) $(SRCS:.cpp=.d))
 OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 
 .SUFFIXES:
@@ -76,14 +75,6 @@ OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 Q ?= @
 
 all: $(BINARY)
-
-ifndef NO_DEPS
-depend: $(DEPS)
-
-ifeq ($(findstring $(MAKECMDGOALS), clean depend Data),)
--include $(DEPS)
-endif
-endif
 
 $(BINARY): $(OBJS)
 	@echo '===> LD $@'
@@ -97,17 +88,9 @@ $(BINARY): $(OBJS)
 	@echo '===> CXX $<'
 	$(Q)$(CXX) $(CXXFLAGS) -c $< -o $@
 
-.c.d:
-	@echo '===> DEP $<'
-	$(Q)$(CC) $(CCFLAGS) -MM $< | sed 's#^$(@F:%.d=%.o):#$@ $(@:%.d=%.o):#' > $@
-
-.cpp.d:
-	@echo '===> DEP $<'
-	$(Q)$(CXX) $(CXXFLAGS) -MM $< | sed 's#^$(@F:%.d=%.o):#$@ $(@:%.d=%.o):#' > $@
-
 clean distclean:
 	@echo '===> CLEAN'
-	$(Q)rm -fr $(DEPS) $(OBJS) $(BINARY)
+	$(Q)rm -fr $(OBJS) $(BINARY)
 
 install: $(BINARY)
 	@echo '===> INSTALL'
