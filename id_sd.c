@@ -357,7 +357,7 @@ static void
 SDL_ALStopSound(void)
 {
     alSound = 0;
-    alOut(alFreqH + 0, 0);
+    YM3812Write(0, alFreqH + 0, 0);
 }
 
 static void
@@ -367,20 +367,18 @@ SDL_AlSetFXInst(Instrument *inst)
 
     m = 0;      // modulator cell for channel 0
     c = 3;      // carrier cell for channel 0
-    alOut(m + alChar,inst->mChar);
-    alOut(m + alScale,inst->mScale);
-    alOut(m + alAttack,inst->mAttack);
-    alOut(m + alSus,inst->mSus);
-    alOut(m + alWave,inst->mWave);
-    alOut(c + alChar,inst->cChar);
-    alOut(c + alScale,inst->cScale);
-    alOut(c + alAttack,inst->cAttack);
-    alOut(c + alSus,inst->cSus);
-    alOut(c + alWave,inst->cWave);
+    YM3812Write(0, m + alChar,inst->mChar);
+    YM3812Write(0, m + alScale,inst->mScale);
+    YM3812Write(0, m + alAttack,inst->mAttack);
+    YM3812Write(0, m + alSus,inst->mSus);
+    YM3812Write(0, m + alWave,inst->mWave);
+    YM3812Write(0, c + alChar,inst->cChar);
+    YM3812Write(0, c + alScale,inst->cScale);
+    YM3812Write(0, c + alAttack,inst->cAttack);
+    YM3812Write(0, c + alSus,inst->cSus);
+    YM3812Write(0, c + alWave,inst->cWave);
 
-    // Note: Switch commenting on these lines for old MUSE compatibility
-//    alOutInIRQ(alFeedCon,inst->nConn);
-    alOut(alFeedCon,0);
+    YM3812Write(0, alFeedCon,0);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -419,8 +417,8 @@ static void
 SDL_ShutAL(void)
 {
     alSound = 0;
-    alOut(alEffects,0);
-    alOut(alFreqH + 0,0);
+    YM3812Write(0, alEffects,0);
+    YM3812Write(0, alFreqH + 0,0);
     SDL_AlSetFXInst(&alZeroInst);
 }
 
@@ -434,9 +432,9 @@ SDL_CleanAL(void)
 {
     int     i;
 
-    alOut(alEffects,0);
+    YM3812Write(0, alEffects,0);
     for (i = 1; i < 0xf5; i++)
-        alOut(i, 0);
+        YM3812Write(0, i, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -447,7 +445,7 @@ SDL_CleanAL(void)
 static void
 SDL_StartAL(void)
 {
-    alOut(alEffects, 0);
+    YM3812Write(0, alEffects, 0);
     SDL_AlSetFXInst(&alZeroInst);
 }
 
@@ -462,10 +460,10 @@ SDL_DetectAdLib(void)
 {
    unsigned i;
     for (i = 1; i <= 0xf5; i++)       // Zero all the registers
-        alOut(i, 0);
+        YM3812Write(0, i, 0);
 
-    alOut(1, 0x20);             // Set WSE=1
-//    alOut(8, 0);                // Set CSM=0 & SEL=0
+    YM3812Write(0, 1, 0x20);             // Set WSE=1
+//    YM3812Write(0, 8, 0);                // Set CSM=0 & SEL=0
 
     return true;
 }
@@ -643,10 +641,10 @@ void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
             {
                 if(*curAlSoundPtr)
                 {
-                    alOut(alFreqL, *curAlSoundPtr);
-                    alOut(alFreqH, alBlock);
+                    YM3812Write(0, alFreqL, *curAlSoundPtr);
+                    YM3812Write(0, alFreqH, alBlock);
                 }
-                else alOut(alFreqH, 0);
+                else YM3812Write(0, alFreqH, 0);
                 curAlSoundPtr++;
                 curAlLengthLeft--;
                 if(!curAlLengthLeft)
@@ -654,7 +652,7 @@ void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
                     curAlSound = alSound = 0;
                     SoundNumber = (soundnames) 0;
                     SoundPriority = 0;
-                    alOut(alFreqH, 0);
+                    YM3812Write(0, alFreqH, 0);
                 }
             }
         }
@@ -664,7 +662,7 @@ void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
             {
                 if(sqHackTime > alTimeCount) break;
                 sqHackTime = alTimeCount + *(sqHackPtr+1);
-                alOut(*(byte *) sqHackPtr, *(((byte *) sqHackPtr)+1));
+                YM3812Write(0, *(byte *) sqHackPtr, *(((byte *) sqHackPtr)+1));
                 sqHackPtr += 2;
                 sqHackLen -= 4;
             }
@@ -938,9 +936,9 @@ SD_MusicOff(void)
     switch (MusicMode)
     {
         case smm_AdLib:
-            alOut(alEffects, 0);
+            YM3812Write(0, alEffects, 0);
             for (i = 0;i < sqMaxTracks;i++)
-                alOut(alFreqH + i + 1, 0);
+                YM3812Write(0, alFreqH + i + 1, 0);
             break;
     }
 
@@ -999,7 +997,7 @@ SD_ContinueMusic(int chunk, int startoffs)
             if(reg >= 0xb1 && reg <= 0xb8) val &= 0xdf;           // disable play note flag
             else if(reg == 0xbd) val &= 0xe0;                     // disable drum flags
 
-            alOut(reg,val);
+            YM3812Write(0, reg,val);
             sqHackPtr += 2;
             sqHackLen -= 4;
         }
