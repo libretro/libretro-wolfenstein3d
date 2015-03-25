@@ -32,10 +32,6 @@ typedef INT16 OPLSAMPLE;
 typedef INT8 OPLSAMPLE;
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef void (*OPL_TIMERHANDLER)(int channel,double interval_Sec);
 typedef void (*OPL_IRQHANDLER)(int param,int irq);
 typedef void (*OPL_UPDATEHANDLER)(int param,int min_interval_us);
@@ -112,10 +108,6 @@ void Y8950SetTimerHandler (int which, OPL_TIMERHANDLER TimerHandler, int channel
 void Y8950SetIRQHandler (int which, OPL_IRQHANDLER IRQHandler, int param);
 void Y8950SetUpdateHandler (int which, OPL_UPDATEHANDLER UpdateHandler, int param);
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif /* __FMOPL_H_ */
