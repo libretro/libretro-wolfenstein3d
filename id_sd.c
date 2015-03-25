@@ -358,11 +358,7 @@ SDL_SetTimerSpeed(void)
 //      SDL_PCPlaySample() - Plays the specified sample on the PC speaker
 //
 ///////////////////////////////////////////////////////////////////////////
-#ifdef  _MUSE_
-void
-#else
 static void
-#endif
 SDL_PCPlaySample(byte *data,longword len,boolean inIRQ)
 {
         if(!inIRQ)
@@ -388,11 +384,7 @@ SDL_PCPlaySample(byte *data,longword len,boolean inIRQ)
 //      SDL_PCStopSample() - Stops a sample playing on the PC speaker
 //
 ///////////////////////////////////////////////////////////////////////////
-#ifdef  _MUSE_
-void
-#else
 static void
-#endif
 SDL_PCStopSampleInIRQ(void)
 {
         pcSound = 0;
@@ -409,11 +401,7 @@ SDL_PCStopSampleInIRQ(void)
 //      SDL_PCPlaySound() - Plays the specified sound on the PC speaker
 //
 ///////////////////////////////////////////////////////////////////////////
-#ifdef  _MUSE_
-void
-#else
 static void
-#endif
 SDL_PCPlaySound(PCSound *sound)
 {
 //      _asm    pushfd
@@ -432,11 +420,7 @@ SDL_PCPlaySound(PCSound *sound)
 //      SDL_PCStopSound() - Stops the current sound playing on the PC Speaker
 //
 ///////////////////////////////////////////////////////////////////////////
-#ifdef  _MUSE_
-void
-#else
 static void
-#endif
 SDL_PCStopSound(void)
 {
 //      _asm    pushfd
