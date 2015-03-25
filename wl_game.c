@@ -14,11 +14,6 @@
 
 #pragma hdrstop
 
-#ifdef MYPROFILE
-#include <TIME.H>
-#endif
-
-
 /*
 =============================================================================
 
@@ -1216,9 +1211,6 @@ void Died (void)
 void GameLoop (void)
 {
     boolean died;
-#ifdef MYPROFILE
-    clock_t start,end;
-#endif
 
 restartgame:
     ClearMemory ();
