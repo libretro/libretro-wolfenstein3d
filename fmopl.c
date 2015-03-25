@@ -1198,12 +1198,6 @@ static int init_tables(void)
             tl_tab[ x*2+0 + i*2*TL_RES_LEN ] =  tl_tab[ x*2+0 ]>>i;
             tl_tab[ x*2+1 + i*2*TL_RES_LEN ] = -tl_tab[ x*2+0 + i*2*TL_RES_LEN ];
         }
-    #if 0
-            logerror("tl %04i", x*2);
-            for (i=0; i<12; i++)
-                logerror(", [%02i] %5i", i*2, tl_tab[ x*2 /*+1*/ + i*2*TL_RES_LEN ] );
-            logerror("\n");
-    #endif
     }
     /*logerror("FMOPL.C: TL_TAB_LEN = %i elements (%i bytes)\n",TL_TAB_LEN, (int)sizeof(tl_tab));*/
 
@@ -1288,10 +1282,6 @@ static void OPL_initalize(FM_OPL *OPL)
 
     /* frequency base */
     OPL->freqbase  = (OPL->rate) ? ((double)OPL->clock / 72.0) / OPL->rate  : 0;
-#if 0
-    OPL->rate = (double)OPL->clock / 72.0;
-    OPL->freqbase  = 1.0;
-#endif
 
     /*logerror("freqbase=%f\n", OPL->freqbase);*/
 
@@ -1303,30 +1293,7 @@ static void OPL_initalize(FM_OPL *OPL)
     {
         /* opn phase increment counter = 20bit */
         OPL->fn_tab[i] = (UINT32)( (double)i * 64 * OPL->freqbase * (1<<(FREQ_SH-10)) ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
-#if 0
-        logerror("FMOPL.C: fn_tab[%4i] = %08x (dec=%8i)\n",
-                 i, OPL->fn_tab[i]>>6, OPL->fn_tab[i]>>6 );
-#endif
     }
-
-#if 0
-    for( i=0 ; i < 16 ; i++ )
-    {
-        logerror("FMOPL.C: sl_tab[%i] = %08x\n",
-            i, sl_tab[i] );
-    }
-    for( i=0 ; i < 8 ; i++ )
-    {
-        int j;
-        logerror("FMOPL.C: ksl_tab[oct=%2i] =",i);
-        for (j=0; j<16; j++)
-        {
-            logerror("%08x ", ksl_tab[i*16+j] );
-        }
-        logerror("\n");
-    }
-#endif
-
 
     /* Amplitude modulation: 27 output levels (triangle waveform); 1 level takes one of: 192, 256 or 448 samples */
     /* One entry from LFO_AM_TABLE lasts for 64 samples */
