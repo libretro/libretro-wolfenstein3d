@@ -633,62 +633,32 @@ void VL_MemToScreenScaledCoord2 (byte *source, int origwidth, int origheight, in
 void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
     int width, int height, int scxdest, int scydest)
 {
-    assert(scxdest >= 0 && scxdest + width * scaleFactor <= screenWidth
-            && scydest >= 0 && scydest + height * scaleFactor <= screenHeight
-            && "VL_LatchToScreenScaledCoord: Destination rectangle out of bounds!");
+   assert(scxdest >= 0 && scxdest + width * scaleFactor <= screenWidth
+         && scydest >= 0 && scydest + height * scaleFactor <= screenHeight
+         && "VL_LatchToScreenScaledCoord: Destination rectangle out of bounds!");
 
-    if(scaleFactor == 1)
-    {
-       // HACK: If screenBits is not 8 and the screen is faded out, the
-       //       result will be black when using SDL_BlitSurface. The reason
-       //       is that the logical palette needed for the transformation
-       //       to the screen color depth is not equal to the logical
-       //       palette of the latch (the latch is not faded). Therefore,
-       //       SDL tries to map the colors...
-       //       The result: All colors are mapped to black.
-       //       So, we do the blit on our own...
-       VL_LockSurface(source);
-       byte *src = (byte *) source->pixels;
-       unsigned srcPitch = source->pitch;
+   VL_LockSurface(source);
+   byte *src = (byte *) source->pixels;
+   unsigned srcPitch = source->pitch;
 
-       VL_LockSurface(curSurface);
-       byte *vbuf = (byte *) curSurface->pixels;
-       for(int j=0,scj=0; j<height; j++, scj++)
-       {
-          for(int i=0,sci=0; i<width; i++, sci++)
-          {
-             byte col = src[(ysrc + j)*srcPitch + xsrc + i];
-             vbuf[(scydest+scj)*curPitch+scxdest+sci] = col;
-          }
-       }
-       VL_UnlockSurface(curSurface);
-       VL_UnlockSurface(source);
-    }
-    else
-    {
-        VL_LockSurface(source);
-        byte *src = (byte *) source->pixels;
-        unsigned srcPitch = source->pitch;
-
-        VL_LockSurface(curSurface);
-        byte *vbuf = (byte *) curSurface->pixels;
-        for(int j=0,scj=0; j<height; j++, scj+=scaleFactor)
-        {
-            for(int i=0,sci=0; i<width; i++, sci+=scaleFactor)
+   VL_LockSurface(curSurface);
+   byte *vbuf = (byte *) curSurface->pixels;
+   for(int j=0,scj=0; j<height; j++, scj+=scaleFactor)
+   {
+      for(int i=0,sci=0; i<width; i++, sci+=scaleFactor)
+      {
+         byte col = src[(ysrc + j)*srcPitch + xsrc + i];
+         for(unsigned m=0; m<scaleFactor; m++)
+         {
+            for(unsigned n=0; n<scaleFactor; n++)
             {
-                byte col = src[(ysrc + j)*srcPitch + xsrc + i];
-                for(unsigned m=0; m<scaleFactor; m++)
-                {
-                    for(unsigned n=0; n<scaleFactor; n++)
-                    {
-                        vbuf[(scydest+scj+m)*curPitch+scxdest+sci+n] = col;
-                    }
-                }
+               vbuf[(scydest+scj+m)*curPitch+scxdest+sci+n] = col;
             }
-        }
-        VL_UnlockSurface(curSurface);
-        VL_UnlockSurface(source);
-    }
+         }
+      }
+   }
+   VL_UnlockSurface(curSurface);
+   VL_UnlockSurface(source);
 }
 
 //===========================================================================
