@@ -407,12 +407,6 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
                 // copy one pixel
                 //
 
-                if(screenBits == 8)
-                {
-                    *(destptr + (y1 + y) * screen->pitch + x1 + x)
-                        = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-                }
-                else
                 {
                     byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
                     uint32_t fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
