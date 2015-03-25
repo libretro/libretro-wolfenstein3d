@@ -37,8 +37,6 @@
 #endif
 #include "fmopl.h"
 
-#pragma hdrstop
-
 #define ORIGSAMPLERATE 7042
 
 typedef struct

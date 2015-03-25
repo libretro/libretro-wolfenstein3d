@@ -15,7 +15,6 @@
 #endif
 
 #include "wl_def.h"
-#pragma hdrstop
 
 extern int lastgamemusicoffset;
 extern int numEpisodesMissing;
