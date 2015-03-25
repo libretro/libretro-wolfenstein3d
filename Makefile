@@ -70,7 +70,7 @@ SRCS += crt.cpp
 OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 
 .SUFFIXES:
-.SUFFIXES: .c .cpp .d .o
+.SUFFIXES: .c .cpp .o
 
 Q ?= @
 
