@@ -64,18 +64,16 @@ int Mix_GetNumMusicDecoders(void)
 
 const char *Mix_GetMusicDecoder(int index)
 {
-    if ((index < 0) || (index >= num_decoders)) {
+    if ((index < 0) || (index >= num_decoders))
         return NULL;
-    }
     return(music_decoders[index]);
 }
 
 static void add_music_decoder(const char *decoder)
 {
     void *ptr = SDL_realloc((void *)music_decoders, (num_decoders + 1) * sizeof (const char *));
-    if (ptr == NULL) {
+    if (ptr == NULL)
         return;  /* oh well, go on without it. */
-    }
     music_decoders = (const char **) ptr;
     music_decoders[num_decoders++] = decoder;
 }
@@ -330,58 +328,6 @@ skip:
     }
     return(retval);
 }
-int Mix_FadeInMusicPos(Mix_Music *music, int loops, int ms, double position)
-{
-    int retval;
-
-    if ( ms_per_step == 0 ) {
-        SDL_SetError("Audio device hasn't been opened");
-        return(-1);
-    }
-
-    /* Don't play null pointers :-) */
-    if ( music == NULL ) {
-        Mix_SetError("music parameter was NULL");
-        return(-1);
-    }
-
-    /* Setup the data */
-    if ( ms ) {
-        music->fading = MIX_FADING_IN;
-    } else {
-        music->fading = MIX_NO_FADING;
-    }
-    music->fade_step = 0;
-    music->fade_steps = ms/ms_per_step;
-
-    /* Play the puppy */
-    SDL_LockAudio();
-    /* If the current music is fading out, wait for the fade to complete */
-    while ( music_playing && (music_playing->fading == MIX_FADING_OUT) ) {
-        SDL_UnlockAudio();
-        SDL_Delay(100);
-        SDL_LockAudio();
-    }
-    music_active = 1;
-    if (loops == 1) {
-        /* Loop is the number of times to play the audio */
-        loops = 0;
-    }
-    music_loops = loops;
-    retval = music_internal_play(music, position);
-    SDL_UnlockAudio();
-
-    return(retval);
-}
-
-int Mix_FadeInMusic(Mix_Music *music, int loops, int ms)
-{
-    return Mix_FadeInMusicPos(music, loops, ms, 0.0);
-}
-int Mix_PlayMusic(Mix_Music *music, int loops)
-{
-    return Mix_FadeInMusicPos(music, loops, 0, 0.0);
-}
 
 /* Set the playing music position */
 int music_internal_position(double position)
@@ -479,47 +425,6 @@ int Mix_HaltMusic(void)
     SDL_UnlockAudio();
 
     return(0);
-}
-
-/* Progressively stop the music */
-int Mix_FadeOutMusic(int ms)
-{
-    int retval = 0;
-
-    if ( ms_per_step == 0 ) {
-        SDL_SetError("Audio device hasn't been opened");
-        return 0;
-    }
-
-    if (ms <= 0) {  /* just halt immediately. */
-        Mix_HaltMusic();
-        return 1;
-    }
-
-    SDL_LockAudio();
-    if ( music_playing) {
-                int fade_steps = (ms + ms_per_step - 1)/ms_per_step;
-                if ( music_playing->fading == MIX_NO_FADING ) {
-                music_playing->fade_step = 0;
-                } else {
-                        int step;
-                        int old_fade_steps = music_playing->fade_steps;
-                        if ( music_playing->fading == MIX_FADING_OUT ) {
-                                step = music_playing->fade_step;
-                        } else {
-                                step = old_fade_steps
-                                        - music_playing->fade_step + 1;
-                        }
-                        music_playing->fade_step = (step * fade_steps)
-                                / old_fade_steps;
-                }
-        music_playing->fading = MIX_FADING_OUT;
-        music_playing->fade_steps = fade_steps;
-        retval = 1;
-    }
-    SDL_UnlockAudio();
-
-    return(retval);
 }
 
 Mix_Fading Mix_FadingMusic(void)

@@ -230,66 +230,6 @@ typedef void (*Mix_EffectFunc_t)(int chan, void *stream, int len, void *udata);
 typedef void (*Mix_EffectDone_t)(int chan, void *udata);
 
 
-/* Register a special effect function. At mixing time, the channel data is
- *  copied into a buffer and passed through each registered effect function.
- *  After it passes through all the functions, it is mixed into the final
- *  output stream. The copy to buffer is performed once, then each effect
- *  function performs on the output of the previous effect. Understand that
- *  this extra copy to a buffer is not performed if there are no effects
- *  registered for a given chunk, which saves CPU cycles, and any given
- *  effect will be extra cycles, too, so it is crucial that your code run
- *  fast. Also note that the data that your function is given is in the
- *  format of the sound device, and not the format you gave to Mix_OpenAudio(),
- *  although they may in reality be the same. This is an unfortunate but
- *  necessary speed concern. Use Mix_QuerySpec() to determine if you can
- *  handle the data before you register your effect, and take appropriate
- *  actions.
- * You may also specify a callback (Mix_EffectDone_t) that is called when
- *  the channel finishes playing. This gives you a more fine-grained control
- *  than Mix_ChannelFinished(), in case you need to free effect-specific
- *  resources, etc. If you don't need this, you can specify NULL.
- * You may set the callbacks before or after calling Mix_PlayChannel().
- * Things like Mix_SetPanning() are just internal special effect functions,
- *  so if you are using that, you've already incurred the overhead of a copy
- *  to a separate buffer, and that these effects will be in the queue with
- *  any functions you've registered. The list of registered effects for a
- *  channel is reset when a chunk finishes playing, so you need to explicitly
- *  set them with each call to Mix_PlayChannel*().
- * You may also register a special effect function that is to be run after
- *  final mixing occurs. The rules for these callbacks are identical to those
- *  in Mix_RegisterEffect, but they are run after all the channels and the
- *  music have been mixed into a single stream, whereas channel-specific
- *  effects run on a given channel before any other mixing occurs. These
- *  global effect callbacks are call "posteffects". Posteffects only have
- *  their Mix_EffectDone_t function called when they are unregistered (since
- *  the main output stream is never "done" in the same sense as a channel).
- *  You must unregister them manually when you've had enough. Your callback
- *  will be told that the channel being mixed is (MIX_CHANNEL_POST) if the
- *  processing is considered a posteffect.
- *
- * After all these effects have finished processing, the callback registered
- *  through Mix_SetPostMix() runs, and then the stream goes to the audio
- *  device.
- *
- * DO NOT EVER call SDL_LockAudio() from your callback function!
- *
- * returns zero if error (no such channel), nonzero if added.
- *  Error messages can be retrieved from Mix_GetError().
- */
-int Mix_RegisterEffect(int chan, Mix_EffectFunc_t f, Mix_EffectDone_t d, void *arg);
-
-
-/* You may not need to call this explicitly, unless you need to stop an
- *  effect from processing in the middle of a chunk's playback.
- * Posteffects are never implicitly unregistered as they are for channels,
- *  but they may be explicitly unregistered through this function by
- *  specifying MIX_CHANNEL_POST for a channel.
- * returns zero if error (no such channel or effect), nonzero if removed.
- *  Error messages can be retrieved from Mix_GetError().
- */
-int Mix_UnregisterEffect(int channel, Mix_EffectFunc_t f);
-
-
 /* You may not need to call this explicitly, unless you need to stop all
  *  effects from processing in the middle of a chunk's playback. Note that
  *  this will also shut off some internal effect processing, since
@@ -455,13 +395,6 @@ extern int Mix_GroupNewer(int tag);
 #define Mix_PlayChannel(channel,chunk,loops) Mix_PlayChannelTimed(channel,chunk,loops,-1)
 /* The same as above, but the sound is played at most 'ticks' milliseconds */
 extern int Mix_PlayChannelTimed(int channel, Mix_Chunk *chunk, int loops, int ticks);
-extern int Mix_PlayMusic(Mix_Music *music, int loops);
-
-/* Fade in music or a channel over "ms" milliseconds, same semantics as the "Play" functions */
-extern int Mix_FadeInMusic(Mix_Music *music, int loops, int ms);
-extern int Mix_FadeInMusicPos(Mix_Music *music, int loops, int ms, double position);
-#define Mix_FadeInChannel(channel,chunk,loops,ms) Mix_FadeInChannelTimed(channel,chunk,loops,ms,-1)
-extern int Mix_FadeInChannelTimed(int channel, Mix_Chunk *chunk, int loops, int ms, int ticks);
 
 /* Set the volume in the range of 0-128 of a specific channel or chunk.
    If the specified channel is -1, set volume for all channels.
@@ -482,14 +415,6 @@ extern int Mix_HaltMusic(void);
    or remove the expiration if 'ticks' is -1
 */
 extern int Mix_ExpireChannel(int channel, int ticks);
-
-/* Halt a channel, fading it out progressively till it's silent
-   The ms parameter indicates the number of milliseconds the fading
-   will take.
- */
-extern int Mix_FadeOutChannel(int which, int ms);
-extern int Mix_FadeOutGroup(int tag, int ms);
-extern int Mix_FadeOutMusic(int ms);
 
 /* Query the fading status of a channel */
 extern Mix_Fading Mix_FadingMusic(void);
