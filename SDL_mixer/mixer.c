@@ -93,8 +93,6 @@ static void *music_data = NULL;
 static const char **chunk_decoders = NULL;
 static int num_decoders = 0;
 
-/* Semicolon-separated SoundFont paths */
-
 int Mix_GetNumChunkDecoders(void)
 {
     return(num_decoders);

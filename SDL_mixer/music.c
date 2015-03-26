@@ -34,7 +34,6 @@
 int volatile music_active = 1;
 static int volatile music_stopped = 0;
 static int music_loops = 0;
-static char *music_cmd = NULL;
 static Mix_Music * volatile music_playing = NULL;
 static int music_volume = MIX_MAX_VOLUME;
 
@@ -71,7 +70,7 @@ const char *Mix_GetMusicDecoder(int index)
 
 static void add_music_decoder(const char *decoder)
 {
-    void *ptr = SDL_realloc((void *)music_decoders, (num_decoders + 1) * sizeof (const char *));
+    void *ptr = realloc((void *)music_decoders, (num_decoders + 1) * sizeof (const char *));
     if (ptr == NULL)
         return;  /* oh well, go on without it. */
     music_decoders = (const char **) ptr;
@@ -492,24 +491,6 @@ int Mix_PlayingMusic(void)
     return(playing);
 }
 
-/* Set the external music playback command */
-int Mix_SetMusicCMD(const char *command)
-{
-    Mix_HaltMusic();
-    if ( music_cmd ) {
-        SDL_free(music_cmd);
-        music_cmd = NULL;
-    }
-    if ( command ) {
-        music_cmd = (char *)SDL_malloc(strlen(command)+1);
-        if ( music_cmd == NULL ) {
-            return(-1);
-        }
-        strcpy(music_cmd, command);
-    }
-    return(0);
-}
-
 int Mix_SetSynchroValue(int i)
 {
     /* Not supported by any players at this time */
@@ -529,14 +510,9 @@ void close_music(void)
     Mix_HaltMusic();
 
     /* rcg06042009 report available decoders at runtime. */
-    SDL_free((void *)music_decoders);
+    free((void *)music_decoders);
     music_decoders = NULL;
     num_decoders = 0;
 
     ms_per_step = 0;
-}
-
-int Mix_SetSoundFonts(const char *paths)
-{
-    return 1;
 }

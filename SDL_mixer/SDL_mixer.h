@@ -443,11 +443,6 @@ extern int Mix_PlayingMusic(void);
 extern int Mix_SetSynchroValue(int value);
 extern int Mix_GetSynchroValue(void);
 
-/* Set/Get/Iterate SoundFonts paths to use by supported MIDI backends */
-extern int Mix_SetSoundFonts(const char *paths);
-extern const char* Mix_GetSoundFonts(void);
-extern int Mix_EachSoundFont(int (*function)(const char*, void*), void *data);
-
 /* Get the Mix_Chunk currently associated with a mixer channel
     Returns NULL if it's an invalid channel, or there's no chunk associated.
 */
