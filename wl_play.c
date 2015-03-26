@@ -34,18 +34,14 @@ objtype *newobj, *obj, *player, *lastobj, *objfreelist, *killerobj;
 boolean noclip, ammocheat;
 int godmode, singlestep, extravbls = 0;
 
-byte tilemap[MAPSIZE][MAPSIZE]; // wall values only
+byte tilemap[MAPSIZE][MAPSIZE]; /* wall values only */
 byte spotvis[MAPSIZE][MAPSIZE];
 objtype *actorat[MAPSIZE][MAPSIZE];
 
-//
-// replacing refresh manager
-//
+/* replacing refresh manager */
 unsigned tics;
 
-//
-// control info
-//
+/* control info */
 boolean mouseenabled, joystickenabled;
 int dirscan[4] = { sc_UpArrow, sc_RightArrow, sc_DownArrow, sc_LeftArrow };
 int buttonscan[NUMBUTTONS] = { sc_Control, sc_Alt, sc_LShift, sc_Space, sc_1, sc_2, sc_3, sc_4 };
@@ -67,10 +63,8 @@ boolean demorecord, demoplayback;
 int8_t *demoptr, *lastdemoptr;
 memptr demobuffer;
 
-//
-// current user input
-//
-int controlx, controly;         // range from -100 to 100 per tic
+/* current user input */
+int controlx, controly;         /* range from -100 to 100 per tic */
 boolean buttonstate[NUMBUTTONS];
 
 int lastgamemusicoffset = 0;
@@ -99,14 +93,10 @@ void PlayLoop (void);
 
 objtype dummyobj;
 
-//
-// LIST OF SONGS FOR EACH VERSION
-//
+/* LIST OF SONGS FOR EACH VERSION */
 int songs[] = {
 #ifndef SPEAR
-    //
-    // Episode One
-    //
+    /* Episode One */
     GETTHEM_MUS,
     SEARCHN_MUS,
     POW_MUS,
@@ -116,12 +106,10 @@ int songs[] = {
     POW_MUS,
     SUSPENSE_MUS,
 
-    WARMARCH_MUS,               // Boss level
-    CORNER_MUS,                 // Secret level
+    WARMARCH_MUS,               /* Boss level */
+    CORNER_MUS,                 /* Secret level */
 
-    //
-    // Episode Two
-    //
+    /* Episode Two */
     NAZI_OMI_MUS,
     PREGNANT_MUS,
     GOINGAFT_MUS,
@@ -248,13 +236,12 @@ int songs[] = {
 
 void PollKeyboardButtons (void)
 {
-    int i;
+   int i;
 
-    for (i = 0; i < NUMBUTTONS; i++)
-        if (Keyboard[buttonscan[i]])
-            buttonstate[i] = true;
+   for (i = 0; i < NUMBUTTONS; i++)
+      if (Keyboard[buttonscan[i]])
+         buttonstate[i] = true;
 }
-
 
 /*
 ===================
@@ -266,14 +253,14 @@ void PollKeyboardButtons (void)
 
 void PollMouseButtons (void)
 {
-    int buttons = IN_MouseButtons ();
+   int buttons = IN_MouseButtons ();
 
-    if (buttons & 1)
-        buttonstate[buttonmouse[0]] = true;
-    if (buttons & 2)
-        buttonstate[buttonmouse[1]] = true;
-    if (buttons & 4)
-        buttonstate[buttonmouse[2]] = true;
+   if (buttons & 1)
+      buttonstate[buttonmouse[0]] = true;
+   if (buttons & 2)
+      buttonstate[buttonmouse[1]] = true;
+   if (buttons & 4)
+      buttonstate[buttonmouse[2]] = true;
 }
 
 
@@ -309,16 +296,16 @@ void PollJoystickButtons (void)
 
 void PollKeyboardMove (void)
 {
-    int delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
+   int delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
 
-    if (Keyboard[dirscan[di_north]])
-        controly -= delta;
-    if (Keyboard[dirscan[di_south]])
-        controly += delta;
-    if (Keyboard[dirscan[di_west]])
-        controlx -= delta;
-    if (Keyboard[dirscan[di_east]])
-        controlx += delta;
+   if (Keyboard[dirscan[di_north]])
+      controly -= delta;
+   if (Keyboard[dirscan[di_south]])
+      controly += delta;
+   if (Keyboard[dirscan[di_west]])
+      controlx -= delta;
+   if (Keyboard[dirscan[di_east]])
+      controlx += delta;
 }
 
 
@@ -332,17 +319,17 @@ void PollKeyboardMove (void)
 
 void PollMouseMove (void)
 {
-    int mousexmove, mouseymove;
+   int mousexmove, mouseymove;
 
-    SDL_GetMouseState(&mousexmove, &mouseymove);
-    if(IN_IsInputGrabbed())
-        IN_CenterMouse();
+   SDL_GetMouseState(&mousexmove, &mouseymove);
+   if(IN_IsInputGrabbed())
+      IN_CenterMouse();
 
-    mousexmove -= screenWidth / 2;
-    mouseymove -= screenHeight / 2;
+   mousexmove -= screenWidth / 2;
+   mouseymove -= screenHeight / 2;
 
-    controlx += mousexmove * 10 / (13 - mouseadjustment);
-    controly += mouseymove * 20 / (13 - mouseadjustment);
+   controlx += mousexmove * 10 / (13 - mouseadjustment);
+   controly += mouseymove * 20 / (13 - mouseadjustment);
 }
 
 
@@ -356,20 +343,21 @@ void PollMouseMove (void)
 
 void PollJoystickMove (void)
 {
-    int joyx, joyy;
+   int joyx, joyy;
+   int delta;
 
-    IN_GetJoyDelta (&joyx, &joyy);
+   IN_GetJoyDelta (&joyx, &joyy);
 
-    int delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
+   delta = buttonstate[bt_run] ? RUNMOVE * tics : BASEMOVE * tics;
 
-    if (joyx > 64 || buttonstate[bt_turnright])
-        controlx += delta;
-    else if (joyx < -64  || buttonstate[bt_turnleft])
-        controlx -= delta;
-    if (joyy > 64 || buttonstate[bt_movebackward])
-        controly += delta;
-    else if (joyy < -64 || buttonstate[bt_moveforward])
-        controly -= delta;
+   if (joyx > 64 || buttonstate[bt_turnright])
+      controlx += delta;
+   else if (joyx < -64  || buttonstate[bt_turnleft])
+      controlx -= delta;
+   if (joyy > 64 || buttonstate[bt_movebackward])
+      controly += delta;
+   else if (joyy < -64 || buttonstate[bt_moveforward])
+      controly -= delta;
 }
 
 /*
@@ -389,128 +377,116 @@ void PollJoystickMove (void)
 
 void PollControls (void)
 {
-    int max, min, i;
-    byte buttonbits;
+   int max, min, i;
+   byte buttonbits;
 
-    IN_ProcessEvents();
+   IN_ProcessEvents();
 
-//
-// get timing info for last frame
-//
-    if (demoplayback || demorecord)   // demo recording and playback needs to be constant
-    {
-        // wait up to DEMOTICS Wolf tics
-        uint32_t curtime = SDL_GetTicks();
-        lasttimecount += DEMOTICS;
-        int32_t timediff = (lasttimecount * 100) / 7 - curtime;
-        if(timediff > 0)
-            SDL_Delay(timediff);
+   /* get timing info for last frame */
+   if (demoplayback || demorecord)   /* demo recording and playback needs to be constant */
+   {
+      /* wait up to DEMOTICS Wolf tics */
+      uint32_t curtime = SDL_GetTicks();
+      lasttimecount += DEMOTICS;
+      int32_t timediff = (lasttimecount * 100) / 7 - curtime;
+      if(timediff > 0)
+         SDL_Delay(timediff);
 
-        if(timediff < -2 * DEMOTICS)       // more than 2-times DEMOTICS behind?
-            lasttimecount = (curtime * 7) / 100;    // yes, set to current timecount
+      if(timediff < -2 * DEMOTICS)       /* more than 2-times DEMOTICS behind? */
+         lasttimecount = (curtime * 7) / 100;    /* yes, set to current timecount */
 
-        tics = DEMOTICS;
-    }
-    else
-        CalcTics ();
+      tics = DEMOTICS;
+   }
+   else
+      CalcTics ();
 
-    controlx = 0;
-    controly = 0;
-    memcpy (buttonheld, buttonstate, sizeof (buttonstate));
-    memset (buttonstate, 0, sizeof (buttonstate));
+   controlx = 0;
+   controly = 0;
+   memcpy (buttonheld, buttonstate, sizeof (buttonstate));
+   memset (buttonstate, 0, sizeof (buttonstate));
 
-    if (demoplayback)
-    {
-        //
-        // read commands from demo buffer
-        //
-        buttonbits = *demoptr++;
-        for (i = 0; i < NUMBUTTONS; i++)
-        {
-            buttonstate[i] = buttonbits & 1;
-            buttonbits >>= 1;
-        }
+   if (demoplayback)
+   {
+      /* read commands from demo buffer */
 
-        controlx = *demoptr++;
-        controly = *demoptr++;
+      buttonbits = *demoptr++;
+      for (i = 0; i < NUMBUTTONS; i++)
+      {
+         buttonstate[i] = buttonbits & 1;
+         buttonbits >>= 1;
+      }
 
-        if (demoptr == lastdemoptr)
-            playstate = ex_completed;   // demo is done
+      controlx = *demoptr++;
+      controly = *demoptr++;
 
-        controlx *= (int) tics;
-        controly *= (int) tics;
+      if (demoptr == lastdemoptr)
+         playstate = ex_completed;   /* demo is done */
 
-        return;
-    }
+      controlx *= (int) tics;
+      controly *= (int) tics;
 
+      return;
+   }
 
-//
-// get button states
-//
-    PollKeyboardButtons ();
+   /* get button states */
+   PollKeyboardButtons ();
 
-    if (mouseenabled && IN_IsInputGrabbed())
-        PollMouseButtons ();
+   if (mouseenabled && IN_IsInputGrabbed())
+      PollMouseButtons ();
 
-    if (joystickenabled)
-        PollJoystickButtons ();
+   if (joystickenabled)
+      PollJoystickButtons ();
 
-//
-// get movements
-//
-    PollKeyboardMove ();
+   /* get movements */
+   PollKeyboardMove ();
 
-    if (mouseenabled && IN_IsInputGrabbed())
-        PollMouseMove ();
+   if (mouseenabled && IN_IsInputGrabbed())
+      PollMouseMove ();
 
-    if (joystickenabled)
-        PollJoystickMove ();
+   if (joystickenabled)
+      PollJoystickMove ();
 
-//
-// bound movement to a maximum
-//
-    max = 100 * tics;
-    min = -max;
-    if (controlx > max)
-        controlx = max;
-    else if (controlx < min)
-        controlx = min;
+   /* bound movement to a maximum */
+   max = 100 * tics;
+   min = -max;
+   if (controlx > max)
+      controlx = max;
+   else if (controlx < min)
+      controlx = min;
 
-    if (controly > max)
-        controly = max;
-    else if (controly < min)
-        controly = min;
+   if (controly > max)
+      controly = max;
+   else if (controly < min)
+      controly = min;
 
-    if (demorecord)
-    {
-        //
-        // save info out to demo buffer
-        //
-        controlx /= (int) tics;
-        controly /= (int) tics;
+   if (demorecord)
+   {
+      /* save info out to demo buffer */
+      controlx /= (int) tics;
+      controly /= (int) tics;
 
-        buttonbits = 0;
+      buttonbits = 0;
 
-        // TODO: Support 32-bit buttonbits
-        for (i = NUMBUTTONS - 1; i >= 0; i--)
-        {
-            buttonbits <<= 1;
-            if (buttonstate[i])
-                buttonbits |= 1;
-        }
+      /* TODO: Support 32-bit buttonbits */
+      for (i = NUMBUTTONS - 1; i >= 0; i--)
+      {
+         buttonbits <<= 1;
+         if (buttonstate[i])
+            buttonbits |= 1;
+      }
 
-        *demoptr++ = buttonbits;
-        *demoptr++ = controlx;
-        *demoptr++ = controly;
+      *demoptr++ = buttonbits;
+      *demoptr++ = controlx;
+      *demoptr++ = controly;
 
-        if (demoptr >= lastdemoptr - 8)
-            playstate = ex_completed;
-        else
-        {
-            controlx *= (int) tics;
-            controly *= (int) tics;
-        }
-    }
+      if (demoptr >= lastdemoptr - 8)
+         playstate = ex_completed;
+      else
+      {
+         controlx *= (int) tics;
+         controly *= (int) tics;
+      }
+   }
 }
 
 
@@ -549,16 +525,14 @@ void CheckKeys (void)
     ScanCode scan;
 
 
-    if (screenfaded || demoplayback)    // don't do anything with a faded screen
+    if (screenfaded || demoplayback)    /* don't do anything with a faded screen */
         return;
 
     scan = LastScan;
 
 
 #ifdef SPEAR
-    //
-    // SECRET CHEAT CODE: TAB-G-F10
-    //
+    /* SECRET CHEAT CODE: TAB-G-F10 */
     if (Keyboard[sc_Tab] && Keyboard[sc_G] && Keyboard[sc_F10])
     {
         WindowH = 160;
@@ -581,10 +555,7 @@ void CheckKeys (void)
     }
 #endif
 
-
-    //
-    // SECRET CHEAT CODE: 'MLI'
-    //
+    /* SECRET CHEAT CODE: 'MLI' */
     if (Keyboard[sc_M] && Keyboard[sc_L] && Keyboard[sc_I])
     {
         gamestate.health = 100;
@@ -634,9 +605,7 @@ void CheckKeys (void)
     }
 #endif
 
-    //
-    // TRYING THE KEEN CHEAT CODE!
-    //
+    /* TRYING THE KEEN CHEAT CODE! */
     if (Keyboard[sc_B] && Keyboard[sc_A] && Keyboard[sc_T])
     {
         ClearMemory ();
@@ -655,10 +624,10 @@ void CheckKeys (void)
             DrawPlayBorder ();
     }
 
-//
-// pause key weirdness can't be checked as a scan code
-//
-    if(buttonstate[bt_pause]) Paused = true;
+    /* pause key weirdness can't be checked as a scan code */
+    if(buttonstate[bt_pause])
+       Paused = true;
+
     if(Paused)
     {
         int lastoffs = StopMusic();
@@ -673,9 +642,7 @@ void CheckKeys (void)
         return;
     }
 
-//
-// F1-F7/ESC to enter control panel
-//
+    /* F1-F7/ESC to enter control panel */
     if (
 #ifndef DEBCHECK
            scan == sc_F10 ||
@@ -712,13 +679,11 @@ void CheckKeys (void)
             playstate = ex_abort;
         lasttimecount = GetTimeCount();
         if (MousePresent && IN_IsInputGrabbed())
-            IN_CenterMouse();     // Clear accumulated mouse movement
+            IN_CenterMouse();     /* Clear accumulated mouse movement */
         return;
     }
 
-//
-// TAB-? debug keys
-//
+    /* TAB-? debug keys */
 #ifdef DEBUGKEYS
     if (Keyboard[sc_Tab] && DebugOk)
     {
@@ -726,10 +691,10 @@ void CheckKeys (void)
         fontnumber = 0;
         SETFONTCOLOR (0, 15);
         if (DebugKeys () && viewsize < 20)
-            DrawPlayBorder ();       // dont let the blue borders flash
+            DrawPlayBorder ();       /* dont let the blue borders flash */
 
         if (MousePresent && IN_IsInputGrabbed())
-            IN_CenterMouse();     // Clear accumulated mouse movement
+            IN_CenterMouse();     /* Clear accumulated mouse movement */
 
         lasttimecount = GetTimeCount();
         return;
@@ -777,30 +742,25 @@ int objcount;
 
 void InitActorList (void)
 {
-    int i;
+   int i;
 
-//
-// init the actor lists
-//
-    for (i = 0; i < MAXACTORS; i++)
-    {
-        objlist[i].prev = &objlist[i + 1];
-        objlist[i].next = NULL;
-    }
+   /* init the actor lists */
+   for (i = 0; i < MAXACTORS; i++)
+   {
+      objlist[i].prev = &objlist[i + 1];
+      objlist[i].next = NULL;
+   }
 
-    objlist[MAXACTORS - 1].prev = NULL;
+   objlist[MAXACTORS - 1].prev = NULL;
 
-    objfreelist = &objlist[0];
-    lastobj = NULL;
+   objfreelist = &objlist[0];
+   lastobj = NULL;
 
-    objcount = 0;
+   objcount = 0;
 
-//
-// give the player the first free spots
-//
-    GetNewActor ();
-    player = newobj;
-
+   /* give the player the first free spots */
+   GetNewActor ();
+   player = newobj;
 }
 
 //===========================================================================
@@ -830,7 +790,7 @@ void GetNewActor (void)
 
     if (lastobj)
         lastobj->next = newobj;
-    newobj->prev = lastobj;     // new->next is allready NULL from memset
+    newobj->prev = lastobj;     /* new->next is allready NULL from memset */
 
     newobj->active = ac_no;
     lastobj = newobj;
@@ -853,31 +813,25 @@ void GetNewActor (void)
 
 void RemoveObj (objtype * gone)
 {
-    if (gone == player)
-        Quit ("RemoveObj: Tried to remove the player!");
+   if (gone == player)
+      Quit ("RemoveObj: Tried to remove the player!");
 
-    gone->state = NULL;
+   gone->state = NULL;
 
-//
-// fix the next object's back link
-//
-    if (gone == lastobj)
-        lastobj = (objtype *) gone->prev;
-    else
-        gone->next->prev = gone->prev;
+   /* fix the next object's back link */
+   if (gone == lastobj)
+      lastobj = (objtype *) gone->prev;
+   else
+      gone->next->prev = gone->prev;
 
-//
-// fix the previous object's forward link
-//
-    gone->prev->next = gone->next;
+   /* fix the previous object's forward link */
+   gone->prev->next = gone->next;
 
-//
-// add it back in to the free list
-//
-    gone->prev = objfreelist;
-    objfreelist = gone;
+   /* add it back in to the free list */
+   gone->prev = objfreelist;
+   objfreelist = gone;
 
-    objcount--;
+   objcount--;
 }
 
 /*
@@ -916,14 +870,14 @@ int StopMusic (void)
 =================
 */
 
-void StartMusic ()
+void StartMusic(void)
 {
     SD_MusicOff ();
     lastmusicchunk = (musicnames) songs[gamestate.mapon + gamestate.episode * 10];
     SD_StartMusic(STARTMUSIC + lastmusicchunk);
 }
 
-void ContinueMusic (int offs)
+void ContinueMusic(int offs)
 {
     SD_MusicOff ();
     lastmusicchunk = (musicnames) songs[gamestate.mapon + gamestate.episode * 10];
@@ -962,48 +916,45 @@ boolean palshifted;
 
 void InitRedShifts (void)
 {
-    SDL_Color *workptr, *baseptr;
-    int i, j, delta;
+   SDL_Color *workptr, *baseptr;
+   int i, j, delta;
 
+   /* fade through intermediate frames */
+   for (i = 1; i <= NUMREDSHIFTS; i++)
+   {
+      workptr = redshifts[i - 1];
+      baseptr = gamepal;
 
-//
-// fade through intermediate frames
-//
-    for (i = 1; i <= NUMREDSHIFTS; i++)
-    {
-        workptr = redshifts[i - 1];
-        baseptr = gamepal;
+      for (j = 0; j <= 255; j++)
+      {
+         delta = 256 - baseptr->r;
+         workptr->r = baseptr->r + delta * i / REDSTEPS;
+         delta = -baseptr->g;
+         workptr->g = baseptr->g + delta * i / REDSTEPS;
+         delta = -baseptr->b;
+         workptr->b = baseptr->b + delta * i / REDSTEPS;
+         baseptr++;
+         workptr++;
+      }
+   }
 
-        for (j = 0; j <= 255; j++)
-        {
-            delta = 256 - baseptr->r;
-            workptr->r = baseptr->r + delta * i / REDSTEPS;
-            delta = -baseptr->g;
-            workptr->g = baseptr->g + delta * i / REDSTEPS;
-            delta = -baseptr->b;
-            workptr->b = baseptr->b + delta * i / REDSTEPS;
-            baseptr++;
-            workptr++;
-        }
-    }
+   for (i = 1; i <= NUMWHITESHIFTS; i++)
+   {
+      workptr = whiteshifts[i - 1];
+      baseptr = gamepal;
 
-    for (i = 1; i <= NUMWHITESHIFTS; i++)
-    {
-        workptr = whiteshifts[i - 1];
-        baseptr = gamepal;
-
-        for (j = 0; j <= 255; j++)
-        {
-            delta = 256 - baseptr->r;
-            workptr->r = baseptr->r + delta * i / WHITESTEPS;
-            delta = 248 - baseptr->g;
-            workptr->g = baseptr->g + delta * i / WHITESTEPS;
-            delta = 0-baseptr->b;
-            workptr->b = baseptr->b + delta * i / WHITESTEPS;
-            baseptr++;
-            workptr++;
-        }
-    }
+      for (j = 0; j <= 255; j++)
+      {
+         delta = 256 - baseptr->r;
+         workptr->r = baseptr->r + delta * i / WHITESTEPS;
+         delta = 248 - baseptr->g;
+         workptr->g = baseptr->g + delta * i / WHITESTEPS;
+         delta = 0-baseptr->b;
+         workptr->b = baseptr->b + delta * i / WHITESTEPS;
+         baseptr++;
+         workptr++;
+      }
+   }
 }
 
 
@@ -1032,7 +983,7 @@ void ClearPaletteShifts (void)
 
 void StartBonusFlash (void)
 {
-    bonuscount = NUMWHITESHIFTS * WHITETICS;    // white shift palette
+    bonuscount = NUMWHITESHIFTS * WHITETICS;    /* white shift palette */
 }
 
 
@@ -1060,51 +1011,50 @@ void StartDamageFlash (int damage)
 
 void UpdatePaletteShifts (void)
 {
-    int red, white;
+   int red, white;
 
-    if (bonuscount)
-    {
-        white = bonuscount / WHITETICS + 1;
-        if (white > NUMWHITESHIFTS)
-            white = NUMWHITESHIFTS;
-        bonuscount -= tics;
-        if (bonuscount < 0)
-            bonuscount = 0;
-    }
-    else
-        white = 0;
+   if (bonuscount)
+   {
+      white = bonuscount / WHITETICS + 1;
+      if (white > NUMWHITESHIFTS)
+         white = NUMWHITESHIFTS;
+      bonuscount -= tics;
+      if (bonuscount < 0)
+         bonuscount = 0;
+   }
+   else
+      white = 0;
 
 
-    if (damagecount)
-    {
-        red = damagecount / 10 + 1;
-        if (red > NUMREDSHIFTS)
-            red = NUMREDSHIFTS;
+   if (damagecount)
+   {
+      red = damagecount / 10 + 1;
+      if (red > NUMREDSHIFTS)
+         red = NUMREDSHIFTS;
 
-        damagecount -= tics;
-        if (damagecount < 0)
-            damagecount = 0;
-    }
-    else
-        red = 0;
+      damagecount -= tics;
+      if (damagecount < 0)
+         damagecount = 0;
+   }
+   else
+      red = 0;
 
-    if (red)
-    {
-        VL_SetPalette (redshifts[red - 1], false);
-        palshifted = true;
-    }
-    else if (white)
-    {
-        VL_SetPalette (whiteshifts[white - 1], false);
-        palshifted = true;
-    }
-    else if (palshifted)
-    {
-        VL_SetPalette (gamepal, false);        // back to normal
-        palshifted = false;
-    }
+   if (red)
+   {
+      VL_SetPalette (redshifts[red - 1], false);
+      palshifted = true;
+   }
+   else if (white)
+   {
+      VL_SetPalette (whiteshifts[white - 1], false);
+      palshifted = true;
+   }
+   else if (palshifted)
+   {
+      VL_SetPalette (gamepal, false);        /* back to normal */
+      palshifted = false;
+   }
 }
-
 
 /*
 =====================
@@ -1118,11 +1068,11 @@ void UpdatePaletteShifts (void)
 
 void FinishPaletteShifts (void)
 {
-    if (palshifted)
-    {
-        palshifted = 0;
-        VL_SetPalette (gamepal, true);
-    }
+   if (palshifted)
+   {
+      palshifted = 0;
+      VL_SetPalette (gamepal, true);
+   }
 }
 
 
@@ -1145,97 +1095,91 @@ void FinishPaletteShifts (void)
 
 void DoActor (objtype * ob)
 {
-    void (*think) (objtype *);
+   void (*think) (objtype *);
 
-    if (!ob->active && !areabyplayer[ob->areanumber])
-        return;
+   if (!ob->active && !areabyplayer[ob->areanumber])
+      return;
 
-    if (!(ob->flags & (FL_NONMARK | FL_NEVERMARK)))
-        actorat[ob->tilex][ob->tiley] = NULL;
+   if (!(ob->flags & (FL_NONMARK | FL_NEVERMARK)))
+      actorat[ob->tilex][ob->tiley] = NULL;
 
-//
-// non transitional object
-//
+   /* non transitional object */
 
-    if (!ob->ticcount)
-    {
-        think = (void (*)(objtype *)) ob->state->think;
-        if (think)
-        {
-            think (ob);
-            if (!ob->state)
-            {
-                RemoveObj (ob);
-                return;
-            }
-        }
-
-        if (ob->flags & FL_NEVERMARK)
-            return;
-
-        if ((ob->flags & FL_NONMARK) && actorat[ob->tilex][ob->tiley])
-            return;
-
-        actorat[ob->tilex][ob->tiley] = ob;
-        return;
-    }
-
-//
-// transitional object
-//
-    ob->ticcount -= (short) tics;
-    while (ob->ticcount <= 0)
-    {
-        think = (void (*)(objtype *)) ob->state->action;        // end of state action
-        if (think)
-        {
-            think (ob);
-            if (!ob->state)
-            {
-                RemoveObj (ob);
-                return;
-            }
-        }
-
-        ob->state = ob->state->next;
-
-        if (!ob->state)
-        {
+   if (!ob->ticcount)
+   {
+      think = (void (*)(objtype *)) ob->state->think;
+      if (think)
+      {
+         think (ob);
+         if (!ob->state)
+         {
             RemoveObj (ob);
             return;
-        }
+         }
+      }
 
-        if (!ob->state->tictime)
-        {
-            ob->ticcount = 0;
-            goto think;
-        }
+      if (ob->flags & FL_NEVERMARK)
+         return;
 
-        ob->ticcount += ob->state->tictime;
-    }
+      if ((ob->flags & FL_NONMARK) && actorat[ob->tilex][ob->tiley])
+         return;
+
+      actorat[ob->tilex][ob->tiley] = ob;
+      return;
+   }
+
+   /* transitional object */
+   ob->ticcount -= (short) tics;
+   while (ob->ticcount <= 0)
+   {
+      think = (void (*)(objtype *)) ob->state->action;        /* end of state action */
+      if (think)
+      {
+         think (ob);
+         if (!ob->state)
+         {
+            RemoveObj (ob);
+            return;
+         }
+      }
+
+      ob->state = ob->state->next;
+
+      if (!ob->state)
+      {
+         RemoveObj (ob);
+         return;
+      }
+
+      if (!ob->state->tictime)
+      {
+         ob->ticcount = 0;
+         goto think;
+      }
+
+      ob->ticcount += ob->state->tictime;
+   }
 
 think:
-    //
-    // think
-    //
-    think = (void (*)(objtype *)) ob->state->think;
-    if (think)
-    {
-        think (ob);
-        if (!ob->state)
-        {
-            RemoveObj (ob);
-            return;
-        }
-    }
+   /* think */
+   think = (void (*)(objtype *)) ob->state->think;
+   if (think)
+   {
+      think (ob);
+      if (!ob->state)
+      {
+         RemoveObj (ob);
+         return;
+      }
+   }
 
-    if (ob->flags & FL_NEVERMARK)
-        return;
+   if (ob->flags & FL_NEVERMARK)
+      return;
 
-    if ((ob->flags & FL_NONMARK) && actorat[ob->tilex][ob->tiley])
-        return;
+   if ((ob->flags & FL_NONMARK) && actorat[ob->tilex][ob->tiley])
+      return;
 
-    actorat[ob->tilex][ob->tiley] = ob;
+   actorat[ob->tilex][ob->tiley] = ob;
 }
 
 //==========================================================================
@@ -1254,84 +1198,78 @@ int32_t funnyticount;
 void PlayLoop (void)
 {
 
-    playstate = ex_stillplaying;
-    lasttimecount = GetTimeCount();
-    frameon = 0;
-    anglefrac = 0;
-    facecount = 0;
-    funnyticount = 0;
-    memset (buttonstate, 0, sizeof (buttonstate));
-    ClearPaletteShifts ();
+   playstate = ex_stillplaying;
+   lasttimecount = GetTimeCount();
+   frameon = 0;
+   anglefrac = 0;
+   facecount = 0;
+   funnyticount = 0;
+   memset (buttonstate, 0, sizeof (buttonstate));
+   ClearPaletteShifts ();
 
-    if (MousePresent && IN_IsInputGrabbed())
-        IN_CenterMouse();         // Clear accumulated mouse movement
+   if (MousePresent && IN_IsInputGrabbed())
+      IN_CenterMouse();         /* Clear accumulated mouse movement */
 
-    if (demoplayback)
-        IN_StartAck ();
+   if (demoplayback)
+      IN_StartAck ();
 
-    do
-    {
-        PollControls ();
+   do
+   {
+      PollControls ();
 
-//
-// actor thinking
-//
-        madenoise = false;
+      /* actor thinking */
+      madenoise = false;
 
-        MoveDoors ();
-        MovePWalls ();
+      MoveDoors ();
+      MovePWalls ();
 
-        for (obj = player; obj; obj = obj->next)
-            DoActor (obj);
+      for (obj = player; obj; obj = obj->next)
+         DoActor (obj);
 
-        UpdatePaletteShifts ();
+      UpdatePaletteShifts ();
 
-        ThreeDRefresh ();
+      ThreeDRefresh ();
 
-        //
-        // MAKE FUNNY FACE IF BJ DOESN'T MOVE FOR AWHILE
-        //
+      /* MAKE FUNNY FACE IF BJ DOESN'T MOVE FOR AWHILE */
 #ifdef SPEAR
-        funnyticount += tics;
-        if (funnyticount > 30l * 70)
-        {
-            funnyticount = 0;
-            if(viewsize != 21)
-                StatusDrawFace(BJWAITING1PIC + (US_RndT () & 1));
-            facecount = 0;
-        }
+      funnyticount += tics;
+      if (funnyticount > 30l * 70)
+      {
+         funnyticount = 0;
+         if(viewsize != 21)
+            StatusDrawFace(BJWAITING1PIC + (US_RndT () & 1));
+         facecount = 0;
+      }
 #endif
 
-        gamestate.TimeCount += tics;
+      gamestate.TimeCount += tics;
 
-        UpdateSoundLoc ();      // JAB
-        if (screenfaded)
-            VW_FadeIn ();
+      UpdateSoundLoc ();      // JAB
+      if (screenfaded)
+         VW_FadeIn ();
 
-        CheckKeys ();
+      CheckKeys ();
 
-//
-// debug aids
-//
-        if (singlestep)
-        {
-            VW_WaitVBL (singlestep);
-            lasttimecount = GetTimeCount();
-        }
-        if (extravbls)
-            VW_WaitVBL (extravbls);
+      /* debug aids */
+      if (singlestep)
+      {
+         VW_WaitVBL (singlestep);
+         lasttimecount = GetTimeCount();
+      }
+      if (extravbls)
+         VW_WaitVBL (extravbls);
 
-        if (demoplayback)
-        {
-            if (IN_CheckAck ())
-            {
-                IN_ClearKeysDown ();
-                playstate = ex_abort;
-            }
-        }
-    }
-    while (!playstate && !startgame);
+      if (demoplayback)
+      {
+         if (IN_CheckAck ())
+         {
+            IN_ClearKeysDown ();
+            playstate = ex_abort;
+         }
+      }
+   }
+   while (!playstate && !startgame);
 
-    if (playstate != ex_died)
-        FinishPaletteShifts ();
+   if (playstate != ex_died)
+      FinishPaletteShifts ();
 }
