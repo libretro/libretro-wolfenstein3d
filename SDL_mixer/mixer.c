@@ -106,18 +106,16 @@ int Mix_GetNumChunkDecoders(void)
 
 const char *Mix_GetChunkDecoder(int index)
 {
-    if ((index < 0) || (index >= num_decoders)) {
+    if ((index < 0) || (index >= num_decoders))
         return NULL;
-    }
     return(chunk_decoders[index]);
 }
 
 static void add_chunk_decoder(const char *decoder)
 {
     void *ptr = SDL_realloc((void *)chunk_decoders, (num_decoders + 1) * sizeof (const char *));
-    if (ptr == NULL) {
+    if (ptr == NULL)
         return;  /* oh well, go on without it. */
-    }
     chunk_decoders = (const char **) ptr;
     chunk_decoders[num_decoders++] = decoder;
 }
@@ -155,9 +153,8 @@ static int _Mix_remove_all_effects(int channel, effect_info **e);
  */
 static void _Mix_channel_done_playing(int channel)
 {
-    if (channel_done_callback) {
+    if (channel_done_callback)
         channel_done_callback(channel);
-    }
 
     /*
      * Call internal function directly, to avoid locking audio from
@@ -175,18 +172,18 @@ static void *Mix_DoEffects(int chan, void *snd, int len)
 
     if (e != NULL) {    /* are there any registered effects? */
         /* if this is the postmix, we can just overwrite the original. */
-        if (!posteffect) {
+        if (!posteffect)
+        {
             buf = malloc(len);
-            if (buf == NULL) {
+            if (buf == NULL)
                 return(snd);
-            }
             memcpy(buf, snd, len);
         }
 
-        for (; e != NULL; e = e->next) {
-            if (e->callback != NULL) {
+        for (; e != NULL; e = e->next)
+        {
+            if (e->callback != NULL)
                 e->callback(chan, buf, len, e->udata);
-            }
         }
     }
 
@@ -208,9 +205,8 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
 #endif
 
     /* Mix the music (must be done before the channels are added) */
-    if ( music_active || (mix_music != music_mixer) ) {
+    if ( music_active || (mix_music != music_mixer) )
         mix_music(music_data, stream, len);
-    }
 
     /* Mix any playing channels... */
     sdl_ticks = SDL_GetTicks();
@@ -1297,9 +1293,10 @@ int _Mix_RegisterEffect_locked(int channel, Mix_EffectFunc_t f,
 {
     effect_info **e = NULL;
 
-    if (channel == MIX_CHANNEL_POST) {
+    if (channel == MIX_CHANNEL_POST)
         e = &posteffects;
-    } else {
+    else
+    {
         if ((channel < 0) || (channel >= num_channels)) {
             Mix_SetError("Invalid channel number");
             return(0);
@@ -1326,9 +1323,10 @@ int _Mix_UnregisterEffect_locked(int channel, Mix_EffectFunc_t f)
 {
     effect_info **e = NULL;
 
-    if (channel == MIX_CHANNEL_POST) {
+    if (channel == MIX_CHANNEL_POST)
         e = &posteffects;
-    } else {
+    else
+    {
         if ((channel < 0) || (channel >= num_channels)) {
             Mix_SetError("Invalid channel number");
             return(0);
@@ -1353,9 +1351,10 @@ int _Mix_UnregisterAllEffects_locked(int channel)
 {
     effect_info **e = NULL;
 
-    if (channel == MIX_CHANNEL_POST) {
+    if (channel == MIX_CHANNEL_POST)
         e = &posteffects;
-    } else {
+    else
+    {
         if ((channel < 0) || (channel >= num_channels)) {
             Mix_SetError("Invalid channel number");
             return(0);

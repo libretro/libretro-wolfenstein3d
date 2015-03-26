@@ -57,7 +57,7 @@
    it should NOT be used to fill a version structure, instead you should
    use the SDL_MIXER_VERSION() macro.
  */
-extern DECLSPEC const SDL_version * SDLCALL Mix_Linked_Version(void);
+const SDL_version * Mix_Linked_Version(void);
 
 typedef enum
 {
@@ -73,10 +73,10 @@ typedef enum
    one or more flags from MIX_InitFlags OR'd together.
    It returns the flags successfully initialized, or 0 on failure.
  */
-extern DECLSPEC int SDLCALL Mix_Init(int flags);
+int Mix_Init(int flags);
 
 /* Unloads libraries loaded with Mix_Init */
-extern DECLSPEC void SDLCALL Mix_Quit(void);
+void Mix_Quit(void);
 
 
 /* The default mixer has 8 simultaneous mixing channels */
@@ -126,24 +126,24 @@ typedef enum {
 typedef struct _Mix_Music Mix_Music;
 
 /* Open the mixer with a certain audio format */
-extern DECLSPEC int SDLCALL Mix_OpenAudio(int frequency, Uint16 format, int channels, int chunksize);
+int Mix_OpenAudio(int frequency, Uint16 format, int channels, int chunksize);
 
 /* Dynamically change the number of channels managed by the mixer.
    If decreasing the number of channels, the upper channels are
    stopped.
    This function returns the new number of allocated channels.
  */
-extern DECLSPEC int SDLCALL Mix_AllocateChannels(int numchans);
+int Mix_AllocateChannels(int numchans);
 
 /* Find out what the actual audio device parameters are.
    This function returns 1 if the audio has been opened, 0 otherwise.
  */
-extern DECLSPEC int SDLCALL Mix_QuerySpec(int *frequency,Uint16 *format,int *channels);
+int Mix_QuerySpec(int *frequency,Uint16 *format,int *channels);
 
 /* Load a wave file or a music (.mod .s3m .it .xm) file */
-extern DECLSPEC Mix_Chunk * SDLCALL Mix_LoadWAV_RW(SDL_RWops *src, int freesrc);
+Mix_Chunk * Mix_LoadWAV_RW(SDL_RWops *src, int freesrc);
 #define Mix_LoadWAV(file)   Mix_LoadWAV_RW(SDL_RWFromFile(file, "rb"), 1)
-extern DECLSPEC Mix_Music * SDLCALL Mix_LoadMUS(const char *file);
+Mix_Music * Mix_LoadMUS(const char *file);
 
 /* Load a music file from an SDL_RWop object (Ogg and MikMod specific currently)
    Matt Campbell (matt@campbellhome.dhs.org) April 2000 */
@@ -302,7 +302,7 @@ typedef void (*Mix_EffectDone_t)(int chan, void *udata);
  * returns zero if error (no such channel), nonzero if added.
  *  Error messages can be retrieved from Mix_GetError().
  */
-extern DECLSPEC int SDLCALL Mix_RegisterEffect(int chan, Mix_EffectFunc_t f, Mix_EffectDone_t d, void *arg);
+int Mix_RegisterEffect(int chan, Mix_EffectFunc_t f, Mix_EffectDone_t d, void *arg);
 
 
 /* You may not need to call this explicitly, unless you need to stop an
@@ -313,7 +313,7 @@ extern DECLSPEC int SDLCALL Mix_RegisterEffect(int chan, Mix_EffectFunc_t f, Mix
  * returns zero if error (no such channel or effect), nonzero if removed.
  *  Error messages can be retrieved from Mix_GetError().
  */
-extern DECLSPEC int SDLCALL Mix_UnregisterEffect(int channel, Mix_EffectFunc_t f);
+int Mix_UnregisterEffect(int channel, Mix_EffectFunc_t f);
 
 
 /* You may not need to call this explicitly, unless you need to stop all
@@ -592,9 +592,6 @@ extern DECLSPEC int SDLCALL Mix_SetMusicPosition(double position);
 */
 extern DECLSPEC int SDLCALL Mix_Playing(int channel);
 extern DECLSPEC int SDLCALL Mix_PlayingMusic(void);
-
-/* Stop music and set external music playback command */
-extern DECLSPEC int SDLCALL Mix_SetMusicCMD(const char *command);
 
 /* Synchro value is set by MikMod from modules while playing */
 extern DECLSPEC int SDLCALL Mix_SetSynchroValue(int value);
