@@ -37,21 +37,6 @@
 #define __MIX_INTERNAL_EFFECT__
 #include "effects_internal.h"
 
-/* profile code:
-    #include <sys/time.h>
-    #include <unistd.h>
-    struct timeval tv1;
-    struct timeval tv2;
-
-    gettimeofday(&tv1, NULL);
-
-        ... do your thing here ...
-
-    gettimeofday(&tv2, NULL);
-    printf("%ld\n", tv2.tv_usec - tv1.tv_usec);
-*/
-
-
 /*
  * Positional effects...panning, distance attenuation, etc.
  */
@@ -741,32 +726,25 @@ static void _Eff_position_u16lsb_c6(int chan, void *stream, int len, void *udata
 
 static void _Eff_position_s16lsb(int chan, void *stream, int len, void *udata)
 {
-    /* 16 signed bits (lsb) * 2 channels. */
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint16 *ptr = (Sint16 *) stream;
-    int i;
+   /* 16 signed bits (lsb) * 2 channels. */
+   volatile position_args *args = (volatile position_args *) udata;
+   Sint16 *ptr = (Sint16 *) stream;
+   int i;
 
-#if 0
-    if (len % (sizeof(Sint16) * 2)) {
-        fprintf(stderr,"Not an even number of frames! len=%d\n", len);
-        return;
-    }
-#endif
-
-    for (i = 0; i < len; i += sizeof (Sint16) * 2) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+0))) *
-                                    args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+1))) *
-                                    args->right_f) * args->distance_f);
-    if (args->room_angle == 180) {
-            *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-            *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-    }
-    else {
-            *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-            *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-    }
-    }
+   for (i = 0; i < len; i += sizeof (Sint16) * 2) {
+      Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+0))) *
+               args->left_f) * args->distance_f);
+      Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+1))) *
+               args->right_f) * args->distance_f);
+      if (args->room_angle == 180) {
+         *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
+         *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
+      }
+      else {
+         *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
+         *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
+      }
+   }
 }
 static void _Eff_position_s16lsb_c4(int chan, void *stream, int len, void *udata)
 {
