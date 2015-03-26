@@ -570,7 +570,7 @@ void CheckKeys (void)
         DrawAmmo ();
         DrawScore ();
 
-        ClearMemory ();
+        SD_StopDigitized ();
         CA_CacheGrChunk (STARTFONT + 1);
         ClearSplitVWB ();
 
@@ -591,7 +591,7 @@ void CheckKeys (void)
 #ifdef DEBUGKEYS
     if (Keyboard[sc_BackSpace] && Keyboard[sc_LShift] && Keyboard[sc_Alt] && param_debugmode)
     {
-        ClearMemory ();
+        SD_StopDigitized ();
         CA_CacheGrChunk (STARTFONT + 1);
         ClearSplitVWB ();
 
@@ -608,7 +608,7 @@ void CheckKeys (void)
     /* TRYING THE KEEN CHEAT CODE! */
     if (Keyboard[sc_B] && Keyboard[sc_A] && Keyboard[sc_T])
     {
-        ClearMemory ();
+        SD_StopDigitized ();
         CA_CacheGrChunk (STARTFONT + 1);
         ClearSplitVWB ();
 
@@ -649,7 +649,7 @@ void CheckKeys (void)
 #endif
            scan == sc_F9 || scan == sc_F7 || scan == sc_F8)     // pop up quit dialog
     {
-        ClearMemory ();
+        SD_StopDigitized ();
         ClearSplitVWB ();
         US_ControlPanel (scan);
 
@@ -663,7 +663,7 @@ void CheckKeys (void)
     if ((scan >= sc_F1 && scan <= sc_F9) || scan == sc_Escape || buttonstate[bt_esc])
     {
         int lastoffs = StopMusic ();
-        ClearMemory ();
+        SD_StopDigitized ();
         VW_FadeOut ();
 
         US_ControlPanel (buttonstate[bt_esc] ? sc_Escape : scan);

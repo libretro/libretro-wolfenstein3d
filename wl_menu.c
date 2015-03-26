@@ -414,7 +414,7 @@ US_ControlPanel (ScanCode scancode)
             StartCPMusic (XJAZNAZI_MUS);
             UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
             UnCacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
-            ClearMemory ();
+            SD_StopDigitized();
 
 
             CA_CacheGrChunk (IDGUYS1PIC);

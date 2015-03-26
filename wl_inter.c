@@ -1677,7 +1677,7 @@ void CopyProtection (void)
       }
    }
 
-   ClearMemory ();
+   SD_StopDigitized();
    ShutdownId ();
 
    printf ("%s\n", DosMessages[US_RndT () % 9]);
