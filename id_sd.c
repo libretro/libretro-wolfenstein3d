@@ -28,13 +28,7 @@
 //
 
 #include "wl_def.h"
-#ifdef _WIN32
-#include "SDL_mixer.h"
-#elif __linux__
-#include <SDL/SDL_mixer.h>
-#else
-#include <SDL/SDL_mixer.h>
-#endif
+#include "SDL_mixer/SDL_mixer.h"
 #include "fmopl.h"
 
 #define ORIGSAMPLERATE 7042
