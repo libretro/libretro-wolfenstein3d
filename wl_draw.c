@@ -168,18 +168,18 @@ static boolean TransformTile (int tx, int ty, short *dispx, short *dispheight)
    fixed ny;
 
    /* translate point to view centered coordinates */
-   fixed gx = ((int32_t)tx<<TILESHIFT)+0x8000-viewx;
-   fixed gy = ((int32_t)ty<<TILESHIFT)+0x8000-viewy;
+   fixed gx  = ((int32_t)tx<<TILESHIFT)+0x8000-viewx;
+   fixed gy  = ((int32_t)ty<<TILESHIFT)+0x8000-viewy;
 
    /* calculate newx */
    fixed gxt = FixedMul(gx,viewcos);
    fixed gyt = FixedMul(gy,viewsin);
-   fixed nx = gxt-gyt-0x2000;            /* 0x2000 is size of object */
+   fixed nx  = gxt-gyt-0x2000;            /* 0x2000 is size of object */
 
    /* calculate newy */
-   gxt = FixedMul(gx,viewsin);
-   gyt = FixedMul(gy,viewcos);
-   ny = gyt+gxt;
+   gxt       = FixedMul(gx,viewsin);
+   gyt       = FixedMul(gy,viewcos);
+   ny        = gyt+gxt;
 
    /* calculate height / perspective ratio */
    
@@ -188,7 +188,7 @@ static boolean TransformTile (int tx, int ty, short *dispx, short *dispheight)
       *dispheight = 0;
    else
    {
-      *dispx = (short)(centerx + ny*scale/nx);
+      *dispx      = (short)(centerx + ny*scale/nx);
       *dispheight = (short)(heightnumerator/(nx>>8));
    }
 
@@ -797,11 +797,11 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
 
 typedef struct
 {
-    short      viewx,
-               viewheight,
-               shapenum;
-    short      flags;          // this must be changed to uint32_t, when you
-                               // you need more than 16-flags for drawing
+   short      viewx;
+   short      viewheight;
+   short      shapenum;
+   /* this must be changed to uint32_t, when you need more than 16-flags for drawing */
+   short      flags;          
 } visobj_t;
 
 visobj_t vislist[MAXVISABLE];
