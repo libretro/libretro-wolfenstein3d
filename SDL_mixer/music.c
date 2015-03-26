@@ -31,10 +31,6 @@
 
 #include "SDL_mixer.h"
 
-#ifdef WAV_MUSIC
-#include "wavestream.h"
-#endif
-
 int volatile music_active = 1;
 static int volatile music_stopped = 0;
 static int music_loops = 0;
@@ -45,9 +41,6 @@ static int music_volume = MIX_MAX_VOLUME;
 struct _Mix_Music {
     Mix_MusicType type;
     union {
-#ifdef WAV_MUSIC
-        WAVStream *wave;
-#endif
     } data;
     Mix_Fading fading;
     int fade_step;
@@ -177,11 +170,6 @@ void music_mixer(void *udata, Uint8 *stream, int len)
             return;
 
         switch (music_playing->type) {
-#ifdef WAV_MUSIC
-            case MUS_WAV:
-                left = WAVStream_PlaySome(stream, len);
-                break;
-#endif
             default:
                 /* Unknown music type?? */
                 break;
@@ -200,11 +188,6 @@ skip:
 /* Initialize the music players with a certain desired audio format */
 int open_music(SDL_AudioSpec *mixer)
 {
-#ifdef WAV_MUSIC
-    if ( WAVStream_Init(mixer) == 0 ) {
-        add_music_decoder("WAVE");
-    }
-#endif
     music_playing = NULL;
     music_stopped = 0;
     Mix_VolumeMusic(SDL_MIX_MAXVOLUME);
@@ -393,15 +376,6 @@ Mix_Music *Mix_LoadMUSType_RW(SDL_RWops *src, Mix_MusicType type, int freesrc)
     music->error = 1;
 
     switch (type) {
-#ifdef WAV_MUSIC
-    case MUS_WAV:
-        music->type = MUS_WAV;
-        music->data.wave = WAVStream_LoadSong_RW(src, freesrc);
-        if (music->data.wave) {
-            music->error = 0;
-        }
-        break;
-#endif
 
     default:
         Mix_SetError("Unrecognized music format");
@@ -439,11 +413,6 @@ void Mix_FreeMusic(Mix_Music *music)
         }
         SDL_UnlockAudio();
         switch (music->type) {
-#ifdef WAV_MUSIC
-            case MUS_WAV:
-                WAVStream_FreeSong(music->data.wave);
-                break;
-#endif
             default:
                 /* Unknown music type?? */
                 break;
@@ -492,11 +461,6 @@ static int music_internal_play(Mix_Music *music, double position)
 
     /* Set up for playback */
     switch (music->type) {
-#ifdef WAV_MUSIC
-        case MUS_WAV:
-        WAVStream_Start(music->data.wave);
-        break;
-#endif
         default:
         Mix_SetError("Can't play unknown music type");
         retval = -1;
@@ -620,11 +584,6 @@ static void music_internal_initialize_volume(void)
 static void music_internal_volume(int volume)
 {
     switch (music_playing->type) {
-#ifdef WAV_MUSIC
-        case MUS_WAV:
-        WAVStream_SetVolume(volume);
-        break;
-#endif
         default:
         /* Unknown music type?? */
         break;
@@ -654,11 +613,6 @@ int Mix_VolumeMusic(int volume)
 static void music_internal_halt(void)
 {
     switch (music_playing->type) {
-#ifdef WAV_MUSIC
-        case MUS_WAV:
-        WAVStream_Stop();
-        break;
-#endif
         default:
         /* Unknown music type?? */
         return;
@@ -767,13 +721,6 @@ static int music_internal_playing()
     }
 
     switch (music_playing->type) {
-#ifdef WAV_MUSIC
-        case MUS_WAV:
-        if ( ! WAVStream_Active() ) {
-            playing = 0;
-        }
-        break;
-#endif
         default:
         playing = 0;
         break;

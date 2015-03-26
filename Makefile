@@ -62,7 +62,6 @@ SRCS += SDL_mixer/effect_position.cpp
 SRCS += SDL_mixer/effects_internal.cpp
 SRCS += SDL_mixer/mixer.cpp
 SRCS += SDL_mixer/music.cpp
-SRCS += SDL_mixer/wavestream.cpp
 
 OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 
