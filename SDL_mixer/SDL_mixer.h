@@ -165,12 +165,6 @@ extern const char * Mix_GetMusicDecoder(int index);
 */
 extern Mix_MusicType Mix_GetMusicType(const Mix_Music *music);
 
-/* Set a function that is called after all mixing is performed.
-   This can be used to provide real-time visual display of the audio stream
-   or add a custom mixer filter for the stream data.
-*/
-extern void Mix_SetPostMix(void (*mix_func)(void *udata, Uint8 *stream, int len), void *arg);
-
 /* Add your own music player or additional mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
  */
