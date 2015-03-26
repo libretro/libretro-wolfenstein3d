@@ -40,7 +40,6 @@
 #define FORM        0x4d524f46      /* "FORM" */
 #define OGGS        0x5367674f      /* "OggS" */
 #define CREA        0x61657243      /* "Crea" */
-#define FLAC        0x43614C66      /* "fLaC" */
 
 static int audio_opened = 0;
 static SDL_AudioSpec mixer;
@@ -140,60 +139,6 @@ int Mix_Init(int flags)
 {
     int result = 0;
 
-    if (flags & MIX_INIT_FLUIDSYNTH) {
-#ifdef USE_FLUIDSYNTH_MIDI
-        if ((initialized & MIX_INIT_FLUIDSYNTH) || Mix_InitFluidSynth() == 0) {
-            result |= MIX_INIT_FLUIDSYNTH;
-        }
-#else
-        Mix_SetError("Mixer not built with FluidSynth support");
-#endif
-    }
-    if (flags & MIX_INIT_FLAC) {
-#ifdef FLAC_MUSIC
-        if ((initialized & MIX_INIT_FLAC) || Mix_InitFLAC() == 0) {
-            result |= MIX_INIT_FLAC;
-        }
-#else
-        Mix_SetError("Mixer not built with FLAC support");
-#endif
-    }
-    if (flags & MIX_INIT_MODPLUG) {
-#ifdef MODPLUG_MUSIC
-        if ((initialized & MIX_INIT_MODPLUG) || Mix_InitModPlug() == 0) {
-            result |= MIX_INIT_MODPLUG;
-        }
-#else
-        Mix_SetError("Mixer not built with MOD modplug support");
-#endif
-    }
-    if (flags & MIX_INIT_MOD) {
-#ifdef MOD_MUSIC
-        if ((initialized & MIX_INIT_MOD) || Mix_InitMOD() == 0) {
-            result |= MIX_INIT_MOD;
-        }
-#else
-        Mix_SetError("Mixer not built with MOD timidity support");
-#endif
-    }
-    if (flags & MIX_INIT_MP3) {
-#ifdef MP3_MUSIC
-        if ((initialized & MIX_INIT_MP3) || Mix_InitMP3() == 0) {
-            result |= MIX_INIT_MP3;
-        }
-#else
-        Mix_SetError("Mixer not built with MP3 support");
-#endif
-    }
-    if (flags & MIX_INIT_OGG) {
-#ifdef OGG_MUSIC
-        if ((initialized & MIX_INIT_OGG) || Mix_InitOgg() == 0) {
-            result |= MIX_INIT_OGG;
-        }
-#else
-        Mix_SetError("Mixer not built with Ogg Vorbis support");
-#endif
-    }
     initialized |= result;
 
     return (result);
@@ -201,41 +146,6 @@ int Mix_Init(int flags)
 
 void Mix_Quit()
 {
-#ifdef USE_FLUIDSYNTH_MIDI
-    if (initialized & MIX_INIT_FLUIDSYNTH) {
-        Mix_QuitFluidSynth();
-    }
-#endif
-#ifdef FLAC_MUSIC
-    if (initialized & MIX_INIT_FLAC) {
-        Mix_QuitFLAC();
-    }
-#endif
-#ifdef MODPLUG_MUSIC
-    if (initialized & MIX_INIT_MODPLUG) {
-        Mix_QuitModPlug();
-    }
-#endif
-#ifdef MOD_MUSIC
-    if (initialized & MIX_INIT_MOD) {
-        Mix_QuitMOD();
-    }
-#endif
-#ifdef MP3_MUSIC
-    if (initialized & MIX_INIT_MP3) {
-        Mix_QuitMP3();
-    }
-#endif
-#ifdef OGG_MUSIC
-    if (initialized & MIX_INIT_OGG) {
-        Mix_QuitOgg();
-    }
-#endif
-#ifdef MID_MUSIC
-    if (soundfont_paths) {
-        SDL_free(soundfont_paths);
-    }
-#endif
     initialized = 0;
 }
 
@@ -269,11 +179,11 @@ static void *Mix_DoEffects(int chan, void *snd, int len)
     if (e != NULL) {    /* are there any registered effects? */
         /* if this is the postmix, we can just overwrite the original. */
         if (!posteffect) {
-            buf = SDL_malloc(len);
+            buf = malloc(len);
             if (buf == NULL) {
                 return(snd);
             }
-            SDL_memcpy(buf, snd, len);
+            memcpy(buf, snd, len);
         }
 
         for (; e != NULL; e = e->next) {
@@ -283,7 +193,7 @@ static void *Mix_DoEffects(int chan, void *snd, int len)
         }
     }
 
-    /* be sure to SDL_free() the return value if != snd ... */
+    /* be sure to free() the return value if != snd ... */
     return(buf);
 }
 
@@ -297,7 +207,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
 
 #if SDL_VERSION_ATLEAST(1, 3, 0)
     /* Need to initialize the stream in SDL 1.3+ */
-    SDL_memset(stream, mixer.silence, len);
+    memset(stream, mixer.silence, len);
 #endif
 
     /* Mix the music (must be done before the channels are added) */
@@ -350,7 +260,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
                     mix_input = Mix_DoEffects(i, mix_channel[i].samples, mixable);
                     SDL_MixAudio(stream+index,mix_input,mixable,volume);
                     if (mix_input != mix_channel[i].samples)
-                        SDL_free(mix_input);
+                        free(mix_input);
 
                     mix_channel[i].samples += mixable;
                     mix_channel[i].playing -= mixable;
@@ -374,7 +284,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
                     mix_input = Mix_DoEffects(i, mix_channel[i].chunk->abuf, remaining);
                     SDL_MixAudio(stream+index, mix_input, remaining, volume);
                     if (mix_input != mix_channel[i].chunk->abuf)
-                        SDL_free(mix_input);
+                        free(mix_input);
 
                     if (mix_channel[i].looping > 0) {
                         --mix_channel[i].looping;
@@ -453,7 +363,7 @@ int Mix_OpenAudio(int frequency, Uint16 format, int nchannels, int chunksize)
     }
 
     num_channels = MIX_CHANNELS;
-    mix_channel = (struct _Mix_Channel *) SDL_malloc(num_channels * sizeof(struct _Mix_Channel));
+    mix_channel = (struct _Mix_Channel *) malloc(num_channels * sizeof(struct _Mix_Channel));
 
     /* Clear out the audio channels */
     for ( i=0; i<num_channels; ++i ) {
@@ -570,7 +480,7 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
     }
 
     /* Allocate the chunk memory */
-    chunk = (Mix_Chunk *)SDL_malloc(sizeof(Mix_Chunk));
+    chunk = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
     if ( chunk == NULL ) {
         SDL_SetError("Out of memory");
         if ( freesrc ) {
@@ -600,7 +510,7 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
     }
     if ( !loaded ) {
         /* The individual loaders have closed src if needed */
-        SDL_free(chunk);
+        free(chunk);
         return(NULL);
     }
 
@@ -616,26 +526,26 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
         if ( SDL_BuildAudioCVT(&wavecvt,
                 wavespec.format, wavespec.channels, wavespec.freq,
                 mixer.format, mixer.channels, mixer.freq) < 0 ) {
-            SDL_free(chunk->abuf);
-            SDL_free(chunk);
+            free(chunk->abuf);
+            free(chunk);
             return(NULL);
         }
         samplesize = ((wavespec.format & 0xFF)/8)*wavespec.channels;
         wavecvt.len = chunk->alen & ~(samplesize-1);
-        wavecvt.buf = (Uint8 *)SDL_calloc(1, wavecvt.len*wavecvt.len_mult);
+        wavecvt.buf = (Uint8 *)calloc(1, wavecvt.len*wavecvt.len_mult);
         if ( wavecvt.buf == NULL ) {
             SDL_SetError("Out of memory");
-            SDL_free(chunk->abuf);
-            SDL_free(chunk);
+            free(chunk->abuf);
+            free(chunk);
             return(NULL);
         }
-        SDL_memcpy(wavecvt.buf, chunk->abuf, chunk->alen);
-        SDL_free(chunk->abuf);
+        memcpy(wavecvt.buf, chunk->abuf, chunk->alen);
+        free(chunk->abuf);
 
         /* Run the audio converter */
         if ( SDL_ConvertAudio(&wavecvt) < 0 ) {
-            SDL_free(wavecvt.buf);
-            SDL_free(chunk);
+            free(wavecvt.buf);
+            free(chunk);
             return(NULL);
         }
 
@@ -662,7 +572,7 @@ Mix_Chunk *Mix_QuickLoad_WAV(Uint8 *mem)
     }
 
     /* Allocate the chunk memory */
-    chunk = (Mix_Chunk *)SDL_calloc(1,sizeof(Mix_Chunk));
+    chunk = (Mix_Chunk *)calloc(1,sizeof(Mix_Chunk));
     if ( chunk == NULL ) {
         SDL_SetError("Out of memory");
         return(NULL);
@@ -672,7 +582,7 @@ Mix_Chunk *Mix_QuickLoad_WAV(Uint8 *mem)
     chunk->allocated = 0;
     mem += 12; /* WAV header */
     do {
-        SDL_memcpy(magic, mem, 4);
+        memcpy(magic, mem, 4);
         mem += 4;
         chunk->alen = ((mem[3]<<24)|(mem[2]<<16)|(mem[1]<<8)|(mem[0]));
         mem += 4;
@@ -696,7 +606,7 @@ Mix_Chunk *Mix_QuickLoad_RAW(Uint8 *mem, Uint32 len)
     }
 
     /* Allocate the chunk memory */
-    chunk = (Mix_Chunk *)SDL_malloc(sizeof(Mix_Chunk));
+    chunk = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
     if ( chunk == NULL ) {
         SDL_SetError("Out of memory");
         return(NULL);
@@ -731,9 +641,9 @@ void Mix_FreeChunk(Mix_Chunk *chunk)
         SDL_UnlockAudio();
         /* Actually free the chunk */
         if ( chunk->allocated ) {
-            SDL_free(chunk->abuf);
+            free(chunk->abuf);
         }
-        SDL_free(chunk);
+        free(chunk);
     }
 }
 
@@ -1120,11 +1030,11 @@ void Mix_CloseAudio(void)
             Mix_HaltChannel(-1);
             _Mix_DeinitEffects();
             SDL_CloseAudio();
-            SDL_free(mix_channel);
+            free(mix_channel);
             mix_channel = NULL;
 
             /* rcg06042009 report available decoders at runtime. */
-            SDL_free((void *)chunk_decoders);
+            free((void *)chunk_decoders);
             chunk_decoders = NULL;
             num_decoders = 0;
         }
@@ -1296,7 +1206,7 @@ static int _Mix_register_effect(effect_info **e, Mix_EffectFunc_t f,
         return(0);
     }
 
-    new_e = SDL_malloc(sizeof (effect_info));
+    new_e = malloc(sizeof (effect_info));
     if (new_e == NULL) {
         Mix_SetError("Out of memory");
         return(0);
@@ -1343,7 +1253,7 @@ static int _Mix_remove_effect(int channel, effect_info **e, Mix_EffectFunc_t f)
             if (cur->done_callback != NULL) {
                 cur->done_callback(channel, cur->udata);
             }
-            SDL_free(cur);
+            free(cur);
 
             if (prev == NULL) {   /* removing first item of list? */
                 *e = next;
@@ -1376,7 +1286,7 @@ static int _Mix_remove_all_effects(int channel, effect_info **e)
         if (cur->done_callback != NULL) {
             cur->done_callback(channel, cur->udata);
         }
-        SDL_free(cur);
+        free(cur);
     }
     *e = NULL;
 
