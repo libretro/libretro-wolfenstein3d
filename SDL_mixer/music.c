@@ -211,24 +211,6 @@ int MIX_string_equals(const char *str1, const char *str2)
     return (!*str1 && !*str2);
 }
 
-static int detect_mp3(Uint8 *magic)
-{
-    if ( strncmp((char *)magic, "ID3", 3) == 0 ) {
-        return 1;
-    }
-
-    /* Detection code lifted from SMPEG */
-    if(((magic[0] & 0xff) != 0xff) || // No sync bits
-       ((magic[1] & 0xf0) != 0xf0) || //
-       ((magic[2] & 0xf0) == 0x00) || // Bitrate is 0
-       ((magic[2] & 0xf0) == 0xf0) || // Bitrate is 15
-       ((magic[2] & 0x0c) == 0x0c) || // Frequency is 3
-       ((magic[1] & 0x06) == 0x00)) { // Layer is 4
-        return(0);
-    }
-    return 1;
-}
-
 /* MUS_MOD can't be auto-detected. If no other format was detected, MOD is
  * assumed and MUS_MOD will be returned, meaning that the format might not
  * actually be MOD-based.
@@ -255,143 +237,7 @@ static Mix_MusicType detect_music_type(SDL_RWops *src)
         return MUS_WAV;
     }
 
-    /* Ogg Vorbis files have the magic four bytes "OggS" */
-    if (strcmp((char *)magic, "OggS") == 0) {
-        return MUS_OGG;
-    }
-
-    /* FLAC files have the magic four bytes "fLaC" */
-    if (strcmp((char *)magic, "fLaC") == 0) {
-        return MUS_FLAC;
-    }
-
-    /* MIDI files have the magic four bytes "MThd" */
-    if (strcmp((char *)magic, "MThd") == 0) {
-        return MUS_MID;
-    }
-
-    if (detect_mp3(magic)) {
-        return MUS_MP3;
-    }
-
-    /* Assume MOD format.
-     *
-     * Apparently there is no way to check if the file is really a MOD,
-     * or there are too many formats supported by MikMod/ModPlug, or
-     * MikMod/ModPlug does this check by itself. */
-    return MUS_MOD;
-}
-
-/* Load a music file */
-Mix_Music *Mix_LoadMUS(const char *file)
-{
-    SDL_RWops *src;
-    Mix_Music *music;
-    Mix_MusicType type;
-    char *ext = strrchr(file, '.');
-
-
-    src = SDL_RWFromFile(file, "rb");
-    if ( src == NULL ) {
-        Mix_SetError("Couldn't open '%s'", file);
-        return NULL;
-    }
-
-    /* Use the extension as a first guess on the file type */
-    type = MUS_NONE;
-    ext = strrchr(file, '.');
-    /* No need to guard these with #ifdef *_MUSIC stuff,
-     * since we simply call Mix_LoadMUSType_RW() later */
-    if ( ext ) {
-        ++ext; /* skip the dot in the extension */
-        if ( MIX_string_equals(ext, "WAV") ) {
-            type = MUS_WAV;
-        } else if ( MIX_string_equals(ext, "MID") ||
-                    MIX_string_equals(ext, "MIDI") ||
-                    MIX_string_equals(ext, "KAR") ) {
-            type = MUS_MID;
-        } else if ( MIX_string_equals(ext, "OGG") ) {
-            type = MUS_OGG;
-        } else if ( MIX_string_equals(ext, "FLAC") ) {
-            type = MUS_FLAC;
-        } else  if ( MIX_string_equals(ext, "MPG") ||
-                     MIX_string_equals(ext, "MPEG") ||
-                     MIX_string_equals(ext, "MP3") ||
-                     MIX_string_equals(ext, "MAD") ) {
-            type = MUS_MP3;
-        }
-    }
-    if ( type == MUS_NONE ) {
-        type = detect_music_type(src);
-    }
-
-    /* We need to know if a specific error occurs; if not, we'll set a
-     * generic one, so we clear the current one. */
-    Mix_SetError("");
-    music = Mix_LoadMUSType_RW(src, type, SDL_TRUE);
-    if ( music == NULL && Mix_GetError()[0] == '\0' ) {
-        Mix_SetError("Unrecognized music format");
-    }
-    return music;
-}
-
-Mix_Music *Mix_LoadMUS_RW(SDL_RWops *src, int freesrc)
-{
-    return Mix_LoadMUSType_RW(src, MUS_NONE, freesrc);
-}
-
-Mix_Music *Mix_LoadMUSType_RW(SDL_RWops *src, Mix_MusicType type, int freesrc)
-{
-    Mix_Music *music;
-    Sint64 start;
-
-    if (!src) {
-        Mix_SetError("RWops pointer is NULL");
-        return NULL;
-    }
-    start = SDL_RWtell(src);
-
-    /* If the caller wants auto-detection, figure out what kind of file
-     * this is. */
-    if (type == MUS_NONE) {
-        if ((type = detect_music_type(src)) == MUS_NONE) {
-            /* Don't call Mix_SetError() here since detect_music_type()
-             * does that. */
-            if (freesrc) {
-                SDL_RWclose(src);
-            }
-            return NULL;
-        }
-    }
-
-    /* Allocate memory for the music structure */
-    music = (Mix_Music *)SDL_malloc(sizeof(Mix_Music));
-    if (music == NULL ) {
-        Mix_SetError("Out of memory");
-        if (freesrc) {
-            SDL_RWclose(src);
-        }
-        return NULL;
-    }
-    music->error = 1;
-
-    switch (type) {
-
-    default:
-        Mix_SetError("Unrecognized music format");
-        break;
-    } /* switch (want) */
-
-    if (music->error) {
-        SDL_free(music);
-        if (freesrc) {
-            SDL_RWclose(src);
-        } else {
-            SDL_RWseek(src, start, RW_SEEK_SET);
-        }
-        music = NULL;
-    }
-    return music;
+    return MUS_NONE;
 }
 
 /* Free a music chunk previously loaded */
@@ -455,9 +301,7 @@ static int music_internal_play(Mix_Music *music, double position)
     music_playing = music;
 
     /* Set the initial volume */
-    if ( music->type != MUS_MOD ) {
-        music_internal_initialize_volume();
-    }
+    music_internal_initialize_volume();
 
     /* Set up for playback */
     switch (music->type) {
@@ -529,6 +373,7 @@ int Mix_FadeInMusicPos(Mix_Music *music, int loops, int ms, double position)
 
     return(retval);
 }
+
 int Mix_FadeInMusic(Mix_Music *music, int loops, int ms)
 {
     return Mix_FadeInMusicPos(music, loops, ms, 0.0);
