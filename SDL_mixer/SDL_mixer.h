@@ -128,9 +128,6 @@ Mix_Chunk * Mix_LoadWAV_RW(SDL_RWops *src, int freesrc);
 /* Load a wave file of the mixer format from a memory buffer */
 extern Mix_Chunk * Mix_QuickLoad_WAV(Uint8 *mem);
 
-/* Load raw audio data of the mixer format from a memory buffer */
-extern Mix_Chunk * Mix_QuickLoad_RAW(Uint8 *mem, Uint32 len);
-
 /* Free an audio chunk previously loaded */
 extern void Mix_FreeChunk(Mix_Chunk *chunk);
 extern void Mix_FreeMusic(Mix_Music *music);
