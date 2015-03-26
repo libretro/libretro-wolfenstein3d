@@ -192,49 +192,6 @@ int open_music(SDL_AudioSpec *mixer)
     return(0);
 }
 
-/* Portable case-insensitive string compare function */
-int MIX_string_equals(const char *str1, const char *str2)
-{
-    while ( *str1 && *str2 )
-    {
-       if ( toupper((unsigned char)*str1) !=
-             toupper((unsigned char)*str2) )
-          break;
-       ++str1;
-       ++str2;
-    }
-    return (!*str1 && !*str2);
-}
-
-/* MUS_MOD can't be auto-detected. If no other format was detected, MOD is
- * assumed and MUS_MOD will be returned, meaning that the format might not
- * actually be MOD-based.
- *
- * Returns MUS_NONE in case of errors. */
-static Mix_MusicType detect_music_type(SDL_RWops *src)
-{
-    Uint8 magic[5];
-    Uint8 moremagic[9];
-
-    Sint64 start = SDL_RWtell(src);
-    if (SDL_RWread(src, magic, 1, 4) != 4 || SDL_RWread(src, moremagic, 1, 8) != 8 )
-    {
-       Mix_SetError("Couldn't read from RWops");
-       return MUS_NONE;
-    }
-    SDL_RWseek(src, start, RW_SEEK_SET);
-    magic[4]='\0';
-    moremagic[8] = '\0';
-
-    /* WAVE files have the magic four bytes "RIFF"
-       AIFF files have the magic 12 bytes "FORM" XXXX "AIFF" */
-    if (((strcmp((char *)magic, "RIFF") == 0) && (strcmp((char *)(moremagic+4), "WAVE") == 0)) ||
-        (strcmp((char *)magic, "FORM") == 0))
-        return MUS_WAV;
-
-    return MUS_NONE;
-}
-
 /* Free a music chunk previously loaded */
 void Mix_FreeMusic(Mix_Music *music)
 {
