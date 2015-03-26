@@ -30,11 +30,6 @@
 
 #include "SDL_mixer.h"
 
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern int _Mix_effects_max_speed;
 extern void *_Eff_volume_table;
 void *_Eff_build_volume_table_u8(void);
@@ -48,12 +43,6 @@ int _Mix_RegisterEffect_locked(int channel, Mix_EffectFunc_t f,
                                Mix_EffectDone_t d, void *arg);
 int _Mix_UnregisterEffect_locked(int channel, Mix_EffectFunc_t f);
 int _Mix_UnregisterAllEffects_locked(int channel);
-
-
-/* Set up for C function definitions, even when using C++ */
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif

@@ -115,13 +115,6 @@ static int music_halt_or_loop (void)
 
     if (!music_internal_playing())
     {
-#ifdef USE_NATIVE_MIDI
-        /* Native MIDI handles looping internally */
-        if (music_playing->type == MUS_MID && native_midi_ok) {
-            music_loops = 0;
-        }
-#endif
-
         /* Restart music if it has to loop at a high level */
         if (music_loops)
         {
@@ -485,17 +478,6 @@ Mix_MusicType Mix_GetMusicType(const Mix_Music *music)
 static int music_internal_play(Mix_Music *music, double position)
 {
     int retval = 0;
-
-#if defined(__MACOSX__) && defined(USE_NATIVE_MIDI)
-    /* This fixes a bug with native MIDI on Mac OS X, where you
-       can't really stop and restart MIDI from the audio callback.
-    */
-    if ( music == music_playing && music->type == MUS_MID && native_midi_ok ) {
-        /* Just a seek suffices to restart playing */
-        music_internal_position(position);
-        return 0;
-    }
-#endif
 
     /* Note the music we're playing */
     if ( music_playing ) {

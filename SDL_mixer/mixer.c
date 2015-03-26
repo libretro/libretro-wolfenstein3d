@@ -98,9 +98,6 @@ static const char **chunk_decoders = NULL;
 static int num_decoders = 0;
 
 /* Semicolon-separated SoundFont paths */
-#ifdef MID_MUSIC
-extern char* soundfont_paths;
-#endif
 
 int Mix_GetNumChunkDecoders(void)
 {
