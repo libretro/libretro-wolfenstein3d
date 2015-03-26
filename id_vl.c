@@ -113,7 +113,8 @@ void    VL_SetVGAPlaneMode (void)
    curPitch = bufferPitch;
 
    scaleFactor = screenWidth/320;
-   if(screenHeight/200 < scaleFactor) scaleFactor = screenHeight/200;
+   if(screenHeight/200 < scaleFactor)
+      scaleFactor = screenHeight/200;
 
 
    pixelangle = (short *) malloc(screenWidth * sizeof(short));
@@ -515,10 +516,8 @@ void VL_MemToLatch(byte *source, int width, int height,
    for(ysrc = 0; ysrc < height; ysrc++)
    {
       for(xsrc = 0; xsrc < width; xsrc++)
-      {
          dest[ysrc * pitch + xsrc] = source[(ysrc * (width >> 2) + (xsrc >> 2))
             + (xsrc & 3) * (width >> 2) * height];
-      }
    }
    VL_UnlockSurface(destSurface);
 }
@@ -556,9 +555,7 @@ void VL_MemToScreenScaledCoord (byte *source, int width, int height, int destx, 
          for(m=0; m<scaleFactor; m++)
          {
             for(n=0; n<scaleFactor; n++)
-            {
                vbuf[(scj+m+desty)*curPitch+sci+n+destx] = col;
-            }
          }
       }
    }
@@ -599,9 +596,7 @@ void VL_MemToScreenScaledCoord2 (byte *source, int origwidth, int origheight, in
          for(m=0; m<scaleFactor; m++)
          {
             for(n=0; n<scaleFactor; n++)
-            {
                vbuf[(scj+m+desty)*curPitch+sci+n+destx] = col;
-            }
          }
       }
    }
@@ -644,9 +639,7 @@ void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
          for(m=0; m<scaleFactor; m++)
          {
             for(n=0; n<scaleFactor; n++)
-            {
                vbuf[(scydest+scj+m)*curPitch+scxdest+sci+n] = col;
-            }
          }
       }
    }
