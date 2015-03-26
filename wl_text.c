@@ -74,10 +74,10 @@ static boolean layoutdone;
 =====================
 */
 
-void RipToEOL (void)
+static void RipToEOL (void)
 {
-   while (*text++ != '\n')         // scan to end of line
-      ;
+   /* scan to end of line */
+   while (*text++ != '\n');
 }
 
 
@@ -89,7 +89,7 @@ void RipToEOL (void)
 =====================
 */
 
-int ParseNumber (void)
+static int ParseNumber (void)
 {
     char  num[80];
     char *numptr;
@@ -125,7 +125,7 @@ int ParseNumber (void)
 =====================
 */
 
-void ParsePicCommand (void)
+static void ParsePicCommand (void)
 {
    picy=ParseNumber();
    picx=ParseNumber();
@@ -133,8 +133,7 @@ void ParsePicCommand (void)
    RipToEOL ();
 }
 
-
-void ParseTimedCommand (void)
+static void ParseTimedCommand (void)
 {
    picy=ParseNumber();
    picx=ParseNumber();
@@ -155,7 +154,7 @@ void ParseTimedCommand (void)
 =====================
 */
 
-void TimedPicCommand (void)
+static void TimedPicCommand (void)
 {
    ParseTimedCommand ();
 
@@ -178,7 +177,7 @@ void TimedPicCommand (void)
 =====================
 */
 
-void HandleCommand (void)
+static void HandleCommand(void)
 {
    int     i,margin,top,bottom;
    int     picwidth,picheight,picmid;
@@ -279,7 +278,7 @@ void HandleCommand (void)
 =====================
 */
 
-void NewLine (void)
+static void NewLine(void)
 {
    char    ch;
 
@@ -317,7 +316,7 @@ void NewLine (void)
 =====================
 */
 
-void HandleCtrls (void)
+static void HandleCtrls(void)
 {
    /* get the character and advance */
    char ch = *text++;                   
@@ -338,46 +337,46 @@ void HandleCtrls (void)
 =====================
 */
 
-void HandleWord (void)
+static void HandleWord(void)
 {
-    char    wword[WORDLIMIT];
-    int     wordindex;
-    word    wwidth,wheight,newpos;
+   char    wword[WORDLIMIT];
+   int     wordindex;
+   word    wwidth,wheight,newpos;
 
 
-    /* copy the next word into [word] */
-    wword[0]  = *text++;
-    wordindex = 1;
+   /* copy the next word into [word] */
+   wword[0]  = *text++;
+   wordindex = 1;
 
-    while (*text>32)
-    {
-        wword[wordindex] = *text++;
-        if (++wordindex == WORDLIMIT)
-            Quit ("PageLayout: Word limit exceeded");
-    }
-    wword[wordindex] = 0;            // stick a null at end for C
+   while (*text>32)
+   {
+      wword[wordindex] = *text++;
+      if (++wordindex == WORDLIMIT)
+         Quit ("PageLayout: Word limit exceeded");
+   }
+   wword[wordindex] = 0;            // stick a null at end for C
 
-    /* see if it fits on this line */
-    VW_MeasurePropString (wword,&wwidth,&wheight);
+   /* see if it fits on this line */
+   VW_MeasurePropString (wword,&wwidth,&wheight);
 
-    while (px+wwidth > (int) rightmargin[rowon])
-    {
-        NewLine ();
-        if (layoutdone)
-            return;         /* overflowed page */
-    }
+   while (px+wwidth > (int) rightmargin[rowon])
+   {
+      NewLine ();
+      if (layoutdone)
+         return;         /* overflowed page */
+   }
 
-    /* print it */
-    newpos = px+wwidth;
-    VWB_DrawPropString (wword);
-    px = newpos;
+   /* print it */
+   newpos = px+wwidth;
+   VWB_DrawPropString (wword);
+   px = newpos;
 
-    /* suck up any extra spaces */
-    while (*text == ' ')
-    {
-        px += SPACEWIDTH;
-        text++;
-    }
+   /* suck up any extra spaces */
+   while (*text == ' ')
+   {
+      px += SPACEWIDTH;
+      text++;
+   }
 }
 
 /*
@@ -391,7 +390,7 @@ void HandleWord (void)
 =====================
 */
 
-void PageLayout (boolean shownumber)
+static void PageLayout(boolean shownumber)
 {
    int     i;
    char    ch;
@@ -479,7 +478,7 @@ void PageLayout (boolean shownumber)
 =====================
 */
 
-void BackPage (void)
+static void BackPage(void)
 {
    pagenum--;
    do
@@ -504,7 +503,7 @@ void BackPage (void)
 =
 =====================
 */
-void CacheLayoutGraphics (void)
+static void CacheLayoutGraphics(void)
 {
    char    *bombpoint, *textstart;
    char    ch;
@@ -561,9 +560,9 @@ void CacheLayoutGraphics (void)
 */
 
 #ifdef JAPAN
-void ShowArticle (int which)
+static void ShowArticle (int which)
 #else
-void ShowArticle (char *article)
+static void ShowArticle (char *article)
 #endif
 {
 #ifdef JAPAN
