@@ -47,14 +47,6 @@ fixed   viewx,viewy; /* the focal point */
 short   viewangle;
 fixed   viewsin,viewcos;
 
-void    TransformActor (objtype *ob);
-void    BuildTables (void);
-void    ClearScreen (void);
-int     CalcRotate (objtype *ob);
-void    DrawScaleds (void);
-void    CalcTics (void);
-void    ThreeDRefresh (void);
-
 /* wall optimization variables */
 int     lastside;               /* true for vertical */
 int32_t    lastintercept;
@@ -109,7 +101,7 @@ word horizwall[MAXWALLTILES],vertwall[MAXWALLTILES];
 
 
 /* transform actor */
-void TransformActor (objtype *ob)
+static void TransformActor (objtype *ob)
 {
    fixed ny;
 
@@ -171,7 +163,7 @@ void TransformActor (objtype *ob)
 ========================
 */
 
-boolean TransformTile (int tx, int ty, short *dispx, short *dispheight)
+static boolean TransformTile (int tx, int ty, short *dispx, short *dispheight)
 {
    fixed ny;
 
@@ -218,7 +210,7 @@ boolean TransformTile (int tx, int ty, short *dispx, short *dispheight)
 ====================
 */
 
-int CalcHeight()
+static int CalcHeight(void)
 {
    int height;
    fixed z = FixedMul(xintercept - viewx, viewcos) - FixedMul(yintercept - viewy, viewsin);
@@ -248,7 +240,7 @@ byte *postsource;
 int postx;
 int postwidth;
 
-void ScalePost(void)
+static void ScalePost(void)
 {
    int yoffs, yw, yd, yendoffs;
    byte col;
@@ -614,7 +606,7 @@ void VGAClearScreen (void)
 =====================
 */
 
-int CalcRotate (objtype *ob)
+static int CalcRotate (objtype *ob)
 {
    int angle;
 
@@ -805,16 +797,6 @@ void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
     }
 }
 
-/*
-=====================
-=
-= DrawScaleds
-=
-= Draws all objects that are visable
-=
-=====================
-*/
-
 #define MAXVISABLE 250
 
 typedef struct
@@ -829,7 +811,17 @@ typedef struct
 visobj_t vislist[MAXVISABLE];
 visobj_t *visptr,*visstep,*farthest;
 
-void DrawScaleds (void)
+/*
+=====================
+=
+= DrawScaleds
+=
+= Draws all objects that are visable
+=
+=====================
+*/
+
+static void DrawScaleds (void)
 {
    int      i,least,numvisable,height;
    byte     *tilespot,*visspot;
@@ -1447,7 +1439,7 @@ void WallRefresh(void)
    ScalePost ();                   /* no more optimization on last post */
 }
 
-void CalcViewVariables(void)
+static void CalcViewVariables(void)
 {
    viewangle = player->angle;
    //printf("\nvieangle=%d\n",viewangle);

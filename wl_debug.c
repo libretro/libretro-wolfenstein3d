@@ -36,7 +36,6 @@ int DebugKeys (void);
 
 // from WL_DRAW.C
 
-void ScalePost();
 void SimpleScaleShape (int xcenter, int shapenum, unsigned height);
 
 /*
