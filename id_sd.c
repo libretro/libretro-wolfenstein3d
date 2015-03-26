@@ -173,7 +173,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos)
    }
 }
 
-Sint16 GetSample(float csample, byte *samples, int size)
+static Sint16 GetSample(float csample, byte *samples, int size)
 {
    float val;
    int32_t intval;
@@ -300,8 +300,7 @@ void SD_SetDigiDevice(SDSMode mode)
       DigiMode = mode;
 }
 
-void
-SDL_SetupDigi(void)
+void SDL_SetupDigi(void)
 {
    /* Correct padding enforced by PM_Startup() */
    int i;
@@ -614,7 +613,7 @@ void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
    {
       if(numreadysamples)
       {
-         if(numreadysamples<sampleslen)
+         if(numreadysamples < sampleslen)
          {
             YM3812UpdateOne(0, stream16, numreadysamples);
             stream16 += numreadysamples*2;
@@ -706,9 +705,7 @@ void SD_Startup(void)
    samplesPerMusicTick = param_samplerate / 700;    // SDL_t0FastAsmService played at 700Hz
 
    if(YM3812Init(1,3579545,param_samplerate))
-   {
       printf("Unable to create virtual OPL!!\n");
-   }
 
    for(i=1;i<0xf6;i++)
       YM3812Write(0,i,0);
@@ -843,8 +840,7 @@ boolean SD_PlaySound(soundnames sound)
 //              no sound is playing
 //
 ///////////////////////////////////////////////////////////////////////////
-word
-SD_SoundPlaying(void)
+word SD_SoundPlaying(void)
 {
    boolean result = false;
 
@@ -859,7 +855,7 @@ SD_SoundPlaying(void)
    }
 
    if (result)
-      return(SoundNumber);
+      return SoundNumber;
    return(false);
 }
 
@@ -908,8 +904,7 @@ SD_WaitSoundDone(void)
 //      SD_MusicOn() - turns on the sequencer
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-SD_MusicOn(void)
+void SD_MusicOn(void)
 {
     sqActive = true;
 }
@@ -920,8 +915,7 @@ SD_MusicOn(void)
 //      returns the last music offset for music continue
 //
 ///////////////////////////////////////////////////////////////////////////
-int
-SD_MusicOff(void)
+int SD_MusicOff(void)
 {
    word    i;
 
@@ -943,8 +937,7 @@ SD_MusicOff(void)
 //      SD_StartMusic() - starts playing the music pointed to
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-SD_StartMusic(int chunk)
+void SD_StartMusic(int chunk)
 {
    SD_MusicOff();
 
@@ -961,8 +954,7 @@ SD_StartMusic(int chunk)
    }
 }
 
-void
-SD_ContinueMusic(int chunk, int startoffs)
+void SD_ContinueMusic(int chunk, int startoffs)
 {
    SD_MusicOff();
 
@@ -1007,8 +999,7 @@ SD_ContinueMusic(int chunk, int startoffs)
 //              to see if the fadeout is complete
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-SD_FadeOutMusic(void)
+void SD_FadeOutMusic(void)
 {
    switch (MusicMode)
    {
