@@ -178,14 +178,6 @@ extern void Mix_HookMusicFinished(void (*music_finished)(void));
 /* Get a pointer to the user data for the current music hook */
 extern void * Mix_GetMusicHookData(void);
 
-/*
- * Add your own callback when a channel has finished playing. NULL
- *  to disable callback. The callback may be called from the mixer's audio
- *  callback or it could be called as a result of Mix_HaltChannel(), etc.
- *  do not call SDL_LockAudio() from this callback; you will either be
- *  inside the audio callback, or SDL_mixer will explicitly lock the audio
- *  before calling your callback.
- */
 extern void Mix_ChannelFinished(void (*channel_finished)(int channel));
 
 
@@ -208,7 +200,6 @@ extern void Mix_ChannelFinished(void (*channel_finished)(int channel));
  *  to be mixed with the rest of the channels and music for the final output
  *  stream.
  *
- * DO NOT EVER call SDL_LockAudio() from your callback function!
  */
 typedef void (*Mix_EffectFunc_t)(int chan, void *stream, int len, void *udata);
 
@@ -219,7 +210,6 @@ typedef void (*Mix_EffectFunc_t)(int chan, void *stream, int len, void *udata);
  *  a channel via Mix_AllocateChannels(), or unregister a callback while
  *  it's still playing.
  *
- * DO NOT EVER call SDL_LockAudio() from your callback function!
  */
 typedef void (*Mix_EffectDone_t)(int chan, void *udata);
 

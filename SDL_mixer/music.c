@@ -91,9 +91,7 @@ static void (*music_finished_hook)(void) = NULL;
 
 void Mix_HookMusicFinished(void (*music_finished)(void))
 {
-    SDL_LockAudio();
     music_finished_hook = music_finished;
-    SDL_UnlockAudio();
 }
 
 
@@ -242,19 +240,15 @@ void Mix_FreeMusic(Mix_Music *music)
 {
     if ( music ) {
         /* Stop the music if it's currently playing */
-        SDL_LockAudio();
         if ( music == music_playing ) {
             /* Wait for any fade out to finish */
             while ( music->fading == MIX_FADING_OUT ) {
-                SDL_UnlockAudio();
                 SDL_Delay(100);
-                SDL_LockAudio();
             }
             if ( music == music_playing ) {
                 music_internal_halt();
             }
         }
-        SDL_UnlockAudio();
         switch (music->type) {
             default:
                 /* Unknown music type?? */
@@ -276,11 +270,9 @@ Mix_MusicType Mix_GetMusicType(const Mix_Music *music)
     if ( music ) {
         type = music->type;
     } else {
-        SDL_LockAudio();
         if ( music_playing ) {
             type = music_playing->type;
         }
-        SDL_UnlockAudio();
     }
     return(type);
 }
@@ -345,7 +337,6 @@ int Mix_SetMusicPosition(double position)
 {
     int retval;
 
-    SDL_LockAudio();
     if ( music_playing ) {
         retval = music_internal_position(position);
         if ( retval < 0 ) {
@@ -355,7 +346,6 @@ int Mix_SetMusicPosition(double position)
         Mix_SetError("Music isn't playing");
         retval = -1;
     }
-    SDL_UnlockAudio();
 
     return(retval);
 }
@@ -391,11 +381,9 @@ int Mix_VolumeMusic(int volume)
         volume = SDL_MIX_MAXVOLUME;
     }
     music_volume = volume;
-    SDL_LockAudio();
     if ( music_playing ) {
         music_internal_volume(music_volume);
     }
-    SDL_UnlockAudio();
     return(prev_volume);
 }
 
@@ -414,14 +402,12 @@ skip:
 }
 int Mix_HaltMusic(void)
 {
-    SDL_LockAudio();
     if ( music_playing ) {
         music_internal_halt();
         if ( music_finished_hook ) {
             music_finished_hook();
         }
     }
-    SDL_UnlockAudio();
 
     return(0);
 }
@@ -430,11 +416,9 @@ Mix_Fading Mix_FadingMusic(void)
 {
     Mix_Fading fading = MIX_NO_FADING;
 
-    SDL_LockAudio();
     if ( music_playing ) {
         fading = music_playing->fading;
     }
-    SDL_UnlockAudio();
 
     return(fading);
 }
@@ -482,11 +466,9 @@ int Mix_PlayingMusic(void)
 {
     int playing = 0;
 
-    SDL_LockAudio();
     if ( music_playing ) {
         playing = music_loops || music_internal_playing();
     }
-    SDL_UnlockAudio();
 
     return(playing);
 }
