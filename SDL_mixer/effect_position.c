@@ -1487,53 +1487,6 @@ int Mix_SetPanning(int channel, Uint8 left, Uint8 right)
     return(retval);
 }
 
-
-int Mix_SetDistance(int channel, Uint8 distance)
-{
-    Mix_EffectFunc_t f = NULL;
-    Uint16 format;
-    position_args *args = NULL;
-    int channels;
-    int retval = 1;
-
-    Mix_QuerySpec(NULL, &format, &channels);
-    f = get_position_effect_func(format, channels);
-    if (f == NULL)
-        return(0);
-
-    SDL_LockAudio();
-    args = get_position_arg(channel);
-    if (!args) {
-        SDL_UnlockAudio();
-        return(0);
-    }
-
-    distance = 255 - distance;  /* flip it to our scale. */
-
-        /* it's a no-op; unregister the effect, if it's registered. */
-    if ((distance == 255) && (args->left_u8 == 255) && (args->right_u8 == 255)) {
-        if (args->in_use) {
-            retval = _Mix_UnregisterEffect_locked(channel, f);
-            SDL_UnlockAudio();
-            return(retval);
-        } else {
-            SDL_UnlockAudio();
-            return(1);
-        }
-    }
-
-    args->distance_u8 = distance;
-    args->distance_f = ((float) distance) / 255.0f;
-    if (!args->in_use) {
-        args->in_use = 1;
-        retval = _Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void *) args);
-    }
-
-    SDL_UnlockAudio();
-    return(retval);
-}
-
-
 int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
 {
     Mix_EffectFunc_t f = NULL;
