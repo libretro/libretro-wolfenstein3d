@@ -30,17 +30,11 @@ CFLAGS += -Wcast-align
 CCFLAGS += $(CFLAGS)
 CCFLAGS += -Werror-implicit-function-declaration
 CCFLAGS += -Wimplicit-int
-CCFLAGS += -Wsequence-point -Iinclude
+CCFLAGS += -Wsequence-point -Iinclude -ISDL_mixer
 
 CXXFLAGS += $(CFLAGS)
 
 LDFLAGS += $(LDFLAGS_SDL)
-ifeq ($(UNAME), Darwin)
-	LDFLAGS += -lSDL_mixer
-endif
-ifeq ($(UNAME), Linux)
-	LDFLAGS += -lSDL_mixer
-endif
 
 SRCS :=
 SRCS += fmopl.cpp
@@ -64,6 +58,12 @@ SRCS += wl_menu.cpp
 SRCS += wl_play.cpp
 SRCS += wl_state.cpp
 SRCS += wl_text.cpp
+SRCS += SDL_mixer/effect_position.cpp
+SRCS += SDL_mixer/effects_internal.cpp
+SRCS += SDL_mixer/effect_stereoreverse.cpp
+SRCS += SDL_mixer/mixer.cpp
+SRCS += SDL_mixer/music.cpp
+SRCS += SDL_mixer/wavestream.cpp
 
 OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 
