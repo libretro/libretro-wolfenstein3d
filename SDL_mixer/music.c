@@ -256,7 +256,7 @@ void Mix_FreeMusic(Mix_Music *music)
         }
 
     skip:
-        SDL_free(music);
+        free(music);
     }
 }
 

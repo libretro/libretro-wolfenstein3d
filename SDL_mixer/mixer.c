@@ -107,7 +107,7 @@ const char *Mix_GetChunkDecoder(int index)
 
 static void add_chunk_decoder(const char *decoder)
 {
-    void *ptr = SDL_realloc((void *)chunk_decoders, (num_decoders + 1) * sizeof (const char *));
+    void *ptr = realloc((void *)chunk_decoders, (num_decoders + 1) * sizeof (const char *));
     if (ptr == NULL)
         return;  /* oh well, go on without it. */
     chunk_decoders = (const char **) ptr;
@@ -372,7 +372,7 @@ int Mix_AllocateChannels(int numchans)
             Mix_HaltChannel(i);
         }
     }
-    mix_channel = (struct _Mix_Channel *) SDL_realloc(mix_channel, numchans * sizeof(struct _Mix_Channel));
+    mix_channel = (struct _Mix_Channel *) realloc(mix_channel, numchans * sizeof(struct _Mix_Channel));
     if ( numchans > num_channels ) {
         /* Initialize the new channels */
         int i;
