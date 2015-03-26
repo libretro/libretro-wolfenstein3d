@@ -92,29 +92,28 @@
 #define CST_SPC 60
 
 
-//
 // TYPEDEFS
-//
-typedef struct {
-                short x,y,amount,curpos,indent;
-                } CP_iteminfo;
+typedef struct
+{
+   short x,y,amount,curpos,indent;
+} CP_iteminfo;
 
-typedef struct {
-                short active;
-                char string[36];
-                int (* routine)(int temp1);
-                } CP_itemtype;
+typedef struct
+{
+   short active;
+   char string[36];
+   int (* routine)(int temp1);
+} CP_itemtype;
 
-typedef struct {
-                short allowed[4];
-                } CustomCtrls;
+typedef struct
+{
+   short allowed[4];
+} CustomCtrls;
 
 extern CP_itemtype MainMenu[];
 extern CP_iteminfo MainItems;
 
-//
 // FUNCTION PROTOTYPES
-//
 
 void US_ControlPanel(ScanCode);
 
@@ -200,35 +199,40 @@ void CheckForEpisodes(void);
 void FreeMusic(void);
 
 
-enum {MOUSE,JOYSTICK,KEYBOARDBTNS,KEYBOARDMOVE};        // FOR INPUT TYPES
+enum
+{
+   MOUSE = 0,
+   JOYSTICK,
+   KEYBOARDBTNS,
+   KEYBOARDMOVE
+};        // FOR INPUT TYPES
 
 enum menuitems
 {
-        newgame,
-        soundmenu,
-        control,
-        loadgame,
-        savegame,
-        changeview,
+   newgame = 0,
+   soundmenu,
+   control,
+   loadgame,
+   savegame,
+   changeview,
 
 #ifndef GOODTIMES
 #ifndef SPEAR
-        readthis,
+   readthis,
 #endif
 #endif
 
-        viewscores,
-        backtodemo,
-        quit
+   viewscores,
+   backtodemo,
+   quit
 };
 
-//
 // WL_INTER
-//
-typedef struct {
-                int kill,secret,treasure;
-                int32_t time;
-                } LRstruct;
+typedef struct
+{
+   int kill,secret,treasure;
+   int32_t time;
+} LRstruct;
 
 extern LRstruct LevelRatios[];
 

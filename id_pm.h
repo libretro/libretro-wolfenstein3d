@@ -15,8 +15,8 @@ extern bool PMSoundInfoPagePadded;
 // The last pointer points one byte after the last page.
 extern uint8_t **PMPages;
 
-void PM_Startup();
-void PM_Shutdown();
+void PM_Startup(void);
+void PM_Shutdown(void);
 
 static inline uint32_t PM_GetPageSize(int page)
 {
@@ -32,7 +32,7 @@ static inline uint8_t *PM_GetPage(int page)
     return PMPages[page];
 }
 
-static inline uint8_t *PM_GetEnd()
+static inline uint8_t *PM_GetEnd(void)
 {
     return PMPages[ChunksInFile];
 }
@@ -44,7 +44,7 @@ static inline byte *PM_GetTexture(int wallpic)
 
 static inline uint16_t *PM_GetSprite(int shapenum)
 {
-    // correct alignment is enforced by PM_Startup()
+    /* correct alignment is enforced by PM_Startup() */
     return (uint16_t *) (void *) PM_GetPage(PMSpriteStart + shapenum);
 }
 

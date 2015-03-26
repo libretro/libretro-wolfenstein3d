@@ -224,9 +224,7 @@ void LoadLatchMem (void)
          ((NUMTILE8 + 7) / 8) * 8, 8, 0, 0, 0, 0);
 
    if(!surf)
-   {
       Quit("Unable to create surface for tiles!");
-   }
 
    SDL_SetColors(surf, gamepal, 0, 256);
 
