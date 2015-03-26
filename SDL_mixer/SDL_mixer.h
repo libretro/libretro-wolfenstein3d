@@ -124,7 +124,6 @@ int Mix_QuerySpec(int *frequency,Uint16 *format,int *channels);
 
 /* Load a wave file or a music (.mod .s3m .it .xm) file */
 Mix_Chunk * Mix_LoadWAV_RW(SDL_RWops *src, int freesrc);
-#define Mix_LoadWAV(file)   Mix_LoadWAV_RW(SDL_RWFromFile(file, "rb"), 1)
 
 /* Load a wave file of the mixer format from a memory buffer */
 extern Mix_Chunk * Mix_QuickLoad_WAV(Uint8 *mem);
