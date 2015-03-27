@@ -317,14 +317,13 @@ void HitVertWall (void)
 
    if(lastside==1 && lastintercept==xtile && lasttilehit==tilehit && !(lasttilehit & 0x40))
    {
+      ScalePost();
       if((pixx&3) && texture == lasttexture)
       {
-         ScalePost();
          postx = pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      ScalePost();
       wallheight[pixx] = CalcHeight();
       postsource+=texture-lasttexture;
       postwidth=1;
@@ -333,7 +332,8 @@ void HitVertWall (void)
       return;
    }
 
-   if(lastside!=-1) ScalePost();
+   if(lastside!=-1)
+      ScalePost();
 
    lastside=1;
    lastintercept=xtile;
@@ -384,14 +384,13 @@ void HitHorizWall(void)
 
    if(lastside==0 && lastintercept==ytile && lasttilehit==tilehit && !(lasttilehit & 0x40))
    {
+      ScalePost();
       if((pixx&3) && texture == lasttexture)
       {
-         ScalePost();
          postx=pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      ScalePost();
       wallheight[pixx] = CalcHeight();
       postsource+=texture-lasttexture;
       postwidth=1;
@@ -442,14 +441,13 @@ void HitHorizDoor (void)
 
    if(lasttilehit==tilehit)
    {
+      ScalePost();
       if((pixx&3) && texture == lasttexture)
       {
-         ScalePost();
          postx=pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      ScalePost();
       wallheight[pixx] = CalcHeight();
       postsource+=texture-lasttexture;
       postwidth=1;
@@ -505,14 +503,13 @@ void HitVertDoor (void)
 
    if(lasttilehit==tilehit)
    {
+      ScalePost();
       if((pixx&3) && texture == lasttexture)
       {
-         ScalePost();
          postx=pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      ScalePost();
       wallheight[pixx] = CalcHeight();
       postsource+=texture-lasttexture;
       postwidth=1;
