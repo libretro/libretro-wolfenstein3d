@@ -32,7 +32,7 @@
 
 #include "SDL.h"
 #include "SDL_mixer.h"
-#include "SDL_endian.h"
+#include "retro_endian.h"
 
 #define __MIX_INTERNAL_EFFECT__
 #include "effects_internal.h"
@@ -344,50 +344,53 @@ static void _Eff_position_u8_c6(int chan, void *stream, int len, void *udata)
  */
 static void _Eff_position_table_u8(int chan, void *stream, int len, void *udata)
 {
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint8 *ptr = (Uint8 *) stream;
-    Uint32 *p;
-    int i;
-    Uint8 *l = ((Uint8 *) _Eff_volume_table) + (256 * args->left_u8);
-    Uint8 *r = ((Uint8 *) _Eff_volume_table) + (256 * args->right_u8);
-    Uint8 *d = ((Uint8 *) _Eff_volume_table) + (256 * args->distance_u8);
+   volatile position_args *args = (volatile position_args *) udata;
+   Uint8 *ptr = (Uint8 *) stream;
+   Uint32 *p;
+   int i;
+   Uint8 *l = ((Uint8 *) _Eff_volume_table) + (256 * args->left_u8);
+   Uint8 *r = ((Uint8 *) _Eff_volume_table) + (256 * args->right_u8);
+   Uint8 *d = ((Uint8 *) _Eff_volume_table) + (256 * args->distance_u8);
 
-    if (args->room_angle == 180) {
-        Uint8 *temp = l;
-        l = r;
-        r = temp;
-    }
-        /*
-         * if there's only a mono channnel, then l[] and r[] are always
-         *  volume 255, and are therefore throwaways. Still, we have to
-         *  be sure not to overrun the audio buffer...
-         */
-    while (len % sizeof (Uint32) != 0) {
-        *ptr = d[l[*ptr]];
-        ptr++;
-        if (args->channels > 1) {
-            *ptr = d[r[*ptr]];
-            ptr++;
-        }
-        len -= args->channels;
-    }
+   if (args->room_angle == 180) {
+      Uint8 *temp = l;
+      l = r;
+      r = temp;
+   }
+   /*
+    * if there's only a mono channnel, then l[] and r[] are always
+    *  volume 255, and are therefore throwaways. Still, we have to
+    *  be sure not to overrun the audio buffer...
+    */
+   while (len % sizeof (Uint32) != 0)
+   {
+      *ptr = d[l[*ptr]];
+      ptr++;
+      if (args->channels > 1)
+      {
+         *ptr = d[r[*ptr]];
+         ptr++;
+      }
+      len -= args->channels;
+   }
 
-    p = (Uint32 *) ptr;
+   p = (Uint32 *) ptr;
 
-    for (i = 0; i < len; i += sizeof (Uint32)) {
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        *p = (d[l[(*p & 0xFF000000) >> 24]] << 24) |
-             (d[r[(*p & 0x00FF0000) >> 16]] << 16) |
-             (d[l[(*p & 0x0000FF00) >>  8]] <<  8) |
-             (d[r[(*p & 0x000000FF)      ]]      ) ;
+   for (i = 0; i < len; i += sizeof (Uint32))
+   {
+#ifdef MSB_FIRST
+      *p = (d[l[(*p & 0xFF000000) >> 24]] << 24) |
+         (d[r[(*p & 0x00FF0000) >> 16]] << 16) |
+         (d[l[(*p & 0x0000FF00) >>  8]] <<  8) |
+         (d[r[(*p & 0x000000FF)      ]]      ) ;
 #else
-        *p = (d[r[(*p & 0xFF000000) >> 24]] << 24) |
-             (d[l[(*p & 0x00FF0000) >> 16]] << 16) |
-             (d[r[(*p & 0x0000FF00) >>  8]] <<  8) |
-             (d[l[(*p & 0x000000FF)      ]]      ) ;
+      *p = (d[r[(*p & 0xFF000000) >> 24]] << 24) |
+         (d[l[(*p & 0x00FF0000) >> 16]] << 16) |
+         (d[r[(*p & 0x0000FF00) >>  8]] <<  8) |
+         (d[l[(*p & 0x000000FF)      ]]      ) ;
 #endif
-        ++p;
-    }
+      ++p;
+   }
 }
 
 
@@ -566,7 +569,7 @@ static void _Eff_position_table_s8(int chan, void *stream, int len, void *udata)
     p = (Uint32 *) ptr;
 
     for (i = 0; i < len; i += sizeof (Uint32)) {
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+#ifdef MSB_FIRST
         *p = (d[l[((Sint16)(Sint8)((*p & 0xFF000000) >> 24))+128]] << 24) |
              (d[r[((Sint16)(Sint8)((*p & 0x00FF0000) >> 16))+128]] << 16) |
              (d[l[((Sint16)(Sint8)((*p & 0x0000FF00) >>  8))+128]] <<  8) |
@@ -593,8 +596,8 @@ static void _Eff_position_u16lsb(int chan, void *stream, int len, void *udata)
     int i;
 
     for (i = 0; i < len; i += sizeof (Uint16) * 2) {
-        Sint16 sampl = (Sint16) (SDL_SwapLE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (SDL_SwapLE16(*(ptr+1)) - 32768);
+        Sint16 sampl = (Sint16) (Retro_SwapLE16(*(ptr+0)) - 32768);
+        Sint16 sampr = (Sint16) (Retro_SwapLE16(*(ptr+1)) - 32768);
 
         Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
                                     * args->distance_f) + 32768);
@@ -602,12 +605,12 @@ static void _Eff_position_u16lsb(int chan, void *stream, int len, void *udata)
                                     * args->distance_f) + 32768);
 
     if (args->room_angle == 180) {
-            *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-            *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
+            *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+            *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
     }
     else {
-            *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-            *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
+            *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+            *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
     }
     }
 }
@@ -618,10 +621,10 @@ static void _Eff_position_u16lsb_c4(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Uint16) * 4) {
-        Sint16 sampl = (Sint16) (SDL_SwapLE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (SDL_SwapLE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (SDL_SwapLE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (SDL_SwapLE16(*(ptr+3)) - 32768);
+        Sint16 sampl = (Sint16) (Retro_SwapLE16(*(ptr+0)) - 32768);
+        Sint16 sampr = (Sint16) (Retro_SwapLE16(*(ptr+1)) - 32768);
+        Sint16 samplr = (Sint16) (Retro_SwapLE16(*(ptr+2)) - 32768);
+        Sint16 samprr = (Sint16) (Retro_SwapLE16(*(ptr+3)) - 32768);
 
         Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
                                     * args->distance_f) + 32768);
@@ -634,28 +637,28 @@ static void _Eff_position_u16lsb_c4(int chan, void *stream, int len, void *udata
 
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
             break;
         case 90:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
             break;
         case 180:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
             break;
         case 270:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
             break;
     }
     }
@@ -667,12 +670,12 @@ static void _Eff_position_u16lsb_c6(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Uint16) * 6) {
-        Sint16 sampl = (Sint16) (SDL_SwapLE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (SDL_SwapLE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (SDL_SwapLE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (SDL_SwapLE16(*(ptr+3)) - 32768);
-        Sint16 sampce = (Sint16) (SDL_SwapLE16(*(ptr+4)) - 32768);
-        Sint16 sampwf = (Sint16) (SDL_SwapLE16(*(ptr+5)) - 32768);
+        Sint16 sampl = (Sint16) (Retro_SwapLE16(*(ptr+0)) - 32768);
+        Sint16 sampr = (Sint16) (Retro_SwapLE16(*(ptr+1)) - 32768);
+        Sint16 samplr = (Sint16) (Retro_SwapLE16(*(ptr+2)) - 32768);
+        Sint16 samprr = (Sint16) (Retro_SwapLE16(*(ptr+3)) - 32768);
+        Sint16 sampce = (Sint16) (Retro_SwapLE16(*(ptr+4)) - 32768);
+        Sint16 sampwf = (Sint16) (Retro_SwapLE16(*(ptr+5)) - 32768);
 
         Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
                                     * args->distance_f) + 32768);
@@ -689,36 +692,36 @@ static void _Eff_position_u16lsb_c6(int chan, void *stream, int len, void *udata
 
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapce);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapce);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
             break;
         case 90:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr)/2 + (Uint16) SDL_SwapLE16(swaprr)/2;
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr)/2 + (Uint16) Retro_SwapLE16(swaprr)/2;
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
             break;
         case 180:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr)/2 + (Uint16) SDL_SwapLE16(swaplr)/2;
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr)/2 + (Uint16) Retro_SwapLE16(swaplr)/2;
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
             break;
         case 270:
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapl)/2 + (Uint16) SDL_SwapLE16(swaplr)/2;
-                *(ptr++) = (Uint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapl)/2 + (Uint16) Retro_SwapLE16(swaplr)/2;
+                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
             break;
     }
     }
@@ -732,17 +735,17 @@ static void _Eff_position_s16lsb(int chan, void *stream, int len, void *udata)
    int i;
 
    for (i = 0; i < len; i += sizeof (Sint16) * 2) {
-      Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+0))) *
+      Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
                args->left_f) * args->distance_f);
-      Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+1))) *
+      Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
                args->right_f) * args->distance_f);
       if (args->room_angle == 180) {
-         *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-         *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
       }
       else {
-         *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-         *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
       }
    }
 }
@@ -754,38 +757,38 @@ static void _Eff_position_s16lsb_c4(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 4) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+0))) *
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
                                     args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+1))) *
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
                                     args->right_f) * args->distance_f);
-        Sint16 swaplr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+1))) *
+        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
                                     args->left_rear_f) * args->distance_f);
-        Sint16 swaprr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+2))) *
+        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+2))) *
                                     args->right_rear_f) * args->distance_f);
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
             break;
         case 90:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
             break;
         case 180:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
             break;
         case 270:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
             break;
     }
     }
@@ -799,50 +802,50 @@ static void _Eff_position_s16lsb_c6(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 6) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+0))) *
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
                                     args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+1))) *
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
                                     args->right_f) * args->distance_f);
-        Sint16 swaplr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+2))) *
+        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+2))) *
                                     args->left_rear_f) * args->distance_f);
-        Sint16 swaprr = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+3))) *
+        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+3))) *
                                     args->right_rear_f) * args->distance_f);
-        Sint16 swapce = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+4))) *
+        Sint16 swapce = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+4))) *
                                     args->center_f) * args->distance_f);
-        Sint16 swapwf = (Sint16) ((((float) (Sint16) SDL_SwapLE16(*(ptr+5))) *
+        Sint16 swapwf = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+5))) *
                                     args->lfe_f) * args->distance_f);
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapce);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapce);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
             break;
         case 90:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr)/2 + (Sint16) SDL_SwapLE16(swaprr)/2;
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr)/2 + (Sint16) Retro_SwapLE16(swaprr)/2;
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
             break;
         case 180:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr)/2 + (Sint16) SDL_SwapLE16(swaplr)/2;
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr)/2 + (Sint16) Retro_SwapLE16(swaplr)/2;
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
             break;
         case 270:
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapl)/2 + (Sint16) SDL_SwapLE16(swaplr)/2;
-                *(ptr++) = (Sint16) SDL_SwapLE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl)/2 + (Sint16) Retro_SwapLE16(swaplr)/2;
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
             break;
     }
     }
@@ -856,8 +859,8 @@ static void _Eff_position_u16msb(int chan, void *stream, int len, void *udata)
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 2) {
-        Sint16 sampl = (Sint16) (SDL_SwapBE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (SDL_SwapBE16(*(ptr+1)) - 32768);
+        Sint16 sampl = (Sint16) (Retro_SwapBE16(*(ptr+0)) - 32768);
+        Sint16 sampr = (Sint16) (Retro_SwapBE16(*(ptr+1)) - 32768);
 
         Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
                                     * args->distance_f) + 32768);
@@ -865,12 +868,12 @@ static void _Eff_position_u16msb(int chan, void *stream, int len, void *udata)
                                     * args->distance_f) + 32768);
 
     if (args->room_angle == 180) {
-            *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-            *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
+            *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+            *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
     }
     else {
-            *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-            *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
+            *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+            *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
     }
     }
 }
@@ -882,10 +885,10 @@ static void _Eff_position_u16msb_c4(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 4) {
-        Sint16 sampl = (Sint16) (SDL_SwapBE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (SDL_SwapBE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (SDL_SwapBE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (SDL_SwapBE16(*(ptr+3)) - 32768);
+        Sint16 sampl = (Sint16) (Retro_SwapBE16(*(ptr+0)) - 32768);
+        Sint16 sampr = (Sint16) (Retro_SwapBE16(*(ptr+1)) - 32768);
+        Sint16 samplr = (Sint16) (Retro_SwapBE16(*(ptr+2)) - 32768);
+        Sint16 samprr = (Sint16) (Retro_SwapBE16(*(ptr+3)) - 32768);
 
         Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
                                     * args->distance_f) + 32768);
@@ -898,28 +901,28 @@ static void _Eff_position_u16msb_c4(int chan, void *stream, int len, void *udata
 
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
             break;
         case 90:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
             break;
         case 180:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
             break;
         case 270:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
             break;
     }
     }
@@ -932,12 +935,12 @@ static void _Eff_position_u16msb_c6(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 6) {
-        Sint16 sampl = (Sint16) (SDL_SwapBE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (SDL_SwapBE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (SDL_SwapBE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (SDL_SwapBE16(*(ptr+3)) - 32768);
-        Sint16 sampce = (Sint16) (SDL_SwapBE16(*(ptr+4)) - 32768);
-        Sint16 sampwf = (Sint16) (SDL_SwapBE16(*(ptr+5)) - 32768);
+        Sint16 sampl = (Sint16) (Retro_SwapBE16(*(ptr+0)) - 32768);
+        Sint16 sampr = (Sint16) (Retro_SwapBE16(*(ptr+1)) - 32768);
+        Sint16 samplr = (Sint16) (Retro_SwapBE16(*(ptr+2)) - 32768);
+        Sint16 samprr = (Sint16) (Retro_SwapBE16(*(ptr+3)) - 32768);
+        Sint16 sampce = (Sint16) (Retro_SwapBE16(*(ptr+4)) - 32768);
+        Sint16 sampwf = (Sint16) (Retro_SwapBE16(*(ptr+5)) - 32768);
 
         Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
                                     * args->distance_f) + 32768);
@@ -954,36 +957,36 @@ static void _Eff_position_u16msb_c6(int chan, void *stream, int len, void *udata
 
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapce);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapce);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
             break;
         case 90:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr)/2 + (Uint16) SDL_SwapBE16(swaprr)/2;
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr)/2 + (Uint16) Retro_SwapBE16(swaprr)/2;
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
             break;
         case 180:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr)/2 + (Uint16) SDL_SwapBE16(swaplr)/2;
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr)/2 + (Uint16) Retro_SwapBE16(swaplr)/2;
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
             break;
         case 270:
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapl)/2 + (Uint16) SDL_SwapBE16(swaplr)/2;
-                *(ptr++) = (Uint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapl)/2 + (Uint16) Retro_SwapBE16(swaplr)/2;
+                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
             break;
     }
     }
@@ -997,12 +1000,12 @@ static void _Eff_position_s16msb(int chan, void *stream, int len, void *udata)
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 2) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+0))) *
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+0))) *
                                     args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+1))) *
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+1))) *
                                     args->right_f) * args->distance_f);
-        *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-        *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
+        *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+        *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
     }
 }
 static void _Eff_position_s16msb_c4(int chan, void *stream, int len, void *udata)
@@ -1013,38 +1016,38 @@ static void _Eff_position_s16msb_c4(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 4) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+0))) *
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+0))) *
                                     args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+1))) *
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+1))) *
                                     args->right_f) * args->distance_f);
-        Sint16 swaplr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+2))) *
+        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+2))) *
                                     args->left_rear_f) * args->distance_f);
-        Sint16 swaprr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+3))) *
+        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+3))) *
                                     args->right_rear_f) * args->distance_f);
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
             break;
         case 90:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
             break;
         case 180:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
             break;
         case 270:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
             break;
     }
     }
@@ -1057,51 +1060,51 @@ static void _Eff_position_s16msb_c6(int chan, void *stream, int len, void *udata
     int i;
 
     for (i = 0; i < len; i += sizeof (Sint16) * 6) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+0))) *
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+0))) *
                                     args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+1))) *
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+1))) *
                                     args->right_f) * args->distance_f);
-        Sint16 swaplr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+2))) *
+        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+2))) *
                                     args->left_rear_f) * args->distance_f);
-        Sint16 swaprr = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+3))) *
+        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+3))) *
                                     args->right_rear_f) * args->distance_f);
-        Sint16 swapce = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+4))) *
+        Sint16 swapce = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+4))) *
                                     args->center_f) * args->distance_f);
-        Sint16 swapwf = (Sint16) ((((float) (Sint16) SDL_SwapBE16(*(ptr+5))) *
+        Sint16 swapwf = (Sint16) ((((float) (Sint16) Retro_SwapBE16(*(ptr+5))) *
                                     args->lfe_f) * args->distance_f);
 
     switch (args->room_angle) {
         case 0:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapce);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapce);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapwf);
             break;
         case 90:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr)/2 + (Sint16) SDL_SwapBE16(swaprr)/2;
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr)/2 + (Sint16) Retro_SwapBE16(swaprr)/2;
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapwf);
             break;
         case 180:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr)/2 + (Sint16) SDL_SwapBE16(swaplr)/2;
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr)/2 + (Sint16) Retro_SwapBE16(swaplr)/2;
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapwf);
             break;
         case 270:
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaplr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swaprr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapr);
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapl)/2 + (Sint16) SDL_SwapBE16(swaplr)/2;
-                *(ptr++) = (Sint16) SDL_SwapBE16(swapwf);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapl)/2 + (Sint16) Retro_SwapBE16(swaplr)/2;
+                *(ptr++) = (Sint16) Retro_SwapBE16(swapwf);
             break;
     }
     }
