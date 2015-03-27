@@ -448,8 +448,6 @@ again:
         if (!esc)
         {
             level = atoi (str);
-            if (level>=0 && level<=8)
-                extravbls = level;
         }
         return 1;
     }
