@@ -219,21 +219,21 @@ void SD_PrepareSound(int which)
          / (float) ORIGSAMPLERATE);
 
    wavebuffer = (byte *)malloc(sizeof(headchunk) + sizeof(wavechunk)
-         + destsamples * 2);     // dest are 16-bit samples
+         + destsamples * 2);     /* dest are 16-bit samples */
    if(wavebuffer == NULL)
       Quit("Unable to allocate wave buffer for sound %i!\n", which);
 
    headchunk head = {{'R','I','F','F'}, 0, {'W','A','V','E'},
       {'f','m','t',' '}, 0x10, 0x0001, 1, param_samplerate, param_samplerate*2, 2, 16};
-   head.filelenminus8 = sizeof(head) + destsamples*2;  // (sizeof(dhead)-8 = 0)
+   head.filelenminus8 = sizeof(head) + destsamples*2;  /* (sizeof(dhead)-8 = 0) */
 
    wavechunk dhead = {{'d', 'a', 't', 'a'}, destsamples*2};
 
    memcpy(wavebuffer, &head, sizeof(head));
    memcpy(wavebuffer+sizeof(head), &dhead, sizeof(dhead));
 
-   // alignment is correct, as wavebuffer comes from malloc
-   // and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0
+   /* alignment is correct, as wavebuffer comes from malloc
+    * and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0 */
    newsamples = (Sint16 *)(void *) (wavebuffer + sizeof(headchunk)
          + sizeof(wavechunk));
    samplestep = (float) ORIGSAMPLERATE / (float) param_samplerate;
@@ -317,8 +317,10 @@ void SDL_SetupDigi(void)
    for(i = 0; i < NumDigi; i++)
    {
       unsigned page;
-      // Calculate the size of the digi from the sizes of the pages between
-      // the start page and the start page of the next sound
+
+      /* Calculate the size of the digi 
+       * from the sizes of the pages between
+       * the start page and the start page of the next sound. */
 
       DigiList[i].startpage = soundInfoPage[i * 2];
       DigiList[i].startpage = (word)Retro_SwapLES16(DigiList[i].startpage);
@@ -348,9 +350,14 @@ void SDL_SetupDigi(void)
       if(lastPage == ChunksInFile - 1 && PMSoundInfoPagePadded)
          size--;
 
-      // Patch lower 16-bit of size with size from sound info page.
-      // The original VSWAP contains padding which is included in the page size,
-      // but not included in the 16-bit size. So we use the more precise value.
+      /* Patch lower 16-bit of size with size 
+       * from sound info page.
+       *
+       * The original VSWAP contains padding 
+       * which is included in the page size,
+       * but not included in the 16-bit size.
+       *
+       * So we use the more precise value. */
       if((size & 0xffff0000) != 0 && (size & 0xffff) < (word)Retro_SwapLES16(soundInfoPage[i * 2 + 1]))
          size -= 0x10000;
       size = (size & 0xffff0000) | (word)Retro_SwapLES16(soundInfoPage[i * 2 + 1]);
@@ -365,7 +372,7 @@ void SDL_SetupDigi(void)
    }
 }
 
-//      AdLib Code
+/*      AdLib Code */
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -381,8 +388,8 @@ static void SDL_ALStopSound(void)
 
 static void SDL_AlSetFXInst(Instrument *inst)
 {
-   byte m = 0;      // modulator cell for channel 0
-   byte c = 3;      // carrier cell for channel 0
+   byte m = 0;      /* modulator cell for channel 0 */
+   byte c = 3;      /* carrier cell for channel 0 */
    YM3812Write(0, m + alChar,inst->mChar);
    YM3812Write(0, m + alScale,inst->mScale);
    YM3812Write(0, m + alAttack,inst->mAttack);
@@ -470,10 +477,10 @@ static void SDL_StartAL(void)
 static boolean SDL_DetectAdLib(void)
 {
    unsigned i;
-   for (i = 1; i <= 0xf5; i++)       // Zero all the registers
+   for (i = 1; i <= 0xf5; i++)       /* Zero all the registers */
       YM3812Write(0, i, 0);
 
-   YM3812Write(0, 1, 0x20);             // Set WSE=1
+   YM3812Write(0, 1, 0x20);          /* Set WSE=1 */
 
    return true;
 }
@@ -527,7 +534,7 @@ static void SDL_StartDevice(void)
    SoundPriority = 0;
 }
 
-//      Public routines
+/*      Public routines */
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -616,7 +623,7 @@ void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
 {
    int stereolen = len>>1;
    int sampleslen = stereolen>>1;
-   INT16 *stream16 = (INT16 *) (void *) stream;    // expect correct alignment
+   INT16 *stream16 = (INT16 *) (void *) stream;    /* expect correct alignment */
 
    while(1)
    {
@@ -706,12 +713,12 @@ void SD_Startup(void)
       return;
    }
 
-   Mix_ReserveChannels(2);  // reserve player and boss weapon channels
-   Mix_GroupChannels(2, MIX_CHANNELS-1, 1); // group remaining channels
+   Mix_ReserveChannels(2);  /* reserve player and boss weapon channels */
+   Mix_GroupChannels(2, MIX_CHANNELS-1, 1); /* group remaining channels */
 
-   // Init music
+   /* Initialize music */
 
-   samplesPerMusicTick = param_samplerate / 700;    // SDL_t0FastAsmService played at 700Hz
+   samplesPerMusicTick = param_samplerate / 700; /* SDL_t0FastAsmService played at 700Hzs */
 
    if(YM3812Init(1,3579545,param_samplerate))
       printf("Unable to create virtual OPL!!\n");
@@ -719,7 +726,7 @@ void SD_Startup(void)
    for(i=1;i<0xf6;i++)
       YM3812Write(0,i,0);
 
-   YM3812Write(0,1,0x20); // Set WSE=1
+   YM3812Write(0,1,0x20); /* Set WSE=1 */
 
    Mix_HookMusic(SDL_IMFMusicPlayer, 0);
    Mix_ChannelFinished(SD_ChannelFinished);
@@ -830,7 +837,9 @@ boolean SD_PlaySound(soundnames sound)
    switch (SoundMode)
    {
       case sdm_PC:
-         //            SDL_PCPlaySound((PCSound *)s);
+#if 0
+         SDL_PCPlaySound((PCSound *)s);
+#endif
          break;
       case sdm_AdLib:
          SDL_ALPlaySound((AdLibSound *)s);
@@ -953,7 +962,7 @@ void SD_StartMusic(int chunk)
    if (MusicMode == smm_AdLib)
    {
       int32_t chunkLen = CA_CacheAudioChunk(chunk);
-      sqHack = (word *)(void *) audiosegs[chunk];     // alignment is correct
+      sqHack = (word *)(void *) audiosegs[chunk];     /* alignment is correct */
       if ( (word)Retro_SwapLES16(*sqHack) == 0)
          sqHackLen = sqHackSeqLen = chunkLen;
       else
@@ -973,7 +982,7 @@ void SD_ContinueMusic(int chunk, int startoffs)
    {
       unsigned i;
       int32_t chunkLen = CA_CacheAudioChunk(chunk);
-      sqHack = (word *)(void *) audiosegs[chunk];     // alignment is correct
+      sqHack = (word *)(void *) audiosegs[chunk];     /* alignment is correct */
       if((word)Retro_SwapLES16(*sqHack) == 0)
          sqHackLen = sqHackSeqLen = chunkLen;
       else
@@ -985,15 +994,15 @@ void SD_ContinueMusic(int chunk, int startoffs)
          Quit("SD_StartMusic: Illegal startoffs provided!");
       }
 
-      // fast forward to correct position
-      // (needed to reconstruct the instruments)
+      /* fast forward to correct position
+       * (needed to reconstruct the instruments). */
 
       for(i = 0; i < startoffs; i += 2)
       {
          byte reg = *(byte *)sqHackPtr;
          byte val = *(((byte *)sqHackPtr) + 1);
-         if(reg >= 0xb1 && reg <= 0xb8) val &= 0xdf;           // disable play note flag
-         else if(reg == 0xbd) val &= 0xe0;                     // disable drum flags
+         if(reg >= 0xb1 && reg <= 0xb8) val &= 0xdf;           /* disable play note flag */
+         else if(reg == 0xbd) val &= 0xe0;                     /* disable drum flags */
 
          YM3812Write(0, reg,val);
          sqHackPtr += 2;
@@ -1017,7 +1026,7 @@ void SD_FadeOutMusic(void)
    switch (MusicMode)
    {
       case smm_AdLib:
-         // DEBUG - quick hack to turn the music off
+         /* DEBUG - quick hack to turn the music off */
          SD_MusicOff();
          break;
    }
