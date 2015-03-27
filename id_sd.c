@@ -28,6 +28,7 @@
 //
 
 #include "wl_def.h"
+#include <retro_endian.h>
 #include "SDL_mixer/SDL_mixer.h"
 #include "fmopl.h"
 
@@ -320,6 +321,8 @@ void SDL_SetupDigi(void)
       // the start page and the start page of the next sound
 
       DigiList[i].startpage = soundInfoPage[i * 2];
+      DigiList[i].startpage = (word)Retro_SwapLES16(DigiList[i].startpage);
+
       if((int) DigiList[i].startpage >= ChunksInFile - 1)
       {
          NumDigi = i;
@@ -330,6 +333,8 @@ void SDL_SetupDigi(void)
       if(i < NumDigi - 1)
       {
          lastPage = soundInfoPage[i * 2 + 2];
+         lastPage = Retro_SwapLES16(lastPage);
+
          if(lastPage == 0 || lastPage + PMSoundStart > ChunksInFile - 1) lastPage = ChunksInFile - 1;
          else lastPage += PMSoundStart;
       }
@@ -346,9 +351,9 @@ void SDL_SetupDigi(void)
       // Patch lower 16-bit of size with size from sound info page.
       // The original VSWAP contains padding which is included in the page size,
       // but not included in the 16-bit size. So we use the more precise value.
-      if((size & 0xffff0000) != 0 && (size & 0xffff) < soundInfoPage[i * 2 + 1])
+      if((size & 0xffff0000) != 0 && (size & 0xffff) < (word)Retro_SwapLES16(soundInfoPage[i * 2 + 1]))
          size -= 0x10000;
-      size = (size & 0xffff0000) | soundInfoPage[i * 2 + 1];
+      size = (size & 0xffff0000) | (word)Retro_SwapLES16(soundInfoPage[i * 2 + 1]);
 
       DigiList[i].length = size;
    }
@@ -663,7 +668,7 @@ void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
          do
          {
             if(sqHackTime > alTimeCount) break;
-            sqHackTime = alTimeCount + *(sqHackPtr+1);
+            sqHackTime = alTimeCount + (word)Retro_SwapLES16(*(sqHackPtr+1));
             YM3812Write(0, *(byte *) sqHackPtr, *(((byte *) sqHackPtr)+1));
             sqHackPtr += 2;
             sqHackLen -= 4;
@@ -949,11 +954,13 @@ void SD_StartMusic(int chunk)
    {
       int32_t chunkLen = CA_CacheAudioChunk(chunk);
       sqHack = (word *)(void *) audiosegs[chunk];     // alignment is correct
-      if(*sqHack == 0) sqHackLen = sqHackSeqLen = chunkLen;
-      else sqHackLen = sqHackSeqLen = *sqHack++;
-      sqHackPtr = sqHack;
-      sqHackTime = 0;
-      alTimeCount = 0;
+      if ( (word)Retro_SwapLES16(*sqHack) == 0)
+         sqHackLen = sqHackSeqLen = chunkLen;
+      else
+         sqHackLen = sqHackSeqLen = (word)Retro_SwapLES16(*sqHack++);
+      sqHackPtr    = sqHack;
+      sqHackTime   = 0;
+      alTimeCount  = 0;
       SD_MusicOn();
    }
 }
@@ -967,8 +974,10 @@ void SD_ContinueMusic(int chunk, int startoffs)
       unsigned i;
       int32_t chunkLen = CA_CacheAudioChunk(chunk);
       sqHack = (word *)(void *) audiosegs[chunk];     // alignment is correct
-      if(*sqHack == 0) sqHackLen = sqHackSeqLen = chunkLen;
-      else sqHackLen = sqHackSeqLen = *sqHack++;
+      if((word)Retro_SwapLES16(*sqHack) == 0)
+         sqHackLen = sqHackSeqLen = chunkLen;
+      else
+         sqHackLen = sqHackSeqLen = (word)Retro_SwapLES16(*sqHack++);
       sqHackPtr = sqHack;
 
       if(startoffs >= sqHackLen)
