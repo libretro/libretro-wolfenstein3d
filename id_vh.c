@@ -335,7 +335,6 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
    unsigned i, p;
    SDL_Surface *source_copy, *screen_copy;
    byte *srcptr;
-   int      first = 1;
    int32_t lastrndval = 0;
    unsigned pixperframe = width * height / frames;
 
@@ -367,47 +366,36 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
       rndval = lastrndval;
 
-      /* When using double buffering, we have to copy 
-       * the pixels of the last AND the current frame.
-       *
-       * Only for the first frame, there is no "last frame" */
-      for(i = first; i < 2; i++)
+      for(p = 0; p < pixperframe; p++)
       {
-         for(p = 0; p < pixperframe; p++)
+         /* seperate random value into x/y pair */
+         x = rndval >> rndbits_y;
+         y = rndval & ((1 << rndbits_y) - 1);
+
+         /* advance to next random element */
+         rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
+
+         if(x >= width || y >= height)
          {
-            /* seperate random value into x/y pair */
-            x = rndval >> rndbits_y;
-            y = rndval & ((1 << rndbits_y) - 1);
-
-            /* advance to next random element */
-            rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
-
-            if(x >= width || y >= height)
-            {
-               if(rndval == 0)     /* entire sequence has been completed */
-                  goto finished;
-               p--;
-               continue;
-            }
-
-            /* copy one pixel */
-            {
-               byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-               uint32_t fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
-               memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
-                     &fullcol, screen->format->BytesPerPixel);
-            }
-
             if(rndval == 0)     /* entire sequence has been completed */
                goto finished;
+            p--;
+            continue;
          }
 
-         if(!i || first)
-            lastrndval = rndval;
+         /* copy one pixel */
+         {
+            byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+            uint32_t fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
+            memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
+                  &fullcol, screen->format->BytesPerPixel);
+         }
+
+         if(rndval == 0)     /* entire sequence has been completed */
+            goto finished;
       }
 
-      /* If there is no double buffering, we always use the "first frame" case */
-      if(usedoublebuffering) first = 0;
+      lastrndval = rndval;
 
       VL_UnlockSurface(screen_copy);
       VL_ScreenToScreen(screen_copy, screenBuffer);

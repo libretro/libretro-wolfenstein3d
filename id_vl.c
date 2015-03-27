@@ -5,7 +5,6 @@
 
 boolean fullscreen = false;
 
-boolean usedoublebuffering = true;
 unsigned screenWidth = 320;
 unsigned screenHeight = 200;
 unsigned screenBits = -1;      // use "best" color depth according to libSDL
@@ -80,18 +79,13 @@ void    VL_SetVGAPlaneMode (void)
       screenBits = vidInfo->vfmt->BitsPerPixel;
    }
 
-   screen = SDL_SetVideoMode(screenWidth, screenHeight, screenBits,
-         (usedoublebuffering ? SDL_HWSURFACE | SDL_DOUBLEBUF : 0)
-         | (fullscreen ? SDL_FULLSCREEN : 0));
-
+   screen = SDL_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
 
    if(!screen)
    {
       printf("Unable to set %ix%ix%i video mode: %s\n", screenWidth, screenHeight, screenBits, SDL_GetError());
       exit(1);
    }
-   if((screen->flags & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
-      usedoublebuffering = false;
    SDL_ShowCursor(SDL_DISABLE);
 
    SDL_SetColors(screen, gamepal, 0, 256);
@@ -296,7 +290,7 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
          newptr++;
       }
 
-      if(!usedoublebuffering) VL_WaitVBL(1);
+      VL_WaitVBL(1);
       VL_SetPalette (palette2, true);
    }
 
@@ -336,7 +330,7 @@ void VL_FadeIn (int start, int end, SDL_Color *palette, int steps)
          palette2[j].b = palette1[j].b + delta * i / steps;
       }
 
-      if(!usedoublebuffering) VL_WaitVBL(1);
+      VL_WaitVBL(1);
       VL_SetPalette(palette2, true);
    }
 

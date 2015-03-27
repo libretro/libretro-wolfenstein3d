@@ -1128,8 +1128,6 @@ void Died (void)
     /* fade to red */
     FinishPaletteShifts ();
 
-    if(usedoublebuffering) VH_UpdateScreen();
-
     VL_BarScaledCoord (viewscreenx,viewscreeny,viewwidth,viewheight,4);
 
     IN_ClearKeysDown ();

@@ -1564,8 +1564,6 @@ void CheckParameters(int argc, char *argv[])
                 }
             }
         }
-        else IFARG("--nodblbuf")
-            usedoublebuffering = false;
         else IFARG("--extravbls")
         {
             if(++i >= argc)
