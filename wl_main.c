@@ -117,7 +117,6 @@ void ReadConfig(void)
 
     char configpath[300];
 
-
     if(configdir[0])
         snprintf(configpath, sizeof(configpath), "%s/%s", configdir, configname);
     else
@@ -126,9 +125,7 @@ void ReadConfig(void)
     const int file = open(configpath, O_RDONLY | O_BINARY);
     if (file != -1)
     {
-        //
-        // valid config file
-        //
+        /* valid config file */
         word tmp;
         read(file,&tmp,sizeof(tmp));
         if(tmp!=0xfefa)
@@ -171,7 +168,7 @@ void ReadConfig(void)
         if ((sds == sds_SoundBlaster && !SoundBlasterPresent))
             sds = sds_Off;
 
-        // make sure values are correct
+        /* make sure values are correct */
 
         if(mouseenabled) mouseenabled=true;
         if(joystickenabled) joystickenabled=true;
@@ -192,9 +189,7 @@ void ReadConfig(void)
     }
     else
     {
-        //
-        // no config file, so select by hardware
-        //
+        /* no config file, so select by hardware */
 noconfig:
         if (SoundBlasterPresent || AdLibPresent)
         {
@@ -218,7 +213,7 @@ noconfig:
         if (IN_JoyPresent())
             joystickenabled = true;
 
-        viewsize = 19;                          // start with a good size
+        viewsize = 19;                          /* start with a good size */
         mouseadjustment=5;
     }
 
@@ -247,7 +242,9 @@ void WriteConfig(void)
     const int file = open(configpath, O_CREAT | O_WRONLY | O_BINARY, 0644);
     if (file != -1)
     {
-        word tmp=0xfefa;
+        int dummyJoystickPort = 0;
+        word tmp = 0xfefa;
+
         write(file,&tmp,sizeof(tmp));
         write(file,Scores,sizeof(HighScore) * MaxScores);
 
@@ -261,7 +258,6 @@ void WriteConfig(void)
         write(file,&dummyJoypadEnabled,sizeof(dummyJoypadEnabled));
         boolean dummyJoystickProgressive = false;
         write(file,&dummyJoystickProgressive,sizeof(dummyJoystickProgressive));
-        int dummyJoystickPort = 0;
         write(file,&dummyJoystickPort,sizeof(dummyJoystickPort));
 
         write(file,dirscan,sizeof(dirscan));
@@ -278,8 +274,6 @@ void WriteConfig(void)
 }
 
 
-//===========================================================================
-
 /*
 =====================
 =
@@ -290,7 +284,7 @@ void WriteConfig(void)
 =====================
 */
 
-void NewGame (int difficulty,int episode)
+void NewGame (int difficulty, int episode)
 {
     memset (&gamestate,0,sizeof(gamestate));
     gamestate.difficulty = difficulty;
@@ -342,13 +336,11 @@ extern statetype s_player;
 
 boolean SaveTheGame(FILE *file,int x,int y)
 {
-    int checksum;
     objtype *ob;
     objtype nullobj;
     statobj_t nullstat;
     unsigned i, j;
-
-    checksum = 0;
+    int checksum = 0;
 
     DiskFlopAnim(x,y);
     fwrite(&gamestate,sizeof(gamestate),1,file);
@@ -437,9 +429,7 @@ boolean SaveTheGame(FILE *file,int x,int y)
     fwrite (&pwallpos,sizeof(pwallpos),1,file);
     checksum = DoChecksum((byte *)&pwallpos,sizeof(pwallpos),checksum);
 
-    //
-    // WRITE OUT CHECKSUM
-    //
+    /* WRITE OUT CHECKSUM */
     fwrite (&checksum,sizeof(checksum),1,file);
 
     fwrite (&lastgamemusicoffset,sizeof(lastgamemusicoffset),1,file);
@@ -459,12 +449,11 @@ boolean SaveTheGame(FILE *file,int x,int y)
 
 boolean LoadTheGame(FILE *file,int x,int y)
 {
-    int32_t checksum,oldchecksum;
+    int32_t oldchecksum;
     objtype nullobj;
     statobj_t nullstat;
     int actnum=0, i, j;
-
-    checksum = 0;
+    int32_t checksum = 0;
 
     DiskFlopAnim(x,y);
     fread (&gamestate,sizeof(gamestate),1,file);
@@ -504,7 +493,7 @@ boolean LoadTheGame(FILE *file,int x,int y)
     fread (player,sizeof(*player),1,file);
     player->state=(statetype *) ((uintptr_t)player->state+(uintptr_t)&s_player);
 
-    //Load all actors ?
+    /* Load all actors ? */
     while (1)
     {
         DiskFlopAnim(x,y);
@@ -513,7 +502,8 @@ boolean LoadTheGame(FILE *file,int x,int y)
             break;
         GetNewActor ();
         nullobj.state=(statetype *) ((uintptr_t)nullobj.state+(uintptr_t)&s_grdstand);
-        // don't copy over the links
+
+        /* don't copy over the links */
         memcpy (newobj,&nullobj,sizeof(nullobj)-8);
     }
 
@@ -553,7 +543,8 @@ boolean LoadTheGame(FILE *file,int x,int y)
     fread (&pwallpos,sizeof(pwallpos),1,file);
     checksum = DoChecksum((byte *)&pwallpos,sizeof(pwallpos),checksum);
 
-    if (gamestate.secretcount)      // assign valid floorcodes under moved pushwalls
+    /* assign valid floorcodes under moved pushwalls */
+    if (gamestate.secretcount)
     {
         word *map, *obj; word tile, sprite;
         map = mapsegs[0]; obj = mapsegs[1];
@@ -578,13 +569,14 @@ boolean LoadTheGame(FILE *file,int x,int y)
             }
     }
 
-    Thrust(0,0);    // set player->areanumber to the floortile you're standing on
+    /* set player->areanumber to the floortile you're standing on */
+    Thrust(0,0);
 
     fread (&oldchecksum,sizeof(oldchecksum),1,file);
 
     fread (&lastgamemusicoffset,sizeof(lastgamemusicoffset),1,file);
-    if(lastgamemusicoffset<0) lastgamemusicoffset=0;
-
+    if(lastgamemusicoffset<0)
+       lastgamemusicoffset=0;
 
     if (oldchecksum != checksum)
     {
@@ -607,8 +599,6 @@ boolean LoadTheGame(FILE *file,int x,int y)
     return true;
 }
 
-//===========================================================================
-
 /*
 ==========================
 =
@@ -621,7 +611,7 @@ boolean LoadTheGame(FILE *file,int x,int y)
 
 void ShutdownId (void)
 {
-    US_Shutdown ();         // This line is completely useless...
+    US_Shutdown ();
     SD_Shutdown ();
     PM_Shutdown ();
     IN_Shutdown ();
@@ -629,8 +619,6 @@ void ShutdownId (void)
     CA_Shutdown ();
 }
 
-
-//===========================================================================
 
 /*
 ==================
@@ -649,11 +637,12 @@ const float radtoint = (float)(FINEANGLES/2/PI);
 
 void BuildTables (void)
 {
-    //
-    // calculate fine tangents
-    //
-
     int i;
+    float anglestep;
+    float angle=0;
+
+    /* calculate fine tangents */
+
     for(i=0;i<FINEANGLES/8;i++)
     {
         double tang=tan((i+0.5)/radtoint);
@@ -661,13 +650,11 @@ void BuildTables (void)
         finetangent[FINEANGLES/4-1-i]=(int32_t)((1/tang)*GLOBAL1);
     }
 
-    //
-    // costable overlays sintable with a quarter phase shift
-    // ANGLES is assumed to be divisable by four
-    //
+    /* 
+     * costable overlays sintable with a quarter phase shift
+     * ANGLES is assumed to be divisable by four. */
 
-    float angle=0;
-    float anglestep=(float)(PI/2/ANGLEQUAD);
+    anglestep=(float)(PI/2/ANGLEQUAD);
     for(i=0; i<ANGLEQUAD; i++)
     {
         fixed value=(int32_t)(GLOBAL1*sin(angle));
@@ -679,9 +666,6 @@ void BuildTables (void)
     sintable[3*ANGLEQUAD] = -65536;
 
 }
-
-//===========================================================================
-
 
 /*
 ====================
@@ -703,33 +687,29 @@ void CalcProjection (int32_t focal)
     double  facedist;
 
     focallength = focal;
-    facedist = focal+MINDIST;
-    halfview = viewwidth/2;                                 // half view in pixels
+    facedist    = focal + MINDIST;
+    halfview    = viewwidth/2; /* half view in pixels */
 
-    //
-    // calculate scale value for vertical height calculations
-    // and sprite x calculations
-    //
-    scale = (fixed) (halfview*facedist/(VIEWGLOBAL/2));
+    /* 
+     * calculate scale value for vertical 
+     * height calculations
+     * and sprite x calculations. */
+    scale       = (fixed) (halfview*facedist/(VIEWGLOBAL/2));
 
-    //
     // divide heightnumerator by a posts distance to get the posts height for
     // the heightbuffer.  The pixel height is height>>2
-    //
     heightnumerator = (TILEGLOBAL*scale)>>6;
 
-    //
-    // calculate the angle offset from view angle of each pixel's ray
-    //
+    /* calculate the angle offset from view angle of each pixel's ray */
 
     for (i=0;i<halfview;i++)
     {
-        // start 1/2 pixel over, so viewangle bisects two middle pixels
-        tang = (int32_t)i*VIEWGLOBAL/viewwidth/facedist;
-        angle = (float) atan(tang);
-        intang = (int) (angle*radtoint);
+        /* start 1/2 pixel over, so viewangle bisects two middle pixels */
+        tang   = (int32_t)i*VIEWGLOBAL/viewwidth/facedist;
+        angle  = (float)atan(tang);
+        intang = (int)(angle * radtoint);
         pixelangle[halfview-1-i] = intang;
-        pixelangle[halfview+i] = -intang;
+        pixelangle[halfview+i]   = -intang;
     }
 }
 
@@ -749,19 +729,17 @@ void CalcProjection (int32_t focal)
 
 void SetupWalls (void)
 {
-    int     i;
+   int     i;
 
-    horizwall[0]=0;
-    vertwall[0]=0;
+   horizwall[0]=0;
+   vertwall[0]=0;
 
-    for (i=1;i<MAXWALLTILES;i++)
-    {
-        horizwall[i]=(i-1)*2;
-        vertwall[i]=(i-1)*2+1;
-    }
+   for (i=1;i<MAXWALLTILES;i++)
+   {
+      horizwall[i]=(i-1)*2;
+      vertwall[i]=(i-1)*2+1;
+   }
 }
-
-//===========================================================================
 
 /*
 ==========================
@@ -771,12 +749,12 @@ void SetupWalls (void)
 ==========================
 */
 
-void SignonScreen (void)                        // VGA version
+void SignonScreen (void)
 {
-    VL_SetVGAPlaneMode ();
+   VL_SetVGAPlaneMode ();
 
-    VL_MungePic (signon,320,200);
-    VL_MemToScreen (signon,320,200,0,0);
+   VL_MungePic (signon,320,200);
+   VL_MemToScreen (signon,320,200,0,0);
 }
 
 
@@ -791,52 +769,50 @@ void SignonScreen (void)                        // VGA version
 void FinishSignon (void)
 {
 #ifndef SPEAR
-    VW_Bar (0,189,300,11,VL_GetPixel(0,0));
-    WindowX = 0;
-    WindowW = 320;
-    PrintY = 190;
+   VW_Bar (0,189,300,11,VL_GetPixel(0,0));
+   WindowX = 0;
+   WindowW = 320;
+   PrintY = 190;
 
-    #ifndef JAPAN
-    SETFONTCOLOR(14,4);
+#ifndef JAPAN
+   SETFONTCOLOR(14,4);
 
-    #ifdef SPANISH
-    US_CPrint ("Oprima una tecla");
-    #else
-    US_CPrint ("Press a key");
-    #endif
-
-    #endif
-
-    VH_UpdateScreen();
-
-    if (!param_nowait)
-        IN_Ack ();
-
-    #ifndef JAPAN
-    VW_Bar (0,189,300,11,VL_GetPixel(0,0));
-
-    PrintY = 190;
-    SETFONTCOLOR(10,4);
-
-    #ifdef SPANISH
-    US_CPrint ("pensando...");
-    #else
-    US_CPrint ("Working...");
-    #endif
-
-    VH_UpdateScreen();
-    #endif
-
-    SETFONTCOLOR(0,15);
+#ifdef SPANISH
+   US_CPrint ("Oprima una tecla");
 #else
-    VH_UpdateScreen();
+   US_CPrint ("Press a key");
+#endif
 
-    if (!param_nowait)
-        VW_WaitVBL(3*70);
+#endif
+
+   VH_UpdateScreen();
+
+   if (!param_nowait)
+      IN_Ack ();
+
+#ifndef JAPAN
+   VW_Bar (0,189,300,11,VL_GetPixel(0,0));
+
+   PrintY = 190;
+   SETFONTCOLOR(10,4);
+
+#ifdef SPANISH
+   US_CPrint ("pensando...");
+#else
+   US_CPrint ("Working...");
+#endif
+
+   VH_UpdateScreen();
+#endif
+
+   SETFONTCOLOR(0,15);
+#else
+   VH_UpdateScreen();
+
+   if (!param_nowait)
+      VW_WaitVBL(3*70);
 #endif
 }
-
-//===========================================================================
 
 /*
 =====================
@@ -853,7 +829,7 @@ void FinishSignon (void)
 
 static int wolfdigimap[] =
     {
-        // These first sounds are in the upload version
+        /* These first sounds are in the upload version */
 #ifndef SPEAR
         HALTSND,                0,  -1,
         DOGBARKSND,             1,  -1,
@@ -1097,7 +1073,7 @@ void DoJukebox(void)
     DrawMenu (&MusicItems,&MusicMenu[start]);
 
     SETFONTCOLOR (READHCOLOR,BKGDCOLOR);
-    PrintY=15;
+    PrintY  = 15;
     WindowX = 0;
     WindowY = 320;
     US_CPrint ("Robert's Jukebox");
@@ -1142,90 +1118,78 @@ void DoJukebox(void)
 ==========================
 */
 
-static void InitGame()
+static void InitGame(void)
 {
 #ifndef SPEARDEMO
-    boolean didjukebox=false;
+   boolean didjukebox=false;
 #endif
 
-    // initialize SDL
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
-    {
-        printf("Unable to init SDL: %s\n", SDL_GetError());
-        exit(1);
-    }
-    atexit(SDL_Quit);
+   /* initialize SDL */
+   if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
+   {
+      printf("Unable to init SDL: %s\n", SDL_GetError());
+      exit(1);
+   }
+   atexit(SDL_Quit);
 
-    int numJoysticks = SDL_NumJoysticks();
-    if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
-    {
-        if(!numJoysticks)
-            printf("No joysticks are available to SDL!\n");
-        else
-            printf("The joystick index must be between -1 and %i!\n", numJoysticks - 1);
-        exit(1);
-    }
+   int numJoysticks = SDL_NumJoysticks();
+   if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
+   {
+      if(!numJoysticks)
+         printf("No joysticks are available to SDL!\n");
+      else
+         printf("The joystick index must be between -1 and %i!\n", numJoysticks - 1);
+      exit(1);
+   }
 
-    SignonScreen ();
+   SignonScreen ();
 
-    VH_Startup ();
-    IN_Startup ();
-    PM_Startup ();
-    SD_Startup ();
-    CA_Startup ();
-    US_Startup ();
+   VH_Startup ();
+   IN_Startup ();
+   PM_Startup ();
+   SD_Startup ();
+   CA_Startup ();
+   US_Startup ();
 
-    // TODO: Will any memory checking be needed someday??
+   /* TODO: Will any memory checking be needed someday?? */
 
 
-//
-// build some tables
-//
-    InitDigiMap ();
+   /* build some tables */
+   InitDigiMap ();
 
-    ReadConfig ();
+   ReadConfig ();
 
-    SetupSaveGames();
+   SetupSaveGames();
 
-//
-// HOLDING DOWN 'M' KEY?
-//
+   /* HOLDING DOWN 'M' KEY? */
 #ifndef SPEARDEMO
-    if (Keyboard[sc_M])
-    {
-        DoJukebox();
-        didjukebox=true;
-    }
-    else
+   if (Keyboard[sc_M])
+   {
+      DoJukebox();
+      didjukebox=true;
+   }
+   else
 #endif
 
-//
-// draw intro screen stuff
-//
-    IntroScreen ();
+      /* draw intro screen stuff */
+      IntroScreen ();
 
+   /* load in and lock down some basic chunks */
+   CA_CacheGrChunk(STARTFONT);
+   CA_CacheGrChunk(STATUSBARPIC);
 
-//
-// load in and lock down some basic chunks
-//
+   LoadLatchMem ();
+   BuildTables ();          /* trig tables */
+   SetupWalls ();
 
-    CA_CacheGrChunk(STARTFONT);
-    CA_CacheGrChunk(STATUSBARPIC);
+   NewViewSize (viewsize);
 
-    LoadLatchMem ();
-    BuildTables ();          // trig tables
-    SetupWalls ();
-
-    NewViewSize (viewsize);
-
-//
-// initialize variables
-//
-    InitRedShifts ();
+   /* initialize variables */
+   InitRedShifts ();
 #ifndef SPEARDEMO
-    if(!didjukebox)
+   if(!didjukebox)
 #endif
-        FinishSignon();
+      FinishSignon();
 }
 
 //===========================================================================
@@ -1240,62 +1204,60 @@ static void InitGame()
 
 boolean SetViewSize (unsigned width, unsigned height)
 {
-    viewwidth = width&~15;                  // must be divisable by 16
-    viewheight = height&~1;                 // must be even
-    centerx = viewwidth/2-1;
-    shootdelta = viewwidth/10;
-    if((unsigned) viewheight == screenHeight)
-        viewscreenx = viewscreeny = screenofs = 0;
-    else
-    {
-        viewscreenx = (screenWidth-viewwidth) / 2;
-        viewscreeny = (screenHeight-scaleFactor*STATUSLINES-viewheight)/2;
-        screenofs = viewscreeny*screenWidth+viewscreenx;
-    }
+   viewwidth  = width         & ~15;   /* must be divisable by 16 */
+   viewheight = height        & ~1;    /* must be even */
+   centerx    = viewwidth    / 2-1;
+   shootdelta = viewwidth / 10;
 
-//
-// calculate trace angles and projection constants
-//
-    CalcProjection (FOCALLENGTH);
+   if((unsigned) viewheight == screenHeight)
+      viewscreenx = viewscreeny = screenofs = 0;
+   else
+   {
+      viewscreenx = (screenWidth-viewwidth) / 2;
+      viewscreeny = (screenHeight-scaleFactor*STATUSLINES-viewheight)/2;
+      screenofs = viewscreeny*screenWidth+viewscreenx;
+   }
 
-    return true;
+   /* calculate trace angles and projection constants */
+   CalcProjection (FOCALLENGTH);
+
+   return true;
 }
 
 
 void ShowViewSize (int width)
 {
-    int oldwidth,oldheight;
+   int oldwidth  = viewwidth;
+   int oldheight = viewheight;
 
-    oldwidth = viewwidth;
-    oldheight = viewheight;
+   if(width == 21)
+   {
+      viewwidth = screenWidth;
+      viewheight = screenHeight;
+      VWB_BarScaledCoord (0, 0, screenWidth, screenHeight, 0);
+   }
+   else if(width == 20)
+   {
+      viewwidth = screenWidth;
+      viewheight = screenHeight - scaleFactor*STATUSLINES;
+      DrawPlayBorder ();
+   }
+   else
+   {
+      viewwidth = width*16*screenWidth/320;
+      viewheight = (int) (width*16*HEIGHTRATIO*screenHeight/200);
+      DrawPlayBorder ();
+   }
 
-    if(width == 21)
-    {
-        viewwidth = screenWidth;
-        viewheight = screenHeight;
-        VWB_BarScaledCoord (0, 0, screenWidth, screenHeight, 0);
-    }
-    else if(width == 20)
-    {
-        viewwidth = screenWidth;
-        viewheight = screenHeight - scaleFactor*STATUSLINES;
-        DrawPlayBorder ();
-    }
-    else
-    {
-        viewwidth = width*16*screenWidth/320;
-        viewheight = (int) (width*16*HEIGHTRATIO*screenHeight/200);
-        DrawPlayBorder ();
-    }
-
-    viewwidth = oldwidth;
-    viewheight = oldheight;
+   viewwidth = oldwidth;
+   viewheight = oldheight;
 }
 
 
 void NewViewSize (int width)
 {
     viewsize = width;
+
     if(viewsize == 21)
         SetViewSize(screenWidth, screenHeight);
     else if(viewsize == 20)
@@ -1303,10 +1265,6 @@ void NewViewSize (int width)
     else
         SetViewSize(width*16*screenWidth/320, (unsigned) (width*16*HEIGHTRATIO*screenHeight/200));
 }
-
-
-
-//===========================================================================
 
 /*
 ==========================
@@ -1326,9 +1284,11 @@ void Quit (const char *errorStr, ...)
         vsprintf(error, errorStr, vlist);
         va_end(vlist);
     }
-    else error[0] = 0;
+    else
+       error[0] = 0;
 
-    if (!pictable)  // don't try to display the red box before it's loaded
+    /* don't try to display the red box before it's loaded */
+    if (!pictable)  
     {
         ShutdownId();
         if (error && *error)
@@ -1340,9 +1300,7 @@ void Quit (const char *errorStr, ...)
     }
 
     if (!error || !*error)
-    {
         WriteConfig ();
-    }
 
     ShutdownId ();
 
@@ -1356,10 +1314,6 @@ void Quit (const char *errorStr, ...)
     exit(0);
 }
 
-//===========================================================================
-
-
-
 /*
 =====================
 =
@@ -1369,161 +1323,144 @@ void Quit (const char *errorStr, ...)
 */
 
 
-static void DemoLoop()
+static void DemoLoop(void)
 {
-    int LastDemo = 0;
+   int LastDemo = 0;
 
-//
-// check for launch from ted
-//
-    if (param_tedlevel != -1)
-    {
-        param_nowait = true;
-        EnableEndGameMenuItem();
-        NewGame(param_difficulty,0);
+   /* check for launch from ted */
+   if (param_tedlevel != -1)
+   {
+      param_nowait = true;
+      EnableEndGameMenuItem();
+      NewGame(param_difficulty,0);
 
 #ifndef SPEAR
-        gamestate.episode = param_tedlevel/10;
-        gamestate.mapon = param_tedlevel%10;
+      gamestate.episode = param_tedlevel/10;
+      gamestate.mapon = param_tedlevel%10;
 #else
-        gamestate.episode = 0;
-        gamestate.mapon = param_tedlevel;
+      gamestate.episode = 0;
+      gamestate.mapon = param_tedlevel;
 #endif
-        GameLoop();
-        Quit (NULL);
-    }
+      GameLoop();
+      Quit (NULL);
+   }
 
 
-//
-// main game cycle
-//
-
+   /* main game cycle */
 #ifndef DEMOTEST
 
-    #ifndef UPLOAD
+#ifndef UPLOAD
 
-        #ifndef GOODTIMES
-        #ifndef SPEAR
-        #ifndef JAPAN
-        if (!param_nowait)
-            NonShareware();
-        #endif
-        #else
-            #ifndef GOODTIMES
-            #ifndef SPEARDEMO
-            extern void CopyProtection(void);
-            if(!param_goodtimes)
-                CopyProtection();
-            #endif
-            #endif
-        #endif
-        #endif
-    #endif
+#ifndef GOODTIMES
+#ifndef SPEAR
+#ifndef JAPAN
+   if (!param_nowait)
+      NonShareware();
+#endif
+#else
+#ifndef GOODTIMES
+#ifndef SPEARDEMO
+   extern void CopyProtection(void);
+   if(!param_goodtimes)
+      CopyProtection();
+#endif
+#endif
+#endif
+#endif
+#endif
 
-    StartCPMusic(INTROSONG);
+   StartCPMusic(INTROSONG);
 
 #ifndef JAPAN
-    if (!param_nowait)
-        PG13 ();
+   if (!param_nowait)
+      PG13 ();
 #endif
 
 #endif
 
-    while (1)
-    {
-        while (!param_nowait)
-        {
-//
-// title page
-//
+   while (1)
+   {
+      while (!param_nowait)
+      {
 #ifndef DEMOTEST
 
 #ifdef SPEAR
-            SDL_Color pal[256];
-            CA_CacheGrChunk (TITLEPALETTE);
-            VL_ConvertPalette(grsegs[TITLEPALETTE], pal, 256);
+         SDL_Color pal[256];
+         /* title page */
+         CA_CacheGrChunk (TITLEPALETTE);
+         VL_ConvertPalette(grsegs[TITLEPALETTE], pal, 256);
 
-            CA_CacheGrChunk (TITLE1PIC);
-            VWB_DrawPic (0,0,TITLE1PIC);
-            UNCACHEGRCHUNK (TITLE1PIC);
+         CA_CacheGrChunk (TITLE1PIC);
+         VWB_DrawPic (0,0,TITLE1PIC);
+         UNCACHEGRCHUNK (TITLE1PIC);
 
-            CA_CacheGrChunk (TITLE2PIC);
-            VWB_DrawPic (0,80,TITLE2PIC);
-            UNCACHEGRCHUNK (TITLE2PIC);
-            VW_UpdateScreen ();
-            VL_FadeIn(0,255,pal,30);
+         CA_CacheGrChunk (TITLE2PIC);
+         VWB_DrawPic (0,80,TITLE2PIC);
+         UNCACHEGRCHUNK (TITLE2PIC);
+         VW_UpdateScreen ();
+         VL_FadeIn(0,255,pal,30);
 
-            UNCACHEGRCHUNK (TITLEPALETTE);
+         UNCACHEGRCHUNK (TITLEPALETTE);
 #else
-            CA_CacheScreen (TITLEPIC);
-            VW_UpdateScreen ();
-            VW_FadeIn();
+         CA_CacheScreen (TITLEPIC);
+         VW_UpdateScreen ();
+         VW_FadeIn();
 #endif
-            if (IN_UserInput(TickBase*15))
-                break;
-            VW_FadeOut();
-//
-// credits page
-//
-            CA_CacheScreen (CREDITSPIC);
-            VW_UpdateScreen();
-            VW_FadeIn ();
-            if (IN_UserInput(TickBase*10))
-                break;
-            VW_FadeOut ();
-//
-// high scores
-//
-            DrawHighScores ();
-            VW_UpdateScreen ();
-            VW_FadeIn ();
+         if (IN_UserInput(TickBase*15))
+            break;
+         VW_FadeOut();
+         /* credits page */
+         CA_CacheScreen (CREDITSPIC);
+         VW_UpdateScreen();
+         VW_FadeIn ();
+         if (IN_UserInput(TickBase*10))
+            break;
+         VW_FadeOut ();
+         DrawHighScores ();
+         VW_UpdateScreen ();
+         VW_FadeIn ();
 
-            if (IN_UserInput(TickBase*10))
-                break;
+         if (IN_UserInput(TickBase*10))
+            break;
 #endif
-//
-// demo
-//
+         /* demo */
 
-            #ifndef SPEARDEMO
-            PlayDemo (LastDemo++%4);
-            #else
-            PlayDemo (0);
-            #endif
+#ifndef SPEARDEMO
+         PlayDemo (LastDemo++%4);
+#else
+         PlayDemo (0);
+#endif
 
-            if (playstate == ex_abort)
-                break;
-            VW_FadeOut();
-            if(screenHeight % 200 != 0)
-                VL_ClearScreen(0);
-            StartCPMusic(INTROSONG);
-        }
+         if (playstate == ex_abort)
+            break;
+         VW_FadeOut();
+         if(screenHeight % 200 != 0)
+            VL_ClearScreen(0);
+         StartCPMusic(INTROSONG);
+      }
 
-        VW_FadeOut ();
+      VW_FadeOut ();
 
 #ifdef DEBUGKEYS
-        if (Keyboard[sc_Tab] && param_debugmode)
-            RecordDemo ();
-        else
-            US_ControlPanel (0);
+      if (Keyboard[sc_Tab] && param_debugmode)
+         RecordDemo ();
+      else
+         US_ControlPanel (0);
 #else
-        US_ControlPanel (0);
+      US_ControlPanel (0);
 #endif
 
-        if (startgame || loadedgame)
-        {
-            GameLoop ();
-            if(!param_nowait)
-            {
-                VW_FadeOut();
-                StartCPMusic(INTROSONG);
-            }
-        }
-    }
+      if (startgame || loadedgame)
+      {
+         GameLoop ();
+         if(!param_nowait)
+         {
+            VW_FadeOut();
+            StartCPMusic(INTROSONG);
+         }
+      }
+   }
 }
-
-
-//===========================================================================
 
 #define IFARG(str) if(!strcmp(arg, (str)))
 

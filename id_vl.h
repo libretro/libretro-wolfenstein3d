@@ -67,13 +67,13 @@ void VL_BarScaledCoord  (int scx, int scy, int scwidth, int scheight, int color)
 
 static inline void VL_Bar      (int x, int y, int width, int height, int color)
 {
-    VL_BarScaledCoord(scaleFactor*x, scaleFactor*y,
-        scaleFactor*width, scaleFactor*height, color);
+   VL_BarScaledCoord(scaleFactor*x, scaleFactor*y,
+         scaleFactor*width, scaleFactor*height, color);
 }
 
 static inline void VL_ClearScreen(int color)
 {
-    SDL_FillRect(curSurface, NULL, color);
+   SDL_FillRect(curSurface, NULL, color);
 }
 
 void VL_MungePic                (byte *source, unsigned width, unsigned height);
