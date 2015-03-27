@@ -26,9 +26,6 @@
 #include <ctype.h>
 #include <assert.h>
 #include <retro_miscellaneous.h>
-#include "SDL_endian.h"
-#include "SDL_audio.h"
-#include "SDL_timer.h"
 
 #include "SDL_mixer.h"
 
