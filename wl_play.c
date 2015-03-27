@@ -20,7 +20,8 @@
 =============================================================================
 */
 
-boolean madenoise;              // true when shooting or screaming
+/* true when shooting or screaming */
+boolean madenoise;              
 
 exit_t playstate;
 
