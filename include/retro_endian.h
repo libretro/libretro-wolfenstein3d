@@ -18,7 +18,7 @@ static INLINE int32_t Retro_SwapLES32(int32_t x)
 #endif
 }
 
-int16_t INLINE int16_t Retro_SwapLES16(int16_t x)
+static INLINE int16_t Retro_SwapLES16(int16_t x)
 {
 #ifdef MSB_FIRST
    uint8_t b1 = x        & 255;

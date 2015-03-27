@@ -32,7 +32,7 @@
 
 #include "SDL.h"
 #include "SDL_mixer.h"
-#include "retro_endian.h"
+#include <retro_endian.h>
 
 #define __MIX_INTERNAL_EFFECT__
 #include "effects_internal.h"

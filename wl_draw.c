@@ -1,7 +1,7 @@
 // WL_DRAW.C
 
 #include "wl_def.h"
-
+#include "retro_endian.h"
 
 /*
 =============================================================================
@@ -631,7 +631,7 @@ static int CalcRotate (objtype *ob)
 
 static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t flags)
 {
-   unsigned pixheight;
+   unsigned scale, pixheight;
    unsigned starty,endy;
    word *cmdptr;
    byte *cline;
@@ -643,7 +643,9 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
    unsigned j;
    byte col;
    t_compshape *shape = (t_compshape *) PM_GetSprite(shapenum);
-   unsigned scale=height>>3; /* low three bits are fractional */
+   word leftpix  = (word)Retro_SwapLES16(shape->leftpix);
+   word rightpix = (word)Retro_SwapLES16(shape->rightpix);
+   scale         = height >> 3; /* low three bits are fractional */
 
    if(!scale)
       return;   /* too close or far away */
@@ -654,25 +656,25 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
 
    cmdptr=(word *) shape->dataofs;
 
-   for(i=shape->leftpix,pixcnt=i*pixheight,rpix=(pixcnt>>6)+actx;i<=shape->rightpix;i++,cmdptr++)
+   for(i= leftpix, pixcnt=i * pixheight,rpix = (pixcnt >> 6) + actx; i <= rightpix; i++, cmdptr++)
    {
       lpix=rpix;
 
       if(lpix>=viewwidth)
          break;
 
-      pixcnt+=pixheight;
-      rpix=(pixcnt>>6)+actx;
+      pixcnt += pixheight;
+      rpix    = (pixcnt >> 6) + actx;
 
       if(lpix!=rpix && rpix>0)
       {
-         if(lpix<0)
+         if(lpix < 0)
             lpix=0;
 
-         if(rpix>viewwidth)
-            rpix=viewwidth,i=shape->rightpix+1;
+         if(rpix > viewwidth)
+            rpix= viewwidth, i = rightpix + 1;
 
-         cline=(byte *)shape + *cmdptr;
+         cline = (byte *)shape + (word)Retro_SwapLES16(*cmdptr);
 
          while(lpix<rpix)
          {
@@ -736,13 +738,15 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
    byte col;
    byte *vmem;
    t_compshape *shape = (t_compshape *) PM_GetSprite(shapenum);
+   word leftpix       = (word)Retro_SwapLES16(shape->leftpix);
+   word rightpix      = (word)Retro_SwapLES16(shape->rightpix);
    unsigned scale     = height>>1;
    unsigned pixheight = scale*SPRITESCALEFACTOR;
    int actx           = xcenter-scale;
    int upperedge      = viewheight/2-scale;
    word *cmdptr       = shape->dataofs;
 
-   for(i=shape->leftpix,pixcnt=i*pixheight,rpix=(pixcnt>>6)+actx;i<=shape->rightpix;i++,cmdptr++)
+   for(i = leftpix, pixcnt = i * pixheight, rpix = (pixcnt >> 6) + actx; i <= rightpix; i++, cmdptr++)
    {
       lpix=rpix;
       if(lpix>=viewwidth)
@@ -751,9 +755,11 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
       rpix=(pixcnt>>6)+actx;
       if(lpix!=rpix && rpix>0)
       {
-         if(lpix<0) lpix=0;
-         if(rpix>viewwidth) rpix=viewwidth,i=shape->rightpix+1;
-         cline = (byte *)shape + *cmdptr;
+         if(lpix < 0)
+            lpix = 0;
+         if(rpix > viewwidth)
+            rpix = viewwidth, i = rightpix + 1;
+         cline = (byte *)shape + (word)Retro_SwapLES16(*cmdptr);
          while(lpix<rpix)
          {
             line=cline;
