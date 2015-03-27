@@ -24,12 +24,8 @@
 #ifndef _SDL_MIXER_H
 #define _SDL_MIXER_H
 
-#include "SDL_stdinc.h"
-#include "SDL_rwops.h"
 #include "SDL_audio.h"
-#include "SDL_endian.h"
 #include "SDL_version.h"
-#include "begin_code.h"
 
 /* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
 */
@@ -76,10 +72,10 @@ void Mix_Quit(void);
 
 /* Good default values for a PC soundcard */
 #define MIX_DEFAULT_FREQUENCY   22050
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#define MIX_DEFAULT_FORMAT  AUDIO_S16LSB
-#else
+#ifdef MSB_FIRST
 #define MIX_DEFAULT_FORMAT  AUDIO_S16MSB
+#else
+#define MIX_DEFAULT_FORMAT  AUDIO_S16LSB
 #endif
 #define MIX_DEFAULT_CHANNELS    2
 #define MIX_MAX_VOLUME          128 /* Volume of a chunk */
