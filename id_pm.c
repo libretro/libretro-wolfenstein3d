@@ -1,4 +1,5 @@
 #include "wl_def.h"
+#include <retro_endian.h>
 
 int ChunksInFile;
 int PMSpriteStart;
@@ -18,7 +19,7 @@ uint8_t **PMPages;
 
 void PM_Startup(void)
 {
-   int i;
+   int i, j, k;
    long fileSize, pageDataSize;
    FILE *file;
    uint32_t *pageOffsets;
@@ -36,18 +37,33 @@ void PM_Startup(void)
 
    ChunksInFile = 0;
    fread(&ChunksInFile, sizeof(word), 1, file);
+   ChunksInFile = Retro_SwapLES32(ChunksInFile);
+
    PMSpriteStart = 0;
    fread(&PMSpriteStart, sizeof(word), 1, file);
+   PMSpriteStart = Retro_SwapLES32(PMSpriteStart);
+
    PMSoundStart = 0;
    fread(&PMSoundStart, sizeof(word), 1, file);
+   PMSoundStart = Retro_SwapLES32(PMSoundStart);
 
    pageOffsets = (uint32_t *) malloc((ChunksInFile + 1) * sizeof(int32_t));
    CHECKMALLOCRESULT(pageOffsets);
    fread(pageOffsets, sizeof(uint32_t), ChunksInFile, file);
 
+   for (k = 0; k < ChunksInFile; k++)
+   {
+      pageOffsets[k] = (uint32_t)Retro_SwapLES32(pageOffsets[k]);
+   }
+
    pageLengths = (word *) malloc(ChunksInFile * sizeof(word));
    CHECKMALLOCRESULT(pageLengths);
    fread(pageLengths, sizeof(word), ChunksInFile, file);
+
+	for(j = 0; j < ChunksInFile; j++)
+	{
+		pageLengths[j] = (word)Retro_SwapLES16(pageLengths[j]);
+	}
 
    fseek(file, 0, SEEK_END);
    fileSize = ftell(file);
