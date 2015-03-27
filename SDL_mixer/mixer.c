@@ -35,9 +35,6 @@
 /* Magic numbers for various audio file formats */
 #define RIFF        0x46464952      /* "RIFF" */
 #define WAVE        0x45564157      /* "WAVE" */
-#define FORM        0x4d524f46      /* "FORM" */
-#define OGGS        0x5367674f      /* "OggS" */
-#define CREA        0x61657243      /* "Crea" */
 
 static int audio_opened = 0;
 static SDL_AudioSpec mixer;
@@ -50,7 +47,8 @@ typedef struct _Mix_effectinfo
     struct _Mix_effectinfo *next;
 } effect_info;
 
-static struct _Mix_Channel {
+static struct _Mix_Channel
+{
     Mix_Chunk *chunk;
     int playing;
     int paused;
