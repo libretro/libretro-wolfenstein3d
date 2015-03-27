@@ -67,12 +67,6 @@ void VL_Shutdown (void)
 
 void    VL_SetVGAPlaneMode (void)
 {
-#ifdef SPEAR
-   SDL_WM_SetCaption("Spear of Destiny", NULL);
-#else
-   SDL_WM_SetCaption("Wolfenstein 3D", NULL);
-#endif
-
    if(screenBits == -1)
    {
       const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
@@ -86,7 +80,6 @@ void    VL_SetVGAPlaneMode (void)
       printf("Unable to set %ix%ix%i video mode: %s\n", screenWidth, screenHeight, screenBits, SDL_GetError());
       exit(1);
    }
-   SDL_ShowCursor(SDL_DISABLE);
 
    SDL_SetColors(screen, gamepal, 0, 256);
    memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
