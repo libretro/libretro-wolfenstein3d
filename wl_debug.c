@@ -428,8 +428,6 @@ again:
         if (!esc)
         {
             level = atoi (str);
-            if (level>=0 && level<=50)
-                singlestep = level;
         }
         return 1;
     }
