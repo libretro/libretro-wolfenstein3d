@@ -109,7 +109,7 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 
 void VH_UpdateScreen(void)
 {
-   SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
+   VL_ScreenToScreen(screenBuffer, screen);
    SDL_Flip(screen);
 }
 
@@ -355,7 +355,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
       if(abortable && IN_CheckAck ())
       {
          VL_UnlockSurface(source_copy);
-         SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
+         VL_ScreenToScreen(screen_copy, screenBuffer);
          VH_UpdateScreen();
 
          SDL_FreeSurface(source_copy);
@@ -410,7 +410,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
       if(usedoublebuffering) first = 0;
 
       VL_UnlockSurface(screen_copy);
-      SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
+      VL_ScreenToScreen(screen_copy, screenBuffer);
       VH_UpdateScreen();
 
       frame++;
@@ -420,7 +420,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 finished:
    VL_UnlockSurface(source_copy);
    VL_UnlockSurface(screen_copy);
-   SDL_BlitSurface(screen_copy, NULL, screenBuffer, NULL);
+   VL_ScreenToScreen(screen_copy, screenBuffer);
    VH_UpdateScreen();
    SDL_FreeSurface(source_copy);
    SDL_FreeSurface(screen_copy);
