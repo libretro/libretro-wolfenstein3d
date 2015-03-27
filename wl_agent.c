@@ -27,12 +27,11 @@
 
 
 
-//
-// player state info
-//
+/* player state info */
 int32_t         thrustspeed;
 
-word            plux,pluy;          // player coordinates scaled to unsigned
+/* player coordinates scaled to unsigned */
+word            plux,pluy;          
 
 short           anglefrac;
 
@@ -55,7 +54,7 @@ statetype   s_attack = {false,0,0,(statefunc) T_Attack,NULL,NULL};
 
 struct atkinf
 {
-    int8_t    tics,attack,frame;              // attack is 1 for gun, 2 for knife
+    int8_t    tics,attack,frame;              /* attack is 1 for gun, 2 for knife */
 } attackinfo[4][14] =
 {
     { {6,0,1},{6,2,2},{6,0,3},{6,-1,4} },
@@ -66,15 +65,11 @@ struct atkinf
 
 //===========================================================================
 
-//----------
-
 void Attack (void);
 void Use (void);
 void Search (objtype *ob);
 void SelectWeapon (void);
 void SelectItem (void);
-
-//----------
 
 boolean TryMove (objtype *ob);
 void T_Player (objtype *ob);
@@ -103,7 +98,8 @@ void CheckWeaponChange (void)
 {
    int newWeapon = -1;
 
-   if (!gamestate.ammo)            // must use knife with no ammo
+   /* must use knife with no ammo */
+   if (!gamestate.ammo)
       return;
 
    if(buttonstate[bt_nextweapon] && !buttonheld[bt_nextweapon])
@@ -185,28 +181,28 @@ void ControlMovement (objtype *ob)
          Thrust(angle, BASEMOVE * MOVESCALE * tics);
    }
 
-   // side to side move
+   /* side to side move */
    if (buttonstate[bt_strafe])
    {
-      // strafing
+      /* strafing */
       if (controlx > 0)
       {
          angle = ob->angle - ANGLES/4;
          if (angle < 0)
             angle += ANGLES;
-         Thrust (angle,controlx*MOVESCALE);      // move to left
+         Thrust (angle,controlx*MOVESCALE);      /* move to left */
       }
       else if (controlx < 0)
       {
          angle = ob->angle + ANGLES/4;
          if (angle >= ANGLES)
             angle -= ANGLES;
-         Thrust (angle,-controlx*MOVESCALE);     // move to right
+         Thrust (angle,-controlx*MOVESCALE);     /* move to right */
       }
    }
    else
    {
-      // not strafing
+      /* not strafing */
       anglefrac += controlx;
       angleunits = anglefrac/ANGLESCALE;
       anglefrac -= angleunits*ANGLESCALE;
@@ -219,20 +215,19 @@ void ControlMovement (objtype *ob)
 
    }
 
-   // forward/backwards move
+   /* forward/backwards move */
    if (controly < 0)
-   {
-      Thrust (ob->angle,-controly*MOVESCALE); // move forwards
-   }
+      Thrust (ob->angle,-controly*MOVESCALE); /* move forwards */
    else if (controly > 0)
    {
       angle = ob->angle + ANGLES/2;
       if (angle >= ANGLES)
          angle -= ANGLES;
-      Thrust (angle,controly*BACKMOVESCALE);          // move backwards
+      Thrust (angle,controly*BACKMOVESCALE);          /* move backwards */
    }
 
-   if (gamestate.victoryflag)              // watching the BJ actor
+   /* watching the BJ actor */
+   if (gamestate.victoryflag)
       return;
 }
 
@@ -315,7 +310,7 @@ int facetimes = 0;
 
 void UpdateFace (void)
 {
-   // don't make demo depend on sound playback
+   /* don't make demo depend on sound playback */
    if(demoplayback || demorecord)
    {
       if(facetimes > 0)
@@ -427,8 +422,8 @@ void TakeDamage (int points,objtype *attacker)
    DrawHealth ();
    DrawFace ();
 
-   // MAKE BJ'S EYES BUG IF MAJOR DAMAGE!
 #ifdef SPEAR
+   /* MAKE BJ'S EYES BUG IF MAJOR DAMAGE! */
    if (points > 30 && gamestate.health!=0 && !godmode && viewsize != 21)
    {
       StatusDrawFace(BJOUCHPIC);
@@ -636,18 +631,19 @@ void DrawAmmo (void)
 
 void GiveAmmo (int ammo)
 {
-    if (!gamestate.ammo)                            // knife was out
-    {
-        if (!gamestate.attackframe)
-        {
-            gamestate.weapon = gamestate.chosenweapon;
-            DrawWeapon ();
-        }
-    }
-    gamestate.ammo += ammo;
-    if (gamestate.ammo > 99)
-        gamestate.ammo = 99;
-    DrawAmmo ();
+   /* knife was out */
+   if (!gamestate.ammo)
+   {
+      if (!gamestate.attackframe)
+      {
+         gamestate.weapon = gamestate.chosenweapon;
+         DrawWeapon ();
+      }
+   }
+   gamestate.ammo += ammo;
+   if (gamestate.ammo > 99)
+      gamestate.ammo = 99;
+   DrawAmmo ();
 }
 
 //===========================================================================
@@ -807,7 +803,7 @@ void GetBonus (statobj_t *check)
    }
 
    StartBonusFlash ();
-   check->shapenum = -1;                   // remove from list
+   check->shapenum = -1;                   /* remove from list */
 }
 
 /*
@@ -834,9 +830,7 @@ boolean TryMove (objtype *ob)
 
 #define PUSHWALLMINDIST PLAYERSIZE
 
-   //
-   // check for solid walls
-   //
+   /* check for solid walls */
    for (y=yl;y<=yh;y++)
    {
       for (x=xl;x<=xh;x++)
@@ -844,7 +838,8 @@ boolean TryMove (objtype *ob)
          check = actorat[x][y];
          if (check && !ISPOINTER(check))
          {
-            if(tilemap[x][y]==64 && x==pwallx && y==pwally)   // back of moving pushwall?
+            /* back of moving pushwall? */
+            if(tilemap[x][y]==64 && x==pwallx && y==pwally)
             {
                switch(pwalldir)
                {
@@ -871,9 +866,7 @@ boolean TryMove (objtype *ob)
       }
    }
 
-   //
-   // check for actors
-   //
+   /* check for actors */
    if (yl>0)
       yl--;
    if (yh<MAPSIZE-1)
@@ -927,10 +920,11 @@ void ClipMove (objtype *ob, int32_t xmove, int32_t ymove)
       return;
 
 #if 0
+   /* walk through walls */
    if (noclip && ob->x > 2*TILEGLOBAL && ob->y > 2*TILEGLOBAL
          && ob->x < (((int32_t)(mapwidth-1))<<TILESHIFT)
          && ob->y < (((int32_t)(mapheight-1))<<TILESHIFT) )
-      return;         // walk through walls
+      return;
 #endif
 
    if (!SD_SoundPlaying())
@@ -977,7 +971,8 @@ void VictoryTile (void)
 ===================
 */
 
-// For player movement in demos exactly as in the original Wolf3D v1.4 source code
+/* For player movement in demos exactly as 
+ * in the original Wolf3D v1.4 source code */
 static fixed FixedByFracOrig(fixed a, fixed b)
 {
    int sign = 0;
@@ -1005,17 +1000,15 @@ void Thrust (int angle, int32_t speed)
    int32_t xmove,ymove;
    unsigned offset;
 
-
-   // ZERO FUNNY COUNTER IF MOVED!
 #ifdef SPEAR
+   /* ZERO FUNNY COUNTER IF MOVED! */
    if (speed)
       funnyticount = 0;
 #endif
 
    thrustspeed += speed;
-   //
-   // moving bounds speed
-   //
+
+   /* moving bounds speed */
    if (speed >= MINDIST*2)
       speed = MINDIST*2-1;
 
@@ -1028,7 +1021,8 @@ void Thrust (int angle, int32_t speed)
 
    ClipMove(player,xmove,ymove);
 
-   player->tilex = (short)(player->x >> TILESHIFT);                // scale to tile values
+   /* scale to tile values */
+   player->tilex = (short)(player->x >> TILESHIFT);
    player->tiley = (short)(player->y >> TILESHIFT);
 
    offset = (player->tiley<<mapshift)+player->tilex;
@@ -1086,7 +1080,7 @@ void Cmd_Use (void)
    int     checkx,checky,doornum,dir;
    boolean elevatorok;
 
-   // find which cardinal direction the player is facing
+   /* find which cardinal direction the player is facing */
    if (player->angle < ANGLES/8 || player->angle > 7*ANGLES/8)
    {
       checkx = player->tilex + 1;
@@ -1119,21 +1113,16 @@ void Cmd_Use (void)
    doornum = tilemap[checkx][checky];
    if (*(mapsegs[1]+(checky<<mapshift)+checkx) == PUSHABLETILE)
    {
-      //
-      // pushable wall
-      //
-
+      /* pushable wall */
       PushWall (checkx,checky,dir);
       return;
    }
    if (!buttonheld[bt_use] && doornum == ELEVATORTILE && elevatorok)
    {
-      //
-      // use elevator
-      //
+      /* use elevator */
       buttonheld[bt_use] = true;
 
-      tilemap[checkx][checky]++;              // flip switch
+      tilemap[checkx][checky]++;              /* flip switch */
       if (*(mapsegs[0]+(player->tiley<<mapshift)+player->tilex) == ALTELEVATORTILE)
          playstate = ex_secretlevel;
       else
@@ -1182,7 +1171,7 @@ void SpawnPlayer (int tilex, int tiley, int dir)
    if (player->angle<0)
       player->angle += ANGLES;
    player->flags = FL_NEVERMARK;
-   Thrust (0,0);                           // set some variables
+   Thrust (0,0);                           /* set some variables */
 
    InitAreas ();
 }
@@ -1206,7 +1195,8 @@ void    KnifeAttack (objtype *ob)
    int32_t  dist;
 
    SD_PlaySound (ATKKNIFESND);
-   // actually fire
+
+   /* actually fire */
    dist = 0x7fffffff;
    closest = NULL;
    for (check=ob->next; check; check=check->next)
@@ -1222,10 +1212,10 @@ void    KnifeAttack (objtype *ob)
       }
    }
 
-   if (!closest || dist > 0x18000l) // missed
+   if (!closest || dist > 0x18000l) /* missed */
       return;
 
-   // hit something
+   /* hit something */
    DamageActor (closest,US_RndT() >> 4);
 }
 
@@ -1251,9 +1241,7 @@ void    GunAttack (objtype *ob)
 
    madenoise = true;
 
-   //
-   // find potential targets
-   //
+   /* find potential targets */
    viewdist = 0x7fffffffl;
    closest = NULL;
 
@@ -1274,19 +1262,16 @@ void    GunAttack (objtype *ob)
          }
       }
 
+      /* no more targets, all missed. */
       if (closest == oldclosest)
-         return;                                         // no more targets, all missed
+         return;
 
-      //
-      // trace a line from player to enemey
-      //
+      /* trace a line from player to enemey */
       if (CheckLine(closest))
          break;
    }
 
-   //
-   // hit something
-   //
+   /* hit something */
    dx = ABS(closest->tilex - player->tilex);
    dy = ABS(closest->tiley - player->tiley);
    dist = dx>dy ? dx:dy;
@@ -1296,7 +1281,7 @@ void    GunAttack (objtype *ob)
       damage = US_RndT() / 6;
    else
    {
-      if ( (US_RndT() / 12) < dist)           // missed
+      if ( (US_RndT() / 12) < dist)           /* missed */
          return;
       damage = US_RndT() / 6;
    }
@@ -1357,7 +1342,8 @@ void    T_Attack (objtype *ob)
 
    UpdateFace ();
 
-   if (gamestate.victoryflag)              // watching the BJ actor
+   /* watching the BJ actor */
+   if (gamestate.victoryflag)
    {
       VictorySpin ();
       return;
@@ -1370,17 +1356,19 @@ void    T_Attack (objtype *ob)
       buttonstate[bt_attack] = false;
 
    ControlMovement (ob);
-   if (gamestate.victoryflag)              // watching the BJ actor
+
+   /* watching the BJ actor */
+   if (gamestate.victoryflag)
       return;
 
-   plux = (word) (player->x >> UNSIGNEDSHIFT);                     // scale to fit in unsigned
+   /* scale to fit in unsigned */
+   plux = (word) (player->x >> UNSIGNEDSHIFT);
    pluy = (word) (player->y >> UNSIGNEDSHIFT);
-   player->tilex = (short)(player->x >> TILESHIFT);                // scale to tile values
+   /* scale to tile values */
+   player->tilex = (short)(player->x >> TILESHIFT);
    player->tiley = (short)(player->y >> TILESHIFT);
 
-   //
-   // change frame and fire
-   //
+   /* change frame and fire */
    gamestate.attackcount -= (short) tics;
    while (gamestate.attackcount <= 0)
    {
@@ -1411,8 +1399,9 @@ void    T_Attack (objtype *ob)
             if (buttonstate[bt_attack])
                gamestate.attackframe -= 2;
          case 1:
+            /* can only happen with chain gun */
             if (!gamestate.ammo)
-            {       // can only happen with chain gun
+            {
                gamestate.attackframe++;
                break;
             }
@@ -1453,27 +1442,32 @@ void    T_Attack (objtype *ob)
 
 void    T_Player (objtype *ob)
 {
-   if (gamestate.victoryflag)              // watching the BJ actor
+   /* watching the BJ actor */
+   if (gamestate.victoryflag)
    {
-      VictorySpin ();
+      VictorySpin();
       return;
    }
 
    UpdateFace ();
    CheckWeaponChange ();
 
-   if ( buttonstate[bt_use] )
+   if (buttonstate[bt_use])
       Cmd_Use ();
 
    if ( buttonstate[bt_attack] && !buttonheld[bt_attack])
       Cmd_Fire ();
 
    ControlMovement (ob);
-   if (gamestate.victoryflag)              // watching the BJ actor
+
+   /* watching the BJ actor */
+   if (gamestate.victoryflag)
       return;
 
-   plux = (word) (player->x >> UNSIGNEDSHIFT);                     // scale to fit in unsigned
+   /* scale to fit in unsigned */
+   plux = (word) (player->x >> UNSIGNEDSHIFT);
    pluy = (word) (player->y >> UNSIGNEDSHIFT);
-   player->tilex = (short)(player->x >> TILESHIFT);                // scale to tile values
+   /* scale to tile values */
+   player->tilex = (short)(player->x >> TILESHIFT);
    player->tiley = (short)(player->y >> TILESHIFT);
 }
