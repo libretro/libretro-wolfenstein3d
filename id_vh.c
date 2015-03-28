@@ -8,8 +8,6 @@ int     px,py;
 byte    fontcolor,backcolor;
 int     fontnumber;
 
-//==========================================================================
-
 void VWB_DrawPropString(const char* string)
 {
    int         width, step;
@@ -279,7 +277,7 @@ void LoadLatchMem (void)
 ===================
 */
 
-// XOR masks for the pseudo-random number sequence starting with n=17 bits
+/* XOR masks for the pseudo-random number sequence starting with n=17 bits */
 static const uint32_t rndmasks[] = {
                     // n    XNOR from (starting at 1, not 0 as usual)
     0x00012000,     // 17   17,14
@@ -327,6 +325,17 @@ void VH_Startup(void)
    rndmask = rndmasks[rndbits - 17];
 }
 
+static boolean FizzleFadeFinish(SDL_Surface *source_copy, SDL_Surface *screen_copy)
+{
+   VL_UnlockSurface(source_copy);
+   VL_UnlockSurface(screen_copy);
+   VL_ScreenToScreen(screen_copy, screenBuffer);
+   VH_UpdateScreen();
+   SDL_FreeSurface(source_copy);
+   SDL_FreeSurface(screen_copy);
+   return false;
+}
+
 boolean FizzleFade (SDL_Surface *source, int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable)
 {
@@ -368,6 +377,9 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
       for(p = 0; p < pixperframe; p++)
       {
+         byte col;
+         uint32_t fullcol;
+
          /* seperate random value into x/y pair */
          x = rndval >> rndbits_y;
          y = rndval & ((1 << rndbits_y) - 1);
@@ -378,21 +390,19 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
          if(x >= width || y >= height)
          {
             if(rndval == 0)     /* entire sequence has been completed */
-               goto finished;
+               return FizzleFadeFinish(source_copy, screen_copy);
             p--;
             continue;
          }
 
          /* copy one pixel */
-         {
-            byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-            uint32_t fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
-            memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
-                  &fullcol, screen->format->BytesPerPixel);
-         }
+         col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+         fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
+         memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
+               &fullcol, screen->format->BytesPerPixel);
 
          if(rndval == 0)     /* entire sequence has been completed */
-            goto finished;
+            return FizzleFadeFinish(source_copy, screen_copy);
       }
 
       lastrndval = rndval;
@@ -402,15 +412,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
       VH_UpdateScreen();
 
       frame++;
-      Delay(frame - GetTimeCount());        // don't go too fast
+      Delay(frame - GetTimeCount()); /* don't go too fast */
    } while (1);
 
-finished:
-   VL_UnlockSurface(source_copy);
-   VL_UnlockSurface(screen_copy);
-   VL_ScreenToScreen(screen_copy, screenBuffer);
-   VH_UpdateScreen();
-   SDL_FreeSurface(source_copy);
-   SDL_FreeSurface(screen_copy);
-   return false;
+   return FizzleFadeFinish(source_copy, screen_copy);
 }
