@@ -155,9 +155,9 @@ void Quit(const char *errorStr, ...);
 
 #define NUMLATCHPICS    100
 
-#undef M_PI
-#define PI              3.141592657
-#define M_PI PI
+#ifndef M_PI
+#define M_PI              3.141592657
+#endif
 
 #define GLOBAL1         (1l<<16)
 #define TILEGLOBAL      GLOBAL1

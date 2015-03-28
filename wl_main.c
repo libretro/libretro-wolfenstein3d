@@ -630,7 +630,7 @@ void ShutdownId (void)
 ==================
 */
 
-const float radtoint = (float)(FINEANGLES/2/PI);
+const float radtoint = (float)(FINEANGLES / 2 / M_PI);
 
 void BuildTables (void)
 {
@@ -648,7 +648,7 @@ void BuildTables (void)
 
    /* costable overlays sintable with a quarter phase shift
     * ANGLES is assumed to be divisable by four. */
-   anglestep = (float)(PI/2/ANGLEQUAD);
+   anglestep = (float)(M_PI / 2 / ANGLEQUAD);
 
    for(i = 0; i < ANGLEQUAD; i++)
    {
