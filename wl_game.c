@@ -1165,25 +1165,27 @@ static int GamePlayStateIterate(boolean *died)
    {
       case EX_COMPLETED:
       case EX_SECRETLEVEL:
-         if(viewsize == 21) DrawPlayScreen();
+         if (viewsize == 21)
+            DrawPlayScreen();
          gamestate.keys = 0;
          DrawKeys ();
          VW_FadeOut ();
 
          SD_StopDigitized ();
 
-         LevelCompleted ();              // do the intermission
-         if(viewsize == 21) DrawPlayScreen();
+         /* do the intermission */
+         LevelCompleted ();
+         if(viewsize == 21)
+            DrawPlayScreen();
 
 #ifdef SPEARDEMO
          if (gamestate.mapon == 1)
          {
-            *died = true;                    // don't "get psyched!"
+            /* don't "get psyched!" */
+            *died = true;
 
             VW_FadeOut ();
-
             SD_StopDigitized ();
-
             CheckHighScore (gamestate.score,gamestate.mapon+1);
 #ifndef JAPAN
             strcpy(MainMenu[viewscores].string,STR_VS);
@@ -1196,12 +1198,11 @@ static int GamePlayStateIterate(boolean *died)
 #ifdef JAPDEMO
          if (gamestate.mapon == 3)
          {
-            *died = true;                    // don't "get psyched!"
+            /* don't "get psyched!" */
+            *died = true;
 
             VW_FadeOut ();
-
             SD_StopDigitized ();
-
             CheckHighScore (gamestate.score,gamestate.mapon+1);
 #ifndef JAPAN
             strcpy(MainMenu[viewscores].string,STR_VS);
@@ -1273,7 +1274,8 @@ static int GamePlayStateIterate(boolean *died)
          return -1;
 
       case EX_VICTORIOUS:
-         if(viewsize == 21) DrawPlayScreen();
+         if (viewsize == 21)
+            DrawPlayScreen();
 #ifndef SPEAR
          VW_FadeOut ();
 #else
@@ -1293,7 +1295,7 @@ static int GamePlayStateIterate(boolean *died)
          return -1;
 
       default:
-         if(viewsize == 21)
+         if (viewsize == 21)
             DrawPlayScreen();
          SD_StopDigitized ();
          break;
