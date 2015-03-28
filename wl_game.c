@@ -163,14 +163,15 @@ void PlaySoundLocGlobal(word s,fixed gx,fixed gy)
 void UpdateSoundLoc(void)
 {
    unsigned i;
+
    for(i = 0; i < MIX_CHANNELS; i++)
    {
-      if(channelSoundPos[i].valid)
-      {
-         SetSoundLoc(channelSoundPos[i].globalsoundx,
-               channelSoundPos[i].globalsoundy);
-         SD_SetPosition(i, leftchannel, rightchannel);
-      }
+      if(!channelSoundPos[i].valid)
+         continue;
+
+      SetSoundLoc(channelSoundPos[i].globalsoundx,
+            channelSoundPos[i].globalsoundy);
+      SD_SetPosition(i, leftchannel, rightchannel);
    }
 }
 
@@ -509,10 +510,7 @@ static void ScanInfoPlane(void)
                break;
 
 #endif
-
-               //
-               // mutants
-               //
+               /* mutants */
             case 252:
             case 253:
             case 254:
@@ -1289,6 +1287,7 @@ static int GamePlayStateIterate(boolean *died)
 
    return 0;
 }
+
 /*
 ===================
 =
