@@ -2691,14 +2691,13 @@ DrawCustKeys (int hilight)
         PrintCustKeys (i);
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //
 // CHANGE SCREEN VIEWING SIZE
 //
 ////////////////////////////////////////////////////////////////////
-int
-CP_ChangeView (int unused)
+
+int CP_ChangeView (int unused)
 {
     int exit = 0, oldview, newview;
     ControlInfo ci;
@@ -2777,29 +2776,28 @@ CP_ChangeView (int unused)
 //
 // DRAW THE CHANGEVIEW SCREEN
 //
-void
-DrawChangeView (int view)
+void DrawChangeView (int view)
 {
-    int rescaledHeight = screenHeight / scaleFactor;
-    if(view != 21) VWB_Bar (0, rescaledHeight - 40, 320, 40, bordercol);
+   int rescaledHeight = screenHeight / scaleFactor;
+   if(view != 21)
+      VWB_Bar (0, rescaledHeight - 40, 320, 40, bordercol);
 
 #ifdef JAPAN
-    CA_CacheScreen (S_CHANGEPIC);
-
-    ShowViewSize (view);
-#else
-    ShowViewSize (view);
-
-    PrintY = (screenHeight / scaleFactor) - 39;
-    WindowX = 0;
-    WindowY = 320;                                  // TODO: Check this!
-    SETFONTCOLOR (HIGHLIGHT, BKGDCOLOR);
-
-    US_CPrint (STR_SIZE1 "\n");
-    US_CPrint (STR_SIZE2 "\n");
-    US_CPrint (STR_SIZE3);
+   CA_CacheScreen (S_CHANGEPIC);
 #endif
-    VW_UpdateScreen ();
+
+   ShowViewSize (view);
+#ifndef JAPAN
+   PrintY = (screenHeight / scaleFactor) - 39;
+   WindowX = 0;
+   WindowY = 320;                                  // TODO: Check this!
+   SETFONTCOLOR (HIGHLIGHT, BKGDCOLOR);
+
+   US_CPrint (STR_SIZE1 "\n");
+   US_CPrint (STR_SIZE2 "\n");
+   US_CPrint (STR_SIZE3);
+#endif
+   VW_UpdateScreen ();
 }
 
 
@@ -2857,72 +2855,33 @@ IntroScreen (void)
 
 #endif
 #define FILLCOLOR       14
+   int i;
 
-//      long memory;
-//      long emshere,xmshere;
-    int i;
-/*      int ems[10]={100,200,300,400,500,600,700,800,900,1000},
-                xms[10]={100,200,300,400,500,600,700,800,900,1000};
-        int main[10]={32,64,96,128,160,192,224,256,288,320};*/
+   /* DRAW MAIN MEMORY */
+   for (i = 0; i < 10; i++)
+      VWB_Bar (49, 163 - 8 * i, 6, 5, MAINCOLOR - i);
+   for (i = 0; i < 10; i++)
+      VWB_Bar (89, 163 - 8 * i, 6, 5, EMSCOLOR - i);
+   for (i = 0; i < 10; i++)
+      VWB_Bar (129, 163 - 8 * i, 6, 5, XMSCOLOR - i);
 
+   /* FILL BOXES */
+   if (MousePresent)
+      VWB_Bar (164, 82, 12, 2, FILLCOLOR);
 
-    //
-    // DRAW MAIN MEMORY
-    //
-#ifdef ABCAUS
-    memory = (1023l + mminfo.nearheap + mminfo.farheap) / 1024l;
-    for (i = 0; i < 10; i++)
-        if (memory >= main[i])
-            VWB_Bar (49, 163 - 8 * i, 6, 5, MAINCOLOR - i);
+   if (IN_JoyPresent())
+      VWB_Bar (164, 105, 12, 2, FILLCOLOR);
 
-    //
-    // DRAW EMS MEMORY
-    //
-    if (EMSPresent)
-    {
-        emshere = 4l * EMSPagesAvail;
-        for (i = 0; i < 10; i++)
-            if (emshere >= ems[i])
-                VWB_Bar (89, 163 - 8 * i, 6, 5, EMSCOLOR - i);
-    }
+   if (AdLibPresent && !SoundBlasterPresent)
+      VWB_Bar (164, 128, 12, 2, FILLCOLOR);
 
-    //
-    // DRAW XMS MEMORY
-    //
-    if (XMSPresent)
-    {
-        xmshere = 4l * XMSPagesAvail;
-        for (i = 0; i < 10; i++)
-            if (xmshere >= xms[i])
-                VWB_Bar (129, 163 - 8 * i, 6, 5, XMSCOLOR - i);
-    }
-#else
-    for (i = 0; i < 10; i++)
-        VWB_Bar (49, 163 - 8 * i, 6, 5, MAINCOLOR - i);
-    for (i = 0; i < 10; i++)
-        VWB_Bar (89, 163 - 8 * i, 6, 5, EMSCOLOR - i);
-    for (i = 0; i < 10; i++)
-        VWB_Bar (129, 163 - 8 * i, 6, 5, XMSCOLOR - i);
+   if (SoundBlasterPresent)
+      VWB_Bar (164, 151, 12, 2, FILLCOLOR);
+
+#if 0
+   if (SoundSourcePresent)
+      VWB_Bar (164, 174, 12, 2, FILLCOLOR);
 #endif
-
-
-    //
-    // FILL BOXES
-    //
-    if (MousePresent)
-        VWB_Bar (164, 82, 12, 2, FILLCOLOR);
-
-    if (IN_JoyPresent())
-        VWB_Bar (164, 105, 12, 2, FILLCOLOR);
-
-    if (AdLibPresent && !SoundBlasterPresent)
-        VWB_Bar (164, 128, 12, 2, FILLCOLOR);
-
-    if (SoundBlasterPresent)
-        VWB_Bar (164, 151, 12, 2, FILLCOLOR);
-
-//    if (SoundSourcePresent)
-//        VWB_Bar (164, 174, 12, 2, FILLCOLOR);
 }
 
 
@@ -3116,9 +3075,8 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
         PrintY = item_i->y + which * 13;
         US_Print ((items + which)->string);
     }
-    //
-    // CALL CUSTOM ROUTINE IF IT IS NEEDED
-    //
+
+    /* CALL CUSTOM ROUTINE IF IT IS NEEDED */
     if (routine)
         routine (which);
     VW_UpdateScreen ();
@@ -3132,9 +3090,7 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
 
     do
     {
-        //
-        // CHANGE GUN SHAPE
-        //
+        /* CHANGE GUN SHAPE */
         if ((int32_t)GetTimeCount () - lastBlinkTime > timer)
         {
             lastBlinkTime = GetTimeCount ();
@@ -3157,9 +3113,7 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
 
         CheckPause ();
 
-        //
-        // SEE IF ANY KEYS ARE PRESSED FOR INITIAL CHAR FINDING
-        //
+        /* SEE IF ANY KEYS ARE PRESSED FOR INITIAL CHAR FINDING */
         key = LastASCII;
         if (key)
         {
@@ -3179,9 +3133,7 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
                     break;
                 }
 
-            //
-            // DIDN'T FIND A MATCH FIRST TIME THRU. CHECK AGAIN.
-            //
+            /* DIDN'T FIND A MATCH FIRST TIME THRU. CHECK AGAIN. */
             if (!ok)
             {
                 for (i = 0; i < which; i++)
@@ -3196,80 +3148,65 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
             }
         }
 
-        //
-        // GET INPUT
-        //
+        /* GET INPUT */
         ReadAnyControl (&ci);
+
         switch (ci.dir)
         {
-                ////////////////////////////////////////////////
-                //
-                // MOVE UP
-                //
-            case dir_North:
+           /* MOVE UP */
+           case dir_North:
 
-                EraseGun (item_i, items, x, y, which);
+              EraseGun (item_i, items, x, y, which);
 
-                //
-                // ANIMATE HALF-STEP
-                //
-                if (which && (items + which - 1)->active)
-                {
-                    y -= 6;
-                    DrawHalfStep (x, y);
-                }
+              /* ANIMATE HALF-STEP */
+              if (which && (items + which - 1)->active)
+              {
+                 y -= 6;
+                 DrawHalfStep (x, y);
+              }
 
-                //
-                // MOVE TO NEXT AVAILABLE SPOT
-                //
-                do
-                {
-                    if (!which)
-                        which = item_i->amount - 1;
-                    else
-                        which--;
-                }
-                while (!(items + which)->active);
+              /* MOVE TO NEXT AVAILABLE SPOT */
+              do
+              {
+                 if (!which)
+                    which = item_i->amount - 1;
+                 else
+                    which--;
+              }
+              while (!(items + which)->active);
 
-                DrawGun (item_i, items, x, &y, which, basey, routine);
-                //
-                // WAIT FOR BUTTON-UP OR DELAY NEXT MOVE
-                //
-                TicDelay (20);
-                break;
+              DrawGun (item_i, items, x, &y, which, basey, routine);
 
-                ////////////////////////////////////////////////
-                //
-                // MOVE DOWN
-                //
-            case dir_South:
+              /* WAIT FOR BUTTON-UP OR DELAY NEXT MOVE */
+              TicDelay (20);
+              break;
 
-                EraseGun (item_i, items, x, y, which);
-                //
-                // ANIMATE HALF-STEP
-                //
-                if (which != item_i->amount - 1 && (items + which + 1)->active)
-                {
-                    y += 6;
-                    DrawHalfStep (x, y);
-                }
+              /* MOVE DOWN */
+           case dir_South:
 
-                do
-                {
-                    if (which == item_i->amount - 1)
-                        which = 0;
-                    else
-                        which++;
-                }
-                while (!(items + which)->active);
+              EraseGun (item_i, items, x, y, which);
 
-                DrawGun (item_i, items, x, &y, which, basey, routine);
+              /* ANIMATE HALF-STEP */
+              if (which != item_i->amount - 1 && (items + which + 1)->active)
+              {
+                 y += 6;
+                 DrawHalfStep (x, y);
+              }
 
-                //
-                // WAIT FOR BUTTON-UP OR DELAY NEXT MOVE
-                //
-                TicDelay (20);
-                break;
+              do
+              {
+                 if (which == item_i->amount - 1)
+                    which = 0;
+                 else
+                    which++;
+              }
+              while (!(items + which)->active);
+
+              DrawGun (item_i, items, x, &y, which, basey, routine);
+
+              /* WAIT FOR BUTTON-UP OR DELAY NEXT MOVE */
+              TicDelay (20);
+              break;
         }
 
         if (ci.button0 || Keyboard[sc_Space] || Keyboard[sc_Enter])
@@ -3284,9 +3221,7 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
 
     IN_ClearKeysDown ();
 
-    //
-    // ERASE EVERYTHING
-    //
+    /* ERASE EVERYTHING */
     if (lastitem != which)
     {
         VWB_Bar (x - 1, y, 25, 16, BKGDCOLOR);
@@ -3308,9 +3243,7 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
     switch (exit)
     {
         case 1:
-            //
-            // CALL THE ROUTINE
-            //
+            /* CALL THE ROUTINE */
             if ((items + which)->routine != NULL)
             {
                 ShootSnd ();
@@ -3324,13 +3257,11 @@ HandleMenu (CP_iteminfo * item_i, CP_itemtype * items, void (*routine) (int w))
             return -1;
     }
 
-    return 0;                   // JUST TO SHUT UP THE ERROR MESSAGES!
+    return 0;
 }
 
 
-//
-// ERASE GUN & DE-HIGHLIGHT STRING
-//
+/* ERASE GUN & DE-HIGHLIGHT STRING */
 void
 EraseGun (CP_iteminfo * item_i, CP_itemtype * items, int x, int y, int which)
 {
@@ -3344,11 +3275,8 @@ EraseGun (CP_iteminfo * item_i, CP_itemtype * items, int x, int y, int which)
 }
 
 
-//
-// DRAW HALF STEP OF GUN TO NEXT POSITION
-//
-void
-DrawHalfStep (int x, int y)
+/* DRAW HALF STEP OF GUN TO NEXT POSITION */
+void DrawHalfStep (int x, int y)
 {
     VWB_DrawPic (x, y, C_CURSOR1PIC);
     VW_UpdateScreen ();
@@ -3357,11 +3285,8 @@ DrawHalfStep (int x, int y)
 }
 
 
-//
-// DRAW GUN AT NEW POSITION
-//
-void
-DrawGun (CP_iteminfo * item_i, CP_itemtype * items, int x, int *y, int which, int basey,
+/* DRAW GUN AT NEW POSITION */
+void DrawGun (CP_iteminfo * item_i, CP_itemtype * items, int x, int *y, int which, int basey,
          void (*routine) (int w))
 {
     VWB_Bar (x - 1, *y, 25, 16, BKGDCOLOR);
@@ -3373,9 +3298,7 @@ DrawGun (CP_iteminfo * item_i, CP_itemtype * items, int x, int *y, int which, in
     PrintY = item_i->y + which * 13;
     US_Print ((items + which)->string);
 
-    //
-    // CALL CUSTOM ROUTINE IF IT IS NEEDED
-    //
+    /* CALL CUSTOM ROUTINE IF IT IS NEEDED */
     if (routine)
         routine (which);
     VW_UpdateScreen ();
@@ -3387,18 +3310,18 @@ DrawGun (CP_iteminfo * item_i, CP_itemtype * items, int x, int *y, int which, in
 // DELAY FOR AN AMOUNT OF TICS OR UNTIL CONTROLS ARE INACTIVE
 //
 ////////////////////////////////////////////////////////////////////
-void
-TicDelay (int count)
+void TicDelay (int count)
 {
     ControlInfo ci;
-
     int32_t startTime = GetTimeCount ();
+
     do
     {
         rarch_sleep(5);
         ReadAnyControl (&ci);
-    }
-    while ((int32_t) GetTimeCount () - startTime < count && ci.dir != dir_None);
+        if (ci.dir == dir_None)
+           break;
+    }while((int32_t) GetTimeCount () - startTime < count);
 }
 
 
@@ -3411,7 +3334,6 @@ void
 DrawMenu (CP_iteminfo * item_i, CP_itemtype * items)
 {
     int i, which = item_i->curpos;
-
 
     WindowX = PrintX = item_i->x + item_i->indent;
     WindowY = PrintY = item_i->y;
@@ -3574,9 +3496,7 @@ Confirm (const char *string)
     IN_ClearKeysDown ();
     WaitKeyUp ();
 
-    //
-    // BLINK CURSOR
-    //
+    /* BLINK CURSOR */
     x = PrintX;
     y = PrintY;
     lastBlinkTime = GetTimeCount();
@@ -3771,17 +3691,9 @@ FreeMusic (void)
 //              specified scan code
 //
 ///////////////////////////////////////////////////////////////////////////
-const char *
-IN_GetScanName (ScanCode scan)
+const char *IN_GetScanName (ScanCode scan)
 {
-/*    const char **p;
-    ScanCode *s;
-
-    for (s = ExtScanCodes, p = ExtScanNames; *s; p++, s++)
-        if (*s == scan)
-            return (*p);*/
-
-    return (ScanNames[scan]);
+   return (ScanNames[scan]);
 }
 
 
@@ -3790,26 +3702,25 @@ IN_GetScanName (ScanCode scan)
 // CHECK FOR PAUSE KEY (FOR MUSIC ONLY)
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-CheckPause (void)
+void CheckPause (void)
 {
-    if (Paused)
-    {
-        switch (SoundStatus)
-        {
-            case 0:
-                SD_MusicOn ();
-                break;
-            case 1:
-                SD_MusicOff ();
-                break;
-        }
+   if (Paused)
+   {
+      switch (SoundStatus)
+      {
+         case 0:
+            SD_MusicOn ();
+            break;
+         case 1:
+            SD_MusicOff ();
+            break;
+      }
 
-        SoundStatus ^= 1;
-        VW_WaitVBL (3);
-        IN_ClearKeysDown ();
-        Paused = false;
-    }
+      SoundStatus ^= 1;
+      VW_WaitVBL (3);
+      IN_ClearKeysDown ();
+      Paused = false;
+   }
 }
 
 
@@ -3818,15 +3729,11 @@ CheckPause (void)
 // DRAW GUN CURSOR AT CORRECT POSITION IN MENU
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-DrawMenuGun (CP_iteminfo * iteminfo)
+void DrawMenuGun (CP_iteminfo * iteminfo)
 {
-    int x, y;
-
-
-    x = iteminfo->x;
-    y = iteminfo->y + iteminfo->curpos * 13 - 2;
-    VWB_DrawPic (x, y, C_CURSOR1PIC);
+   int x = iteminfo->x;
+   int y = iteminfo->y + iteminfo->curpos * 13 - 2;
+   VWB_DrawPic (x, y, C_CURSOR1PIC);
 }
 
 
@@ -3835,22 +3742,20 @@ DrawMenuGun (CP_iteminfo * iteminfo)
 // DRAW SCREEN TITLE STRIPES
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-DrawStripes (int y)
+void DrawStripes (int y)
 {
 #ifndef SPEAR
-    VWB_Bar (0, y, 320, 24, 0);
-    VWB_Hlin (0, 319, y + 22, STRIPE);
+   VWB_Bar (0, y, 320, 24, 0);
+   VWB_Hlin (0, 319, y + 22, STRIPE);
 #else
-    VWB_Bar (0, y, 320, 22, 0);
-    VWB_Hlin (0, 319, y + 23, 0);
+   VWB_Bar (0, y, 320, 22, 0);
+   VWB_Hlin (0, 319, y + 23, 0);
 #endif
 }
 
-void
-ShootSnd (void)
+void ShootSnd (void)
 {
-    SD_PlaySound (SHOOTSND);
+   SD_PlaySound (SHOOTSND);
 }
 
 
@@ -3859,175 +3764,170 @@ ShootSnd (void)
 // CHECK FOR EPISODES
 //
 ///////////////////////////////////////////////////////////////////////////
-void
-CheckForEpisodes (void)
+void CheckForEpisodes (void)
 {
-    struct stat statbuf;
+   struct stat statbuf;
 
-    // On Linux like systems, the configdir defaults to $HOME/.chocolate_wolfenstein_3d
+   // On Linux like systems, the configdir defaults to $HOME/.chocolate_wolfenstein_3d
 #if !defined(_WIN32)
-    if(configdir[0] == 0)
-    {
-        // Set config location to home directory for multi-user support
-        char *homedir = getenv("HOME");
-        if(homedir == NULL)
-        {
-            Quit("Your $HOME directory is not defined. You must set this before playing.");
-        }
-        #define WOLFDIR "/.chocolate_wolfenstein_3d"
-        if(strlen(homedir) + sizeof(WOLFDIR) > sizeof(configdir))
-        {
-            Quit("Your $HOME directory path is too long. It cannot be used for saving games.");
-        }
-        snprintf(configdir, sizeof(configdir), "%s" WOLFDIR, homedir);
-    }
+   if(configdir[0] == 0)
+   {
+      // Set config location to home directory for multi-user support
+      char *homedir = getenv("HOME");
+      if(homedir == NULL)
+      {
+         Quit("Your $HOME directory is not defined. You must set this before playing.");
+      }
+#define WOLFDIR "/.chocolate_wolfenstein_3d"
+      if(strlen(homedir) + sizeof(WOLFDIR) > sizeof(configdir))
+      {
+         Quit("Your $HOME directory path is too long. It cannot be used for saving games.");
+      }
+      snprintf(configdir, sizeof(configdir), "%s" WOLFDIR, homedir);
+   }
 #endif
 
-    if(configdir[0] != 0)
-    {
-        // Ensure config directory exists and create if necessary
-        if(stat(configdir, &statbuf) != 0)
-        {
+   if(configdir[0] != 0)
+   {
+      /* Ensure config directory exists and create if necessary */
+      if(stat(configdir, &statbuf) != 0)
+      {
 #ifdef _WIN32
-            if(_mkdir(configdir) != 0)
+         if(_mkdir(configdir) != 0)
 #else
             if(mkdir(configdir, 0755) != 0)
 #endif
             {
-                Quit("The configuration directory \"%s\" could not be created.", configdir);
+               Quit("The configuration directory \"%s\" could not be created.", configdir);
             }
-        }
-    }
+      }
+   }
 
-//
-// JAPANESE VERSION
-//
+   /* JAPANESE VERSION */
 #ifdef JAPAN
 #ifdef JAPDEMO
-    if(!stat("vswap.wj1", &statbuf))
-    {
-        strcpy (extension, "wj1");
-        numEpisodesMissing = 5;
+   if(!stat("vswap.wj1", &statbuf))
+   {
+      strcpy (extension, "wj1");
+      numEpisodesMissing = 5;
 #else
-    if(!stat("vswap.wj6", &statbuf))
-    {
-        strcpy (extension, "wj6");
+      if(!stat("vswap.wj6", &statbuf))
+      {
+         strcpy (extension, "wj6");
 #endif
-        strcat (configname, extension);
-        strcat (SaveName, extension);
-        strcat (demoname, extension);
-        EpisodeSelect[1] =
+         strcat (configname, extension);
+         strcat (SaveName, extension);
+         strcat (demoname, extension);
+         EpisodeSelect[1] =
             EpisodeSelect[2] = EpisodeSelect[3] = EpisodeSelect[4] = EpisodeSelect[5] = 1;
-    }
-    else
-        Quit ("NO JAPANESE WOLFENSTEIN 3-D DATA FILES to be found!");
+      }
+      else
+         Quit ("NO JAPANESE WOLFENSTEIN 3-D DATA FILES to be found!");
 #else
 
-//
-// ENGLISH
-//
+      /* ENGLISH */
 #ifdef UPLOAD
-    if(!stat("vswap.wl1", &statbuf))
-    {
-        strcpy (extension, "wl1");
-        numEpisodesMissing = 5;
-    }
-    else
-        Quit ("NO WOLFENSTEIN 3-D DATA FILES to be found!");
+      if(!stat("vswap.wl1", &statbuf))
+      {
+         strcpy (extension, "wl1");
+         numEpisodesMissing = 5;
+      }
+      else
+         Quit ("NO WOLFENSTEIN 3-D DATA FILES to be found!");
 #else
 #ifndef SPEAR
-    if(!stat("vswap.wl6", &statbuf))
-    {
-        strcpy (extension, "wl6");
-        NewEmenu[2].active =
+      if(!stat("vswap.wl6", &statbuf))
+      {
+         strcpy (extension, "wl6");
+         NewEmenu[2].active =
             NewEmenu[4].active =
             NewEmenu[6].active =
             NewEmenu[8].active =
             NewEmenu[10].active =
             EpisodeSelect[1] =
             EpisodeSelect[2] = EpisodeSelect[3] = EpisodeSelect[4] = EpisodeSelect[5] = 1;
-    }
-    else
-    {
-        if(!stat("vswap.wl3", &statbuf))
-        {
+      }
+      else
+      {
+         if(!stat("vswap.wl3", &statbuf))
+         {
             strcpy (extension, "wl3");
             numEpisodesMissing = 3;
             NewEmenu[2].active = NewEmenu[4].active = EpisodeSelect[1] = EpisodeSelect[2] = 1;
-        }
-        else
-        {
+         }
+         else
+         {
             if(!stat("vswap.wl1", &statbuf))
             {
-                strcpy (extension, "wl1");
-                numEpisodesMissing = 5;
+               strcpy (extension, "wl1");
+               numEpisodesMissing = 5;
             }
             else
-                Quit ("NO WOLFENSTEIN 3-D DATA FILES to be found!");
-        }
-    }
+               Quit ("NO WOLFENSTEIN 3-D DATA FILES to be found!");
+         }
+      }
 #endif
 #endif
 
 
 #ifdef SPEAR
 #ifndef SPEARDEMO
-    if(param_mission == 0)
-    {
-        if(!stat("vswap.sod", &statbuf))
+      if(param_mission == 0)
+      {
+         if(!stat("vswap.sod", &statbuf))
             strcpy (extension, "sod");
-        else
+         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-    }
-    else if(param_mission == 1)
-    {
-        if(!stat("vswap.sd1", &statbuf))
+      }
+      else if(param_mission == 1)
+      {
+         if(!stat("vswap.sd1", &statbuf))
             strcpy (extension, "sd1");
-        else
+         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-    }
-    else if(param_mission == 2)
-    {
-        if(!stat("vswap.sd2", &statbuf))
+      }
+      else if(param_mission == 2)
+      {
+         if(!stat("vswap.sd2", &statbuf))
             strcpy (extension, "sd2");
-        else
+         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-    }
-    else if(param_mission == 3)
-    {
-        if(!stat("vswap.sd3", &statbuf))
+      }
+      else if(param_mission == 3)
+      {
+         if(!stat("vswap.sd3", &statbuf))
             strcpy (extension, "sd3");
-        else
+         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-    }
-    else
-        Quit ("UNSUPPORTED MISSION!");
-    strcpy (graphext, "sod");
-    strcpy (audioext, "sod");
+      }
+      else
+         Quit ("UNSUPPORTED MISSION!");
+      strcpy (graphext, "sod");
+      strcpy (audioext, "sod");
 #else
-    if(!stat("vswap.sdm", &statbuf))
-    {
-        strcpy (extension, "sdm");
-    }
-    else
-        Quit ("NO SPEAR OF DESTINY DEMO DATA FILES TO BE FOUND!");
-    strcpy (graphext, "sdm");
-    strcpy (audioext, "sdm");
+      if(!stat("vswap.sdm", &statbuf))
+      {
+         strcpy (extension, "sdm");
+      }
+      else
+         Quit ("NO SPEAR OF DESTINY DEMO DATA FILES TO BE FOUND!");
+      strcpy (graphext, "sdm");
+      strcpy (audioext, "sdm");
 #endif
 #else
-    strcpy (graphext, extension);
-    strcpy (audioext, extension);
+      strcpy (graphext, extension);
+      strcpy (audioext, extension);
 #endif
 
-    strcat (configname, extension);
-    strcat (SaveName, extension);
-    strcat (demoname, extension);
+      strcat (configname, extension);
+      strcat (SaveName, extension);
+      strcat (demoname, extension);
 
 #ifndef SPEAR
 #ifndef GOODTIMES
-    strcat (helpfilename, extension);
+      strcat (helpfilename, extension);
 #endif
-    strcat (endfilename, extension);
+      strcat (endfilename, extension);
 #endif
 #endif
 }
