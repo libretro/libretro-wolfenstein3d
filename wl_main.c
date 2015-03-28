@@ -83,9 +83,6 @@ int     param_joystickindex = 0;
 
 
 int     param_joystickhat = -1;
-int     param_samplerate = 44100;
-//int     param_audiobuffer = 2048 / (44100 / param_samplerate);
-int     param_audiobuffer;
 
 int     param_mission = 0;
 boolean param_goodtimes = false;
@@ -1468,7 +1465,7 @@ void CheckParameters(int argc, char *argv[])
 {
     bool hasError = false, showHelp = false;
     bool sampleRateGiven = false, audioBufferGiven = false;
-    int defaultSampleRate = param_samplerate;
+    int defaultSampleRate = 44100;
     unsigned i;
 
     for(i = 1; i < argc; i++)
@@ -1582,26 +1579,6 @@ void CheckParameters(int argc, char *argv[])
             }
             else param_joystickhat = atoi(argv[i]);
         }
-        else IFARG("--samplerate")
-        {
-            if(++i >= argc)
-            {
-                printf("The samplerate option is missing the rate argument!\n");
-                hasError = true;
-            }
-            else param_samplerate = atoi(argv[i]);
-            sampleRateGiven = true;
-        }
-        else IFARG("--audiobuffer")
-        {
-            if(++i >= argc)
-            {
-                printf("The audiobuffer option is missing the size argument!\n");
-                hasError = true;
-            }
-            else param_audiobuffer = atoi(argv[i]);
-            audioBufferGiven = true;
-        }
         else IFARG("--mission")
         {
             if(++i >= argc)
@@ -1676,9 +1653,6 @@ void CheckParameters(int argc, char *argv[])
             " --joystick <index>     Use the index-th joystick if available\n"
             "                        (-1 to disable joystick, default: 0)\n"
             " --joystickhat <index>  Enables movement with the given coolie hat\n"
-            " --samplerate <rate>    Sets the sound sample rate (given in Hz, default: %i)\n"
-            " --audiobuffer <size>   Sets the size of the audio buffer (-> sound latency)\n"
-            "                        (given in bytes, default: 2048 / (44100 / samplerate))\n"
             " --ignorenumchunks      Ignores the number of chunks in VGAHEAD.*\n"
             "                        (may be useful for some broken mods)\n"
             " --configdir <dir>      Directory where config file and save games are stored\n"
@@ -1696,9 +1670,6 @@ void CheckParameters(int argc, char *argv[])
         );
         exit(1);
     }
-
-    if(sampleRateGiven && !audioBufferGiven)
-        param_audiobuffer = 2048 / (44100 / param_samplerate);
 }
 
 /*

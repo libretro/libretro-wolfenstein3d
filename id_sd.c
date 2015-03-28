@@ -215,7 +215,7 @@ void SD_PrepareSound(int which)
    if(origsamples + size >= PM_GetEnd())
       Quit("SD_PrepareSound(%i): Sound reaches out of page file!\n", which);
 
-   destsamples = (int) ((float) size * (float) param_samplerate
+   destsamples = (int) ((float) size * (float)44100
          / (float) ORIGSAMPLERATE);
 
    wavebuffer = (byte *)malloc(sizeof(headchunk) + sizeof(wavechunk)
@@ -224,7 +224,7 @@ void SD_PrepareSound(int which)
       Quit("Unable to allocate wave buffer for sound %i!\n", which);
 
    headchunk head = {{'R','I','F','F'}, 0, {'W','A','V','E'},
-      {'f','m','t',' '}, 0x10, 0x0001, 1, param_samplerate, param_samplerate*2, 2, 16};
+      {'f','m','t',' '}, 0x10, 0x0001, 1, 44100, 44100 * 2, 2, 16};
    head.filelenminus8 = sizeof(head) + destsamples*2;  /* (sizeof(dhead)-8 = 0) */
 
    wavechunk dhead = {{'d', 'a', 't', 'a'}, destsamples*2};
@@ -236,7 +236,7 @@ void SD_PrepareSound(int which)
     * and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0 */
    newsamples = (Sint16 *)(void *) (wavebuffer + sizeof(headchunk)
          + sizeof(wavechunk));
-   samplestep = (float) ORIGSAMPLERATE / (float) param_samplerate;
+   samplestep = (float) ORIGSAMPLERATE / (float)44100;
 
    for(i=0; i<destsamples; i++, cursample+=samplestep)
    {
@@ -707,7 +707,7 @@ void SD_Startup(void)
    if (SD_Started)
       return;
 
-   if(Mix_OpenAudio(param_samplerate, AUDIO_S16, 2, param_audiobuffer))
+   if(Mix_OpenAudio(44100, AUDIO_S16, 2, 2048))
    {
       printf("Unable to open audio: %s\n", Mix_GetError());
       return;
@@ -718,9 +718,9 @@ void SD_Startup(void)
 
    /* Initialize music */
 
-   samplesPerMusicTick = param_samplerate / 700; /* SDL_t0FastAsmService played at 700Hzs */
+   samplesPerMusicTick = 44100 / 700; /* SDL_t0FastAsmService played at 700Hzs */
 
-   if(YM3812Init(1,3579545,param_samplerate))
+   if(YM3812Init(1, 3579545, 44100))
       printf("Unable to create virtual OPL!!\n");
 
    for(i=1;i<0xf6;i++)
