@@ -1312,16 +1312,20 @@ static int GamePlayStateIterate(boolean *died)
 void GameLoop (void)
 {
    boolean died;
-
-restartgame:
-   SD_StopDigitized ();
-   SETFONTCOLOR(0,15);
-   VW_FadeOut();
-   DrawPlayScreen ();
-   died = false;
+   boolean restartgame = true;
 
    do
    {
+      if (restartgame)
+      {
+         SD_StopDigitized ();
+         SETFONTCOLOR(0,15);
+         VW_FadeOut();
+         DrawPlayScreen ();
+         died = false;
+         restartgame = false;
+      }
+
       if (!loadedgame)
          gamestate.score = gamestate.oldscore;
       if(!died || viewsize != 21)
@@ -1396,7 +1400,10 @@ startplayloop:
          FinishDemoRecord ();
 
       if (startgame || loadedgame)
-         goto restartgame;
+      {
+         restartgame = true;
+         continue;
+      }
 
       if (GamePlayStateIterate(&died) != 0)
          return;
