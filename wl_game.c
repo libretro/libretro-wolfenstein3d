@@ -1151,8 +1151,156 @@ void Died (void)
     }
 }
 
-//==========================================================================
+#ifndef FROMSECRET1
+#define FROMSECRET1             3
+#endif
 
+#ifndef FROMSECRET2
+#define FROMSECRET2             11
+#endif
+
+static int GamePlayStateIterate(boolean *died)
+{
+   switch (playstate)
+   {
+      case EX_COMPLETED:
+      case EX_SECRETLEVEL:
+         if(viewsize == 21) DrawPlayScreen();
+         gamestate.keys = 0;
+         DrawKeys ();
+         VW_FadeOut ();
+
+         SD_StopDigitized ();
+
+         LevelCompleted ();              // do the intermission
+         if(viewsize == 21) DrawPlayScreen();
+
+#ifdef SPEARDEMO
+         if (gamestate.mapon == 1)
+         {
+            *died = true;                    // don't "get psyched!"
+
+            VW_FadeOut ();
+
+            SD_StopDigitized ();
+
+            CheckHighScore (gamestate.score,gamestate.mapon+1);
+#ifndef JAPAN
+            strcpy(MainMenu[viewscores].string,STR_VS);
+#endif
+            MainMenu[viewscores].routine = CP_ViewScores;
+            return -1;
+         }
+#endif
+
+#ifdef JAPDEMO
+         if (gamestate.mapon == 3)
+         {
+            *died = true;                    // don't "get psyched!"
+
+            VW_FadeOut ();
+
+            SD_StopDigitized ();
+
+            CheckHighScore (gamestate.score,gamestate.mapon+1);
+#ifndef JAPAN
+            strcpy(MainMenu[viewscores].string,STR_VS);
+#endif
+            MainMenu[viewscores].routine = CP_ViewScores;
+            return -1;
+         }
+#endif
+
+         gamestate.oldscore = gamestate.score;
+
+#ifndef SPEAR
+         /* COMING BACK FROM SECRET LEVEL */
+         if (gamestate.mapon == 9)
+            gamestate.mapon = ElevatorBackTo[gamestate.episode]; /* back from secret */
+         else
+            /* GOING TO SECRET LEVEL */
+            if (playstate == EX_SECRETLEVEL)
+               gamestate.mapon = 9;
+#else
+
+         /* GOING TO SECRET LEVEL */
+         if (playstate == EX_SECRETLEVEL)
+            switch(gamestate.mapon)
+            {
+               case FROMSECRET1:
+                  gamestate.mapon = 18;
+                  break;
+               case FROMSECRET2:
+                  gamestate.mapon = 19;
+                  break;
+            }
+         else
+            /* COMING BACK FROM SECRET LEVEL */
+            if (gamestate.mapon == 18 || gamestate.mapon == 19)
+               switch(gamestate.mapon)
+               {
+                  case 18:
+                     gamestate.mapon = FROMSECRET1+1;
+                     break;
+                  case 19:
+                     gamestate.mapon = FROMSECRET2+1;
+                     break;
+               }
+#endif
+            else
+               /* GOING TO NEXT LEVEL */
+               gamestate.mapon++;
+         break;
+
+      case EX_DIED:
+         Died ();
+         *died = true;                    /* don't "get psyched!" */
+
+         if (gamestate.lives > -1)
+            break;                          /* more lives left */
+
+         VW_FadeOut ();
+         if(screenHeight % 200 != 0)
+            VL_ClearScreen(0);
+
+         SD_StopDigitized ();
+
+         CheckHighScore (gamestate.score,gamestate.mapon+1);
+#ifndef JAPAN
+         strcpy(MainMenu[viewscores].string,STR_VS);
+#endif
+         MainMenu[viewscores].routine = CP_ViewScores;
+         return -1;
+
+      case EX_VICTORIOUS:
+         if(viewsize == 21) DrawPlayScreen();
+#ifndef SPEAR
+         VW_FadeOut ();
+#else
+         VL_FadeOut (0,255,0,17,17,300);
+#endif
+         SD_StopDigitized ();
+
+         Victory ();
+
+         SD_StopDigitized ();
+
+         CheckHighScore (gamestate.score,gamestate.mapon+1);
+#ifndef JAPAN
+         strcpy(MainMenu[viewscores].string,STR_VS);
+#endif
+         MainMenu[viewscores].routine = CP_ViewScores;
+         return -1;
+
+      default:
+         if(viewsize == 21)
+            DrawPlayScreen();
+         SD_StopDigitized ();
+         break;
+   }
+
+   return 0;
+}
 /*
 ===================
 =
@@ -1176,7 +1324,8 @@ restartgame:
    {
       if (!loadedgame)
          gamestate.score = gamestate.oldscore;
-      if(!died || viewsize != 21) DrawScore();
+      if(!died || viewsize != 21)
+         DrawScore();
 
       startgame = false;
       if (!loadedgame)
@@ -1196,7 +1345,8 @@ restartgame:
          ContinueMusic(lastgamemusicoffset);
          loadedgame = false;
       }
-      else StartMusic ();
+      else
+         StartMusic ();
 
       if (!died)
          PreloadGraphics (); /* TODO: Let this do something useful! */
@@ -1248,144 +1398,7 @@ startplayloop:
       if (startgame || loadedgame)
          goto restartgame;
 
-      switch (playstate)
-      {
-         case EX_COMPLETED:
-         case EX_SECRETLEVEL:
-            if(viewsize == 21) DrawPlayScreen();
-            gamestate.keys = 0;
-            DrawKeys ();
-            VW_FadeOut ();
-
-            SD_StopDigitized ();
-
-            LevelCompleted ();              // do the intermission
-            if(viewsize == 21) DrawPlayScreen();
-
-#ifdef SPEARDEMO
-            if (gamestate.mapon == 1)
-            {
-               died = true;                    // don't "get psyched!"
-
-               VW_FadeOut ();
-
-               SD_StopDigitized ();
-
-               CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
-               strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
-               MainMenu[viewscores].routine = CP_ViewScores;
-               return;
-            }
-#endif
-
-#ifdef JAPDEMO
-            if (gamestate.mapon == 3)
-            {
-               died = true;                    // don't "get psyched!"
-
-               VW_FadeOut ();
-
-               SD_StopDigitized ();
-
-               CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
-               strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
-               MainMenu[viewscores].routine = CP_ViewScores;
-               return;
-            }
-#endif
-
-            gamestate.oldscore = gamestate.score;
-
-#ifndef SPEAR
-            /* COMING BACK FROM SECRET LEVEL */
-            if (gamestate.mapon == 9)
-               gamestate.mapon = ElevatorBackTo[gamestate.episode]; /* back from secret */
-            else
-               /* GOING TO SECRET LEVEL */
-               if (playstate == EX_SECRETLEVEL)
-                  gamestate.mapon = 9;
-#else
-
-#define FROMSECRET1             3
-#define FROMSECRET2             11
-
-            /* GOING TO SECRET LEVEL */
-            if (playstate == EX_SECRETLEVEL)
-               switch(gamestate.mapon)
-               {
-                  case FROMSECRET1:
-                     gamestate.mapon = 18;
-                     break;
-                  case FROMSECRET2:
-                     gamestate.mapon = 19;
-                     break;
-               }
-            else
-               /* COMING BACK FROM SECRET LEVEL */
-               if (gamestate.mapon == 18 || gamestate.mapon == 19)
-                  switch(gamestate.mapon)
-                  {
-                     case 18:
-                        gamestate.mapon = FROMSECRET1+1;
-                        break;
-                     case 19:
-                        gamestate.mapon = FROMSECRET2+1;
-                        break;
-                  }
-#endif
-               else
-                  /* GOING TO NEXT LEVEL */
-                  gamestate.mapon++;
-            break;
-
-         case EX_DIED:
-            Died ();
-            died = true;                    /* don't "get psyched!" */
-
-            if (gamestate.lives > -1)
-               break;                          /* more lives left */
-
-            VW_FadeOut ();
-            if(screenHeight % 200 != 0)
-               VL_ClearScreen(0);
-
-            SD_StopDigitized ();
-
-            CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
-            strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
-            MainMenu[viewscores].routine = CP_ViewScores;
-            return;
-
-         case EX_VICTORIOUS:
-            if(viewsize == 21) DrawPlayScreen();
-#ifndef SPEAR
-            VW_FadeOut ();
-#else
-            VL_FadeOut (0,255,0,17,17,300);
-#endif
-            SD_StopDigitized ();
-
-            Victory ();
-
-            SD_StopDigitized ();
-
-            CheckHighScore (gamestate.score,gamestate.mapon+1);
-#ifndef JAPAN
-            strcpy(MainMenu[viewscores].string,STR_VS);
-#endif
-            MainMenu[viewscores].routine = CP_ViewScores;
-            return;
-
-         default:
-            if(viewsize == 21) DrawPlayScreen();
-            SD_StopDigitized ();
-            break;
-      }
+      if (GamePlayStateIterate(&died) != 0)
+         return;
    }while(1);
 }

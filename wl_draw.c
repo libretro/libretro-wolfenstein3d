@@ -761,7 +761,7 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
             rpix = viewwidth, i = rightpix + 1;
          cline   = (byte *)shape + (word)Retro_SwapLES16(*cmdptr);
 
-         while(lpix<rpix)
+         while(lpix < rpix)
          {
             line=cline;
 
@@ -793,7 +793,7 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
                      if (screndy > viewheight)
                         screndy=viewheight,j=endy;
 
-                     while(scrstarty<screndy)
+                     while(scrstarty < screndy)
                      {
                         *vmem=col;
                         vmem+=vbufPitch;
