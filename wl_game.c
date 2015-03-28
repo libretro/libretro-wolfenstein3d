@@ -39,9 +39,7 @@ boolean         spearflag;
 #endif
 
 
-//
-// ELEVATOR BACK MAPS - REMEMBER (-1)!!
-//
+/* ELEVATOR BACK MAPS - REMEMBER (-1)!! */
 int ElevatorBackTo[]={1,1,7,3,5,3};
 
 void SetupGameLevel (void);
@@ -56,12 +54,6 @@ void GameLoop (void);
 
 =============================================================================
 */
-
-
-
-//===========================================================================
-//===========================================================================
-
 
 /*
 ==========================
@@ -342,9 +334,7 @@ static void ScanInfoPlane(void)
             case 124:
                SpawnDeadGuard (x,y);
                break;
-               //
-               // officer
-               //
+               /* officer */
             case 188:
             case 189:
             case 190:
@@ -593,8 +583,6 @@ static void ScanInfoPlane(void)
    }
 }
 
-//==========================================================================
-
 /*
 ==================
 =
@@ -832,42 +820,42 @@ void DrawStatusBorder (byte color)
 void DrawPlayBorder (void)
 {
    int xl, yl;
-    const int px = scaleFactor; // size of one "pixel"
+   const int px = scaleFactor; // size of one "pixel"
 
-    if (bordercol != VIEWCOLOR)
-        DrawStatusBorder(bordercol);
-    else
-    {
-        const int statusborderw = (screenWidth-px*320)/2;
-        VWB_BarScaledCoord (0, screenHeight-px*STATUSLINES,
+   if (bordercol != VIEWCOLOR)
+      DrawStatusBorder(bordercol);
+   else
+   {
+      const int statusborderw = (screenWidth-px*320)/2;
+      VWB_BarScaledCoord (0, screenHeight-px*STATUSLINES,
             statusborderw+px*8, px*STATUSLINES, bordercol);
-        VWB_BarScaledCoord (screenWidth-statusborderw-px*8, screenHeight-px*STATUSLINES,
+      VWB_BarScaledCoord (screenWidth-statusborderw-px*8, screenHeight-px*STATUSLINES,
             statusborderw+px*8, px*STATUSLINES, bordercol);
-    }
+   }
 
-    if((unsigned) viewheight == screenHeight)
-       return;
+   if((unsigned) viewheight == screenHeight)
+      return;
 
-    VWB_BarScaledCoord (0,0,screenWidth,screenHeight-px*STATUSLINES,bordercol);
+   VWB_BarScaledCoord (0,0,screenWidth,screenHeight-px*STATUSLINES,bordercol);
 
-    xl = screenWidth/2-viewwidth/2;
-    yl = (screenHeight-px*STATUSLINES-viewheight)/2;
-    VWB_BarScaledCoord (xl,yl,viewwidth,viewheight,0);
+   xl = screenWidth/2-viewwidth/2;
+   yl = (screenHeight-px*STATUSLINES-viewheight)/2;
+   VWB_BarScaledCoord (xl,yl,viewwidth,viewheight,0);
 
-    if(xl != 0)
-    {
-        /* Paint game view border lines */
-        VWB_BarScaledCoord(xl-px, yl-px, viewwidth+px, px, 0);                      // upper border
-        VWB_BarScaledCoord(xl, yl+viewheight, viewwidth+px, px, bordercol-2);       // lower border
-        VWB_BarScaledCoord(xl-px, yl-px, px, viewheight+px, 0);                     // left border
-        VWB_BarScaledCoord(xl+viewwidth, yl-px, px, viewheight+2*px, bordercol-2);  // right border
-        VWB_BarScaledCoord(xl-px, yl+viewheight, px, px, bordercol-3);              // lower left highlight
-    }
-    else
-    {
-        /* Just paint a lower border line */
-        VWB_BarScaledCoord(0, yl+viewheight, viewwidth, px, bordercol-2);       // lower border
-    }
+   if(xl != 0)
+   {
+      /* Paint game view border lines */
+      VWB_BarScaledCoord(xl-px, yl-px, viewwidth+px, px, 0);                      // upper border
+      VWB_BarScaledCoord(xl, yl+viewheight, viewwidth+px, px, bordercol-2);       // lower border
+      VWB_BarScaledCoord(xl-px, yl-px, px, viewheight+px, 0);                     // left border
+      VWB_BarScaledCoord(xl+viewwidth, yl-px, px, viewheight+2*px, bordercol-2);  // right border
+      VWB_BarScaledCoord(xl-px, yl+viewheight, px, px, bordercol-3);              // lower left highlight
+   }
+   else
+   {
+      /* Just paint a lower border line */
+      VWB_BarScaledCoord(0, yl+viewheight, viewwidth, px, bordercol-2);       // lower border
+   }
 }
 
 
@@ -1183,6 +1171,7 @@ restartgame:
    VW_FadeOut();
    DrawPlayScreen ();
    died = false;
+
    do
    {
       if (!loadedgame)
@@ -1398,5 +1387,5 @@ startplayloop:
             SD_StopDigitized ();
             break;
       }
-   } while (1);
+   }while(1);
 }
