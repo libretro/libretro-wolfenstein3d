@@ -17,8 +17,7 @@ void Write (int x, int y, const char *string);
 ==================
 */
 
-void
-ClearSplitVWB (void)
+void ClearSplitVWB (void)
 {
     WindowX = 0;
     WindowY = 0;
@@ -37,7 +36,7 @@ ClearSplitVWB (void)
 //
 ////////////////////////////////////////////////////////
 
-void EndScreen (int palette, int screen)
+static void EndScreen (int palette, int screen)
 {
    SDL_Color pal[256];
    CA_CacheScreen (screen);
@@ -51,8 +50,7 @@ void EndScreen (int palette, int screen)
    VW_FadeOut ();
 }
 
-
-void EndSpear (void)
+static void EndSpear (void)
 {
    SDL_Color pal[256];
 
@@ -322,9 +320,6 @@ void PG13 (void)
 }
 #endif
 
-
-//==========================================================================
-
 void Write (int x, int y, const char *string)
 {
    char ch;
@@ -387,10 +382,7 @@ void Write (int x, int y, const char *string)
    }
 }
 
-
-/* Breathe Mr. BJ!!! */
-void
-BJ_Breathe (void)
+static void BJ_Breathe (void)
 {
    static int which = 0, max = 10;
    int pics[2] = { L_GUYPIC, L_GUY2PIC };
@@ -939,8 +931,7 @@ done:   itoa (kr, tempstr, 10);
 =================
 */
 
-boolean
-PreloadUpdate (unsigned current, unsigned total)
+static boolean PreloadUpdate (unsigned current, unsigned total)
 {
    unsigned w = WindowW - scaleFactor * 10;
 
