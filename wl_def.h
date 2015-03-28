@@ -103,7 +103,6 @@ void Quit(const char *errorStr, ...);
 =============================================================================
 */
 
-#define MAXTICS 10
 #define DEMOTICS        4
 
 #define MAXACTORS       150         // max number of nazis, etc / map

@@ -35,9 +35,11 @@ static int music_loops = 0;
 static Mix_Music * volatile music_playing = NULL;
 static int music_volume = MIX_MAX_VOLUME;
 
-struct _Mix_Music {
+struct _Mix_Music
+{
     Mix_MusicType type;
-    union {
+    union
+    {
     } data;
     Mix_Fading fading;
     int fade_step;

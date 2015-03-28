@@ -239,19 +239,22 @@ static void ScalePost(void)
    int ywcount = yd = wallheight[postx] >> 3;
 
    if(yd <= 0)
-      yd = 100;
+      yd      = 100;
 
-   yoffs = (viewheight / 2 - ywcount) * vbufPitch;
+   yoffs      = (viewheight / 2 - ywcount) * vbufPitch;
+
    if (yoffs < 0)
-      yoffs = 0;
-   yoffs += postx;
+      yoffs   = 0;
 
-   yendoffs = viewheight / 2 + ywcount - 1;
-   yw=TEXTURESIZE-1;
+   yoffs     += postx;
+
+   yendoffs   = viewheight / 2 + ywcount - 1;
+   yw         = TEXTURESIZE-1;
 
    while(yendoffs >= viewheight)
    {
       ywcount -= TEXTURESIZE/2;
+
       while(ywcount <= 0)
       {
          ywcount += yd;
@@ -259,37 +262,32 @@ static void ScalePost(void)
       }
       yendoffs--;
    }
+
    if(yw < 0)
       return;
 
-   col = postsource[yw];
-
+   col      = postsource[yw];
    yendoffs = yendoffs * vbufPitch + postx;
+
    while(yoffs <= yendoffs)
    {
-      vbuf[yendoffs] = col;
-      ywcount -= TEXTURESIZE/2;
-      if(ywcount <= 0)
+      vbuf[yendoffs]  = col;
+      ywcount        -= TEXTURESIZE/2;
+
+      if (ywcount <= 0)
       {
          do
          {
             ywcount += yd;
             yw--;
-         }
-         while(ywcount <= 0);
+         }while(ywcount <= 0);
+
          if(yw < 0)
             break;
          col = postsource[yw];
       }
       yendoffs -= vbufPitch;
    }
-}
-
-void GlobalScalePost(byte *vidbuf, unsigned pitch)
-{
-    vbuf = vidbuf;
-    vbufPitch = pitch;
-    ScalePost();
 }
 
 /*
@@ -306,16 +304,15 @@ void GlobalScalePost(byte *vidbuf, unsigned pitch)
 void HitVertWall (void)
 {
    int wallpic;
-   int texture;
+   int texture = ((yintercept+texdelta)>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
 
-   texture = ((yintercept+texdelta)>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
    if (xtilestep == -1)
    {
       texture = TEXTUREMASK-texture;
       xintercept += TILEGLOBAL;
    }
 
-   if(lastside==1 && lastintercept==xtile && lasttilehit==tilehit && !(lasttilehit & 0x40))
+   if (lastside == 1 && lastintercept==xtile && lasttilehit==tilehit && !(lasttilehit & 0x40))
    {
       ScalePost();
 
@@ -334,7 +331,7 @@ void HitVertWall (void)
       return;
    }
 
-   if(lastside!=-1)
+   if (lastside != -1)
       ScalePost();
 
    lastside         = 1;
@@ -376,15 +373,14 @@ void HitVertWall (void)
 void HitHorizWall(void)
 {
    int wallpic;
-   int texture;
+   int texture = ((xintercept+texdelta)>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
 
-   texture = ((xintercept+texdelta)>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
    if (ytilestep == -1)
       yintercept += TILEGLOBAL;
    else
       texture = TEXTUREMASK-texture;
 
-   if(lastside==0 && lastintercept==ytile && lasttilehit==tilehit && !(lasttilehit & 0x40))
+   if (lastside == 0 && lastintercept==ytile && lasttilehit==tilehit && !(lasttilehit & 0x40))
    {
       ScalePost();
       if((pixx&3) && texture == lasttexture)
@@ -401,7 +397,7 @@ void HitHorizWall(void)
       return;
    }
 
-   if(lastside!=-1)
+   if (lastside != -1)
       ScalePost();
 
    lastside               = 0;
@@ -450,23 +446,23 @@ void HitHorizDoor (void)
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      wallheight[pixx] = CalcHeight();
-      postsource+=texture-lasttexture;
-      postwidth=1;
-      postx=pixx;
-      lasttexture=texture;
+      wallheight[pixx]  = CalcHeight();
+      postsource       += texture-lasttexture;
+      postwidth         = 1;
+      postx             = pixx;
+      lasttexture       = texture;
       return;
    }
 
-   if(lastside!=-1)
+   if (lastside != -1)
       ScalePost();
 
-   lastside=2;
-   lasttilehit=tilehit;
-   lasttexture=texture;
+   lastside         = 2;
+   lasttilehit      = tilehit;
+   lasttexture      = texture;
    wallheight[pixx] = CalcHeight();
-   postx = pixx;
-   postwidth = 1;
+   postx            = pixx;
+   postwidth        = 1;
 
    switch(doorobjlist[doornum].lock)
    {
@@ -501,15 +497,17 @@ void HitVertDoor (void)
    int doornum = tilehit&0x7f;
    int texture = ((yintercept-doorposition[doornum])>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
 
-   if(lasttilehit==tilehit)
+   if (lasttilehit == tilehit)
    {
       ScalePost();
+
       if((pixx&3) && texture == lasttexture)
       {
          postx=pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
+
       wallheight[pixx]    = CalcHeight();
       postsource         += texture-lasttexture;
       postwidth           = 1;
@@ -518,7 +516,7 @@ void HitVertDoor (void)
       return;
    }
 
-   if(lastside!=-1)
+   if (lastside != -1)
       ScalePost();
 
    lastside         = 2;
@@ -611,11 +609,11 @@ static int CalcRotate (objtype *ob)
    else
       angle = (viewangle-180) - dirangle[ob->dir];
 
-   angle+=ANGLES/16;
-   while (angle>=ANGLES)
-      angle-=ANGLES;
-   while (angle<0)
-      angle+=ANGLES;
+   angle += ANGLES/16;
+   while (angle >= ANGLES)
+      angle -= ANGLES;
+   while (angle < 0)
+      angle += ANGLES;
 
    /* 2 rotation pain frame */
    if (ob->state->rotate == 2)
@@ -674,7 +672,7 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
 
          cline = (byte *)shape + (word)Retro_SwapLES16(*cmdptr);
 
-         while(lpix<rpix)
+         while(lpix < rpix)
          {
             if(wallheight[lpix] <= (int)height)
             {
@@ -703,13 +701,13 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
                      {
                         col=((byte *)shape)[newstart+j];
 
-                        if(scrstarty<0)
+                        if(scrstarty < 0)
                            scrstarty=0;
 
-                        if(screndy>viewheight)
+                        if(screndy > viewheight)
                            screndy=viewheight,j=endy;
 
-                        while(scrstarty<screndy)
+                        while(scrstarty < screndy)
                         {
                            *vmem=col;
                            vmem+=vbufPitch;
@@ -739,10 +737,10 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
    t_compshape *shape = (t_compshape *) PM_GetSprite(shapenum);
    word leftpix       = (word)Retro_SwapLES16(shape->leftpix);
    word rightpix      = (word)Retro_SwapLES16(shape->rightpix);
-   unsigned scale     = height>>1;
-   unsigned pixheight = scale*SPRITESCALEFACTOR;
-   int actx           = xcenter-scale;
-   int upperedge      = viewheight/2-scale;
+   unsigned scale     = height >> 1;
+   unsigned pixheight = scale * SPRITESCALEFACTOR;
+   int actx           = xcenter - scale;
+   int upperedge      = viewheight / 2 - scale;
    word *cmdptr       = shape->dataofs;
 
    for(i = leftpix, pixcnt = i * pixheight, rpix = (pixcnt >> 6) + actx; i <= rightpix; i++, cmdptr++)
@@ -936,7 +934,7 @@ static void DrawScaleds (void)
    if (!numvisable)
       return;                                                                 
 
-   for (i = 0; i<numvisable; i++)
+   for (i = 0; i < numvisable; i++)
    {
       least = 32000;
       for (visstep = &vislist[0]; visstep<visptr; visstep++)
@@ -1007,6 +1005,8 @@ static void DrawPlayerWeapon (void)
 =====================
 */
 
+#define MAXTICS 10
+
 void CalcTics (void)
 {
    uint32_t curtime;
@@ -1027,7 +1027,7 @@ void CalcTics (void)
 
    lasttimecount += tics;
 
-   if (tics>MAXTICS)
+   if (tics > MAXTICS)
       tics = MAXTICS;
 }
 
