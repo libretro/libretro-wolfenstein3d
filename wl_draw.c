@@ -228,9 +228,9 @@ static int CalcHeight(void)
 ===================
 */
 
-byte *postsource;
-int postx;
-int postwidth;
+static byte *postsource;
+static int postx;
+static int postwidth;
 
 static void ScalePost(void)
 {
