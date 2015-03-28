@@ -2,14 +2,7 @@
 
 #include <math.h>
 #include "wl_def.h"
-// Win32
-#ifdef _WIN32
-#include "SDL_mixer.h"
-#elif __linux__
-#include <SDL/SDL_mixer.h>
-#else
-#include <SDL/SDL_mixer.h>
-#endif
+#include "SDL_mixer/SDL_mixer.h"
 
 /*
 =============================================================================
@@ -199,12 +192,11 @@ static void ScanInfoPlane(void)
 {
    unsigned x,y;
    int      tile;
-   word     *start;
+   word     *start = mapsegs[1];
 
-   start = mapsegs[1];
-   for (y=0;y<mapheight;y++)
+   for (y = 0;y < mapheight; y++)
    {
-      for (x=0;x<mapwidth;x++)
+      for (x = 0; x < mapwidth; x++)
       {
          tile = *start++;
          if (!tile)
@@ -718,10 +710,6 @@ void SetupGameLevel (void)
    CA_LoadAllSounds ();
 }
 
-
-//==========================================================================
-
-
 /*
 ===================
 =
@@ -787,25 +775,25 @@ void DrawPlayBorderSides(void)
 
 void DrawStatusBorder (byte color)
 {
-    int statusborderw = (screenWidth-scaleFactor*320)/2;
+   int statusborderw = (screenWidth-scaleFactor*320)/2;
 
-    VWB_BarScaledCoord (0,0,screenWidth,screenHeight-scaleFactor*(STATUSLINES-3),color);
-    VWB_BarScaledCoord (0,screenHeight-scaleFactor*(STATUSLINES-3),
-        statusborderw+scaleFactor*8,scaleFactor*(STATUSLINES-4),color);
-    VWB_BarScaledCoord (0,screenHeight-scaleFactor*2,screenWidth,scaleFactor*2,color);
-    VWB_BarScaledCoord (screenWidth-statusborderw-scaleFactor*8, screenHeight-scaleFactor*(STATUSLINES-3),
-        statusborderw+scaleFactor*8,scaleFactor*(STATUSLINES-4),color);
+   VWB_BarScaledCoord (0,0,screenWidth,screenHeight-scaleFactor*(STATUSLINES-3),color);
+   VWB_BarScaledCoord (0,screenHeight-scaleFactor*(STATUSLINES-3),
+         statusborderw+scaleFactor*8,scaleFactor*(STATUSLINES-4),color);
+   VWB_BarScaledCoord (0,screenHeight-scaleFactor*2,screenWidth,scaleFactor*2,color);
+   VWB_BarScaledCoord (screenWidth-statusborderw-scaleFactor*8, screenHeight-scaleFactor*(STATUSLINES-3),
+         statusborderw+scaleFactor*8,scaleFactor*(STATUSLINES-4),color);
 
-    VWB_BarScaledCoord (statusborderw+scaleFactor*9, screenHeight-scaleFactor*3,
-        scaleFactor*97, scaleFactor*1, color-1);
-    VWB_BarScaledCoord (statusborderw+scaleFactor*106, screenHeight-scaleFactor*3,
-        scaleFactor*161, scaleFactor*1, color-2);
-    VWB_BarScaledCoord (statusborderw+scaleFactor*267, screenHeight-scaleFactor*3,
-        scaleFactor*44, scaleFactor*1, color-3);
-    VWB_BarScaledCoord (screenWidth-statusborderw-scaleFactor*9, screenHeight-scaleFactor*(STATUSLINES-4),
-        scaleFactor*1, scaleFactor*20, color-2);
-    VWB_BarScaledCoord (screenWidth-statusborderw-scaleFactor*9, screenHeight-scaleFactor*(STATUSLINES/2-4),
-        scaleFactor*1, scaleFactor*14, color-3);
+   VWB_BarScaledCoord (statusborderw+scaleFactor*9, screenHeight-scaleFactor*3,
+         scaleFactor*97, scaleFactor*1, color-1);
+   VWB_BarScaledCoord (statusborderw+scaleFactor*106, screenHeight-scaleFactor*3,
+         scaleFactor*161, scaleFactor*1, color-2);
+   VWB_BarScaledCoord (statusborderw+scaleFactor*267, screenHeight-scaleFactor*3,
+         scaleFactor*44, scaleFactor*1, color-3);
+   VWB_BarScaledCoord (screenWidth-statusborderw-scaleFactor*9, screenHeight-scaleFactor*(STATUSLINES-4),
+         scaleFactor*1, scaleFactor*20, color-2);
+   VWB_BarScaledCoord (screenWidth-statusborderw-scaleFactor*9, screenHeight-scaleFactor*(STATUSLINES/2-4),
+         scaleFactor*1, scaleFactor*14, color-3);
 }
 
 
@@ -820,7 +808,7 @@ void DrawStatusBorder (byte color)
 void DrawPlayBorder (void)
 {
    int xl, yl;
-   const int px = scaleFactor; // size of one "pixel"
+   const int px = scaleFactor; /* size of one "pixel" */
 
    if (bordercol != VIEWCOLOR)
       DrawStatusBorder(bordercol);
@@ -885,51 +873,51 @@ void DrawPlayScreen (void)
 // Uses LatchDrawPic instead of StatusDrawPic
 void LatchNumberHERE (int x, int y, unsigned width, int32_t number)
 {
-    unsigned length,c;
-    char str[20];
+   unsigned length,c;
+   char str[20];
 
-    ltoa (number,str,10);
+   ltoa (number,str,10);
 
-    length = (unsigned) strlen (str);
+   length = (unsigned) strlen (str);
 
-    while (length<width)
-    {
-        LatchDrawPic (x,y,N_BLANKPIC);
-        x++;
-        width--;
-    }
+   while (length<width)
+   {
+      LatchDrawPic (x,y,N_BLANKPIC);
+      x++;
+      width--;
+   }
 
-    c = length <= width ? 0 : length-width;
+   c = length <= width ? 0 : length-width;
 
-    while (c<length)
-    {
-        LatchDrawPic (x,y,str[c]-'0'+ N_0PIC);
-        x++;
-        c++;
-    }
+   while (c<length)
+   {
+      LatchDrawPic (x,y,str[c]-'0'+ N_0PIC);
+      x++;
+      c++;
+   }
 }
 
-void ShowActStatus()
+void ShowActStatus(void)
 {
-    /* Draw status bar without borders */
-    byte *source = grsegs[STATUSBARPIC];
-    int picnum = STATUSBARPIC - STARTPICS;
-    int width = pictable[picnum].width;
-    int height = pictable[picnum].height;
-    int destx = (screenWidth-scaleFactor*320)/2 + 9 * scaleFactor;
-    int desty = screenHeight - (height - 4) * scaleFactor;
-    VL_MemToScreenScaledCoord2(source, width, height, 9, 4, destx, desty, width - 18, height - 7);
+   /* Draw status bar without borders */
+   byte *source = grsegs[STATUSBARPIC];
+   int picnum   = STATUSBARPIC - STARTPICS;
+   int width    = pictable[picnum].width;
+   int height   = pictable[picnum].height;
+   int destx    = (screenWidth-scaleFactor*320)/2 + 9 * scaleFactor;
+   int desty    = screenHeight - (height - 4) * scaleFactor;
+   VL_MemToScreenScaledCoord2(source, width, height, 9, 4, destx, desty, width - 18, height - 7);
 
-    ingame = false;
-    DrawFace ();
-    DrawHealth ();
-    DrawLives ();
-    DrawLevel ();
-    DrawAmmo ();
-    DrawKeys ();
-    DrawWeapon ();
-    DrawScore ();
-    ingame = true;
+   ingame = false;
+   DrawFace ();
+   DrawHealth ();
+   DrawLives ();
+   DrawLevel ();
+   DrawAmmo ();
+   DrawKeys ();
+   DrawWeapon ();
+   DrawScore ();
+   ingame = true;
 }
 
 
@@ -962,59 +950,57 @@ void RecordDemo (void) {return;}
 
 void PlayDemo (int demonumber)
 {
-    int length;
+   int length;
 #ifdef DEMOSEXTERN
-// debug: load chunk
+   // debug: load chunk
 #ifndef SPEARDEMO
-    int dems[4]={T_DEMO0,T_DEMO1,T_DEMO2,T_DEMO3};
+   int dems[4]={T_DEMO0,T_DEMO1,T_DEMO2,T_DEMO3};
 #else
-    int dems[1]={T_DEMO0};
+   int dems[1]={T_DEMO0};
 #endif
 
-    CA_CacheGrChunk(dems[demonumber]);
-    demoptr = (int8_t *) grsegs[dems[demonumber]];
+   CA_CacheGrChunk(dems[demonumber]);
+   demoptr = (int8_t *) grsegs[dems[demonumber]];
 #else
-    demoname[4] = '0'+demonumber;
-    CA_LoadFile (demoname,&demobuffer);
-    demoptr = (int8_t *)demobuffer;
+   demoname[4] = '0'+demonumber;
+   CA_LoadFile (demoname,&demobuffer);
+   demoptr = (int8_t *)demobuffer;
 #endif
 
-    NewGame (1,0);
-    gamestate.mapon = *demoptr++;
-    gamestate.difficulty = gd_hard;
-    length = READWORD((uint8_t **)&demoptr);
+   NewGame (1,0);
+   gamestate.mapon = *demoptr++;
+   gamestate.difficulty = gd_hard;
+   length = READWORD((uint8_t **)&demoptr);
 
-    /* TODO: Seems like the original demo format supports 16 MB demos
-     * But T_DEM00 and T_DEM01 of Wolf have a 0xd8 as third length size... */
-    demoptr++;
-    lastdemoptr = demoptr-4+length;
+   /* TODO: Seems like the original demo format supports 16 MB demos
+    * But T_DEM00 and T_DEM01 of Wolf have a 0xd8 as third length size... */
+   demoptr++;
+   lastdemoptr = demoptr-4+length;
 
-    VW_FadeOut ();
+   VW_FadeOut ();
 
-    SETFONTCOLOR(0,15);
-    DrawPlayScreen ();
+   SETFONTCOLOR(0,15);
+   DrawPlayScreen ();
 
-    startgame = false;
-    demoplayback = true;
+   startgame = false;
+   demoplayback = true;
 
-    SetupGameLevel ();
-    StartMusic ();
+   SetupGameLevel ();
+   StartMusic ();
 
-    PlayLoop ();
+   PlayLoop ();
 
 #ifdef DEMOSEXTERN
-    UNCACHEGRCHUNK(dems[demonumber]);
+   UNCACHEGRCHUNK(dems[demonumber]);
 #else
-    MM_FreePtr (&demobuffer);
+   MM_FreePtr (&demobuffer);
 #endif
 
-    demoplayback = false;
+   demoplayback = false;
 
-    StopMusic ();
-    SD_StopDigitized ();
+   StopMusic ();
+   SD_StopDigitized ();
 }
-
-//==========================================================================
 
 /*
 ==================
@@ -1028,127 +1014,127 @@ void PlayDemo (int demonumber)
 
 void Died (void)
 {
-    float   fangle;
-    int32_t dx,dy;
-    int     iangle,curangle,clockwise,counter,change;
+   float   fangle;
+   int32_t dx,dy;
+   int     iangle,curangle,clockwise,counter,change;
 
-    if (screenfaded)
-    {
-        ThreeDRefresh ();
-        VW_FadeIn ();
-    }
+   if (screenfaded)
+   {
+      ThreeDRefresh ();
+      VW_FadeIn ();
+   }
 
-    gamestate.weapon = (weapontype) -1; /* take away weapon */
-    SD_PlaySound (PLAYERDEATHSND);
+   gamestate.weapon = (weapontype) -1; /* take away weapon */
+   SD_PlaySound (PLAYERDEATHSND);
 
-    /* swing around to face attacker */
-    if(killerobj)
-    {
-        dx = killerobj->x - player->x;
-        dy = player->y - killerobj->y;
+   /* swing around to face attacker */
+   if(killerobj)
+   {
+      dx = killerobj->x - player->x;
+      dy = player->y - killerobj->y;
 
-        fangle = (float) atan2((float) dy, (float) dx); /* returns -pi to pi */
-        if (fangle<0)
-            fangle = (float) (M_PI*2+fangle);
+      fangle = (float) atan2((float) dy, (float) dx); /* returns -pi to pi */
+      if (fangle<0)
+         fangle = (float) (M_PI*2+fangle);
 
-        iangle = (int) (fangle/(M_PI*2)*ANGLES);
-    }
-    else
-    {
-        iangle = player->angle + ANGLES / 2;
-        if(iangle >= ANGLES) iangle -= ANGLES;
-    }
+      iangle = (int) (fangle/(M_PI*2)*ANGLES);
+   }
+   else
+   {
+      iangle = player->angle + ANGLES / 2;
+      if(iangle >= ANGLES) iangle -= ANGLES;
+   }
 
-    if (player->angle > iangle)
-    {
-        counter = player->angle - iangle;
-        clockwise = ANGLES-player->angle + iangle;
-    }
-    else
-    {
-        clockwise = iangle - player->angle;
-        counter = player->angle + ANGLES-iangle;
-    }
+   if (player->angle > iangle)
+   {
+      counter = player->angle - iangle;
+      clockwise = ANGLES-player->angle + iangle;
+   }
+   else
+   {
+      clockwise = iangle - player->angle;
+      counter = player->angle + ANGLES-iangle;
+   }
 
-    curangle = player->angle;
+   curangle = player->angle;
 
-    if (clockwise<counter)
-    {
-        /* rotate clockwise */
-        if (curangle > iangle)
-            curangle -= ANGLES;
-        do
-        {
-            change = tics*DEATHROTATE;
-            if (curangle + change > iangle)
-                change = iangle-curangle;
+   if (clockwise<counter)
+   {
+      /* rotate clockwise */
+      if (curangle > iangle)
+         curangle -= ANGLES;
+      do
+      {
+         change = tics*DEATHROTATE;
+         if (curangle + change > iangle)
+            change = iangle-curangle;
 
-            curangle += change;
-            player->angle += change;
-            if (player->angle >= ANGLES)
-                player->angle -= ANGLES;
+         curangle += change;
+         player->angle += change;
+         if (player->angle >= ANGLES)
+            player->angle -= ANGLES;
 
-            ThreeDRefresh ();
-            CalcTics ();
-        } while (curangle != iangle);
-    }
-    else
-    {
-        /* rotate counterclockwise */
-        if (curangle < iangle)
-            curangle += ANGLES;
-        do
-        {
-            change = -(int)tics*DEATHROTATE;
-            if (curangle + change < iangle)
-                change = iangle-curangle;
+         ThreeDRefresh ();
+         CalcTics ();
+      } while (curangle != iangle);
+   }
+   else
+   {
+      /* rotate counterclockwise */
+      if (curangle < iangle)
+         curangle += ANGLES;
+      do
+      {
+         change = -(int)tics*DEATHROTATE;
+         if (curangle + change < iangle)
+            change = iangle-curangle;
 
-            curangle += change;
-            player->angle += change;
-            if (player->angle < 0)
-                player->angle += ANGLES;
+         curangle += change;
+         player->angle += change;
+         if (player->angle < 0)
+            player->angle += ANGLES;
 
-            ThreeDRefresh ();
-            CalcTics ();
-        } while (curangle != iangle);
-    }
+         ThreeDRefresh ();
+         CalcTics ();
+      } while (curangle != iangle);
+   }
 
-    /* fade to red */
-    FinishPaletteShifts ();
+   /* fade to red */
+   FinishPaletteShifts ();
 
-    VL_BarScaledCoord (viewscreenx,viewscreeny,viewwidth,viewheight,4);
+   VL_BarScaledCoord (viewscreenx,viewscreeny,viewwidth,viewheight,4);
 
-    IN_ClearKeysDown ();
+   IN_ClearKeysDown ();
 
-    FizzleFade(screenBuffer,viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
+   FizzleFade(screenBuffer,viewscreenx,viewscreeny,viewwidth,viewheight,70,false);
 
-    IN_UserInput(100);
-    SD_WaitSoundDone ();
-    SD_StopDigitized();
+   IN_UserInput(100);
+   SD_WaitSoundDone ();
+   SD_StopDigitized();
 
-    gamestate.lives--;
+   gamestate.lives--;
 
-    if (gamestate.lives > -1)
-    {
-        gamestate.health = 100;
-        gamestate.weapon = gamestate.bestweapon
-            = gamestate.chosenweapon = wp_pistol;
-        gamestate.ammo = STARTAMMO;
-        gamestate.keys = 0;
-        pwallstate = pwallpos = 0;
-        gamestate.attackframe = gamestate.attackcount =
-            gamestate.weaponframe = 0;
+   if (gamestate.lives > -1)
+   {
+      gamestate.health = 100;
+      gamestate.weapon = gamestate.bestweapon
+         = gamestate.chosenweapon = wp_pistol;
+      gamestate.ammo = STARTAMMO;
+      gamestate.keys = 0;
+      pwallstate = pwallpos = 0;
+      gamestate.attackframe = gamestate.attackcount =
+         gamestate.weaponframe = 0;
 
-        if(viewsize != 21)
-        {
-            DrawKeys ();
-            DrawWeapon ();
-            DrawAmmo ();
-            DrawHealth ();
-            DrawFace ();
-            DrawLives ();
-        }
-    }
+      if(viewsize != 21)
+      {
+         DrawKeys ();
+         DrawWeapon ();
+         DrawAmmo ();
+         DrawHealth ();
+         DrawFace ();
+         DrawLives ();
+      }
+   }
 }
 
 #ifndef FROMSECRET1
