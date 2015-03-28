@@ -128,7 +128,8 @@ void    VL_SetVGAPlaneMode (void)
 void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors)
 {
    unsigned i;
-   for(i=0; i<numColors; i++)
+
+   for(i = 0; i < numColors; i++)
    {
       destpal[i].r = *srcpal++ * 255 / 63;
       destpal[i].g = *srcpal++ * 255 / 63;
@@ -149,7 +150,7 @@ void VL_FillPalette (int red, int green, int blue)
     int i;
     SDL_Color pal[256];
 
-    for(i=0; i<256; i++)
+    for(i = 0; i < 256; i++)
     {
         pal[i].r = red;
         pal[i].g = green;
@@ -206,7 +207,7 @@ void VL_SetPalette (SDL_Color *palette, bool forceupdate)
    memcpy(curpal, palette, sizeof(SDL_Color) * 256);
 
    SDL_SetPalette(curSurface, SDL_LOGPAL, palette, 0, 256);
-   if(forceupdate)
+   if (forceupdate)
       VH_UpdateScreen();
 }
 
@@ -238,29 +239,30 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
    int         i,j,orig,delta;
    SDL_Color   *origptr, *newptr;
 
-   red = red * 255 / 63;
+   red   = red * 255 / 63;
    green = green * 255 / 63;
-   blue = blue * 255 / 63;
+   blue  = blue * 255 / 63;
 
    VL_WaitVBL(1);
    VL_GetPalette(palette1);
    memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
 
    /* fade through intermediate frames */
-   for (i=0;i<steps;i++)
+   for (i = 0; i < steps; i++)
    {
       origptr = &palette1[start];
-      newptr = &palette2[start];
-      for (j=start;j<=end;j++)
+      newptr  = &palette2[start];
+
+      for (j = start;j <= end; j++)
       {
-         orig = origptr->r;
-         delta = red-orig;
+         orig      = origptr->r;
+         delta     = red-orig;
          newptr->r = orig + delta * i / steps;
-         orig = origptr->g;
-         delta = green-orig;
+         orig      = origptr->g;
+         delta     = green-orig;
          newptr->g = orig + delta * i / steps;
-         orig = origptr->b;
-         delta = blue-orig;
+         orig      = origptr->b;
+         delta     = blue-orig;
          newptr->b = orig + delta * i / steps;
          origptr++;
          newptr++;
@@ -294,15 +296,15 @@ void VL_FadeIn (int start, int end, SDL_Color *palette, int steps)
    memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
 
    /* fade through intermediate frames */
-   for (i=0;i<steps;i++)
+   for (i = 0;i < steps; i++)
    {
-      for (j=start;j<=end;j++)
+      for (j = start; j <= end; j++)
       {
-         delta = palette[j].r-palette1[j].r;
+         delta         = palette[j].r-palette1[j].r;
          palette2[j].r = palette1[j].r + delta * i / steps;
-         delta = palette[j].g-palette1[j].g;
+         delta         = palette[j].g-palette1[j].g;
          palette2[j].g = palette1[j].g + delta * i / steps;
-         delta = palette[j].b-palette1[j].b;
+         delta         = palette[j].b-palette1[j].b;
          palette2[j].b = palette1[j].b + delta * i / steps;
       }
 
@@ -368,12 +370,13 @@ void VL_Plot (int x, int y, int color)
 
 byte VL_GetPixel (int x, int y)
 {
+   byte col;
    assert(x >= 0 && (unsigned) x < screenWidth
          && y >= 0 && (unsigned) y < screenHeight
          && "VL_GetPixel: Pixel out of bounds!");
 
    VL_LockSurface(curSurface);
-   byte col = ((byte *) curSurface->pixels)[y * curPitch + x];
+   col = ((byte *) curSurface->pixels)[y * curPitch + x];
    VL_UnlockSurface(curSurface);
    return col;
 }
@@ -520,14 +523,14 @@ void VL_MemToScreenScaledCoord (byte *source, int width, int height, int destx, 
    VL_LockSurface(curSurface);
    vbuf = (byte *) curSurface->pixels;
 
-   for(j=0,scj=0; j<height; j++, scj+=scaleFactor)
+   for(j = 0, scj = 0; j < height; j++, scj += scaleFactor)
    {
-      for(i=0,sci=0; i<width; i++, sci+=scaleFactor)
+      for(i = 0,sci = 0; i < width; i++, sci += scaleFactor)
       {
          byte col = source[(j*(width>>2)+(i>>2))+(i&3)*(width>>2)*height];
-         for(m=0; m<scaleFactor; m++)
+         for(m = 0; m < scaleFactor; m++)
          {
-            for(n=0; n<scaleFactor; n++)
+            for(n = 0; n < scaleFactor; n++)
                vbuf[(scj+m+desty)*curPitch+sci+n+destx] = col;
          }
       }
@@ -561,14 +564,14 @@ void VL_MemToScreenScaledCoord2 (byte *source, int origwidth, int origheight, in
    VL_LockSurface(curSurface);
    vbuf = (byte *) curSurface->pixels;
 
-   for(j=0,scj=0; j<height; j++, scj+=scaleFactor)
+   for(j = 0,scj = 0; j < height; j++, scj += scaleFactor)
    {
-      for(i=0,sci=0; i<width; i++, sci+=scaleFactor)
+      for(i = 0, sci = 0; i < width; i++, sci += scaleFactor)
       {
          byte col = source[((j+srcy)*(origwidth>>2)+((i+srcx)>>2))+((i+srcx)&3)*(origwidth>>2)*origheight];
-         for(m=0; m<scaleFactor; m++)
+         for(m = 0; m < scaleFactor; m++)
          {
-            for(n=0; n<scaleFactor; n++)
+            for(n = 0; n < scaleFactor; n++)
                vbuf[(scj+m+desty)*curPitch+sci+n+destx] = col;
          }
       }
@@ -596,20 +599,20 @@ void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
          && "VL_LatchToScreenScaledCoord: Destination rectangle out of bounds!");
 
    VL_LockSurface(source);
-   src = (byte *) source->pixels;
+   src = (byte *)source->pixels;
    srcPitch = source->pitch;
 
    VL_LockSurface(curSurface);
    vbuf = (byte *) curSurface->pixels;
 
-   for(j=0,scj=0; j<height; j++, scj+=scaleFactor)
+   for(j = 0, scj = 0; j < height; j++, scj += scaleFactor)
    {
-      for(i=0,sci=0; i<width; i++, sci+=scaleFactor)
+      for(i = 0, sci = 0; i < width; i++, sci += scaleFactor)
       {
          byte col = src[(ysrc + j)*srcPitch + xsrc + i];
-         for(m=0; m<scaleFactor; m++)
+         for(m = 0; m < scaleFactor; m++)
          {
-            for(n=0; n<scaleFactor; n++)
+            for(n = 0; n < scaleFactor; n++)
                vbuf[(scydest+scj+m)*curPitch+scxdest+sci+n] = col;
          }
       }

@@ -1,6 +1,5 @@
 #include "wl_def.h"
 
-
 pictabletype    *pictable;
 SDL_Surface     *latchpics[NUMLATCHPICS];
 
@@ -19,7 +18,7 @@ void VWB_DrawPropString(const char* string)
    int       height = font->height;
    byte       *dest = vbuf + scaleFactor * (py * curPitch + px);
 
-   while ((ch = (byte)*string++)!=0)
+   while ((ch = (byte)*string++) != 0)
    {
       width  = step = font->width[ch];
       source = ((byte *)font)+font->location[ch];
@@ -124,30 +123,28 @@ void VWB_DrawTile8M (int x, int y, int tile)
 
 void VWB_DrawPic (int x, int y, int chunknum)
 {
-   unsigned width,height;
-   int picnum = chunknum - STARTPICS;
+   int picnum      = chunknum - STARTPICS;
+   unsigned width  = pictable[picnum].width;
+   unsigned height = pictable[picnum].height;
 
    x &= ~7;
 
-   width = pictable[picnum].width;
-   height = pictable[picnum].height;
-
-   VL_MemToScreen (grsegs[chunknum],width,height,x,y);
+   VL_MemToScreen (grsegs[chunknum], width, height, x, y);
 }
 
 void VWB_DrawPicScaledCoord (int scx, int scy, int chunknum)
 {
-   int picnum = chunknum - STARTPICS;
-   unsigned width = pictable[picnum].width;
+   int picnum      = chunknum - STARTPICS;
+   unsigned width  = pictable[picnum].width;
    unsigned height = pictable[picnum].height;
 
-   VL_MemToScreenScaledCoord (grsegs[chunknum],width,height,scx,scy);
+   VL_MemToScreenScaledCoord (grsegs[chunknum], width, height, scx, scy);
 }
 
 
 void VWB_Bar (int x, int y, int width, int height, int color)
 {
-   VW_Bar (x,y,width,height,color);
+   VW_Bar (x, y, width, height, color);
 }
 
 void VWB_Plot (int x, int y, int color)
@@ -241,16 +238,14 @@ void LoadLatchMem (void)
    start = LATCHPICS_LUMP_START;
    end   = LATCHPICS_LUMP_END;
 
-   for (i=start;i<=end;i++)
+   for (i = start; i <= end; i++)
    {
       width  = pictable[i-STARTPICS].width;
       height = pictable[i-STARTPICS].height;
       surf   = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 
       if(!surf)
-      {
          Quit("Unable to create surface for picture!");
-      }
       SDL_SetColors(surf, gamepal, 0, 256);
 
       latchpics[2+i-start] = surf;
@@ -299,8 +294,9 @@ extern SDL_Color curpal[256];
 /* Returns the number of bits needed to represent the given value */
 static int log2_ceil(uint32_t x)
 {
-   int n = 0;
+   int n      = 0;
    uint32_t v = 1;
+
    while(v < x)
    {
       n++;
@@ -314,8 +310,8 @@ void VH_Startup(void)
    int rndbits;
    int rndbits_x = log2_ceil(screenWidth);
 
-   rndbits_y = log2_ceil(screenHeight);
-   rndbits   = rndbits_x + rndbits_y;
+   rndbits_y     = log2_ceil(screenHeight);
+   rndbits       = rndbits_x + rndbits_y;
 
    if(rndbits < 17)
       rndbits = 17;       // no problem, just a bit slower
@@ -349,7 +345,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
    IN_StartAck ();
 
-   frame = GetTimeCount();
+   frame       = GetTimeCount();
 
    /* can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     * can't rely on screenBuffer as source for same reason: every flip it has to be updated
@@ -360,6 +356,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
    do
    {
+      byte *destptr;
+
       if(abortable && IN_CheckAck ())
       {
          VL_UnlockSurface(source_copy);
@@ -371,9 +369,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
          return true;
       }
 
-      byte *destptr = VL_LockSurface(screen_copy);
-
-      rndval = lastrndval;
+      destptr = VL_LockSurface(screen_copy);
+      rndval  = lastrndval;
 
       for(p = 0; p < pixperframe; p++)
       {
@@ -396,7 +393,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
          }
 
          /* copy one pixel */
-         col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+         col     = *(srcptr + (y1 + y) * source->pitch + x1 + x);
          fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
          memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
                &fullcol, screen->format->BytesPerPixel);

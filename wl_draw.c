@@ -126,7 +126,7 @@ static void TransformActor (objtype *ob)
    ob->transy = ny;
 
    /* too close, don't overflow the divide */
-   if (nx<MINDIST)                 
+   if (nx < MINDIST)                 
    {
       ob->viewheight = 0;
       return;
@@ -318,30 +318,32 @@ void HitVertWall (void)
    if(lastside==1 && lastintercept==xtile && lasttilehit==tilehit && !(lasttilehit & 0x40))
    {
       ScalePost();
+
       if((pixx&3) && texture == lasttexture)
       {
          postx = pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      wallheight[pixx] = CalcHeight();
-      postsource+=texture-lasttexture;
-      postwidth=1;
-      postx=pixx;
-      lasttexture=texture;
+
+      wallheight[pixx]    = CalcHeight();
+      postsource         += texture-lasttexture;
+      postwidth           = 1;
+      postx               = pixx;
+      lasttexture         = texture;
       return;
    }
 
    if(lastside!=-1)
       ScalePost();
 
-   lastside=1;
-   lastintercept=xtile;
-   lasttilehit=tilehit;
-   lasttexture=texture;
+   lastside         = 1;
+   lastintercept    = xtile;
+   lasttilehit      = tilehit;
+   lasttexture      = texture;
    wallheight[pixx] = CalcHeight();
-   postx = pixx;
-   postwidth = 1;
+   postx            = pixx;
+   postwidth        = 1;
 
    /* check for adjacent doors */
    if (tilehit & 0x40)
@@ -391,24 +393,24 @@ void HitHorizWall(void)
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      wallheight[pixx] = CalcHeight();
-      postsource+=texture-lasttexture;
-      postwidth=1;
-      postx=pixx;
-      lasttexture=texture;
+      wallheight[pixx]    = CalcHeight();
+      postsource         += texture-lasttexture;
+      postwidth           = 1;
+      postx               = pixx;
+      lasttexture         = texture;
       return;
    }
 
    if(lastside!=-1)
       ScalePost();
 
-   lastside=0;
-   lastintercept=ytile;
-   lasttilehit=tilehit;
-   lasttexture=texture;
-   wallheight[pixx] = CalcHeight();
-   postx = pixx;
-   postwidth = 1;
+   lastside               = 0;
+   lastintercept          = ytile;
+   lasttilehit            = tilehit;
+   lasttexture            = texture;
+   wallheight[pixx]       = CalcHeight();
+   postx                  = pixx;
+   postwidth              = 1;
 
    /* check for adjacent doors */
    if (tilehit & 0x40)
@@ -485,8 +487,6 @@ void HitHorizDoor (void)
    postsource = PM_GetTexture(doorpage) + texture;
 }
 
-//==========================================================================
-
 /*
 ====================
 =
@@ -510,11 +510,11 @@ void HitVertDoor (void)
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
-      wallheight[pixx] = CalcHeight();
-      postsource+=texture-lasttexture;
-      postwidth=1;
-      postx=pixx;
-      lasttexture=texture;
+      wallheight[pixx]    = CalcHeight();
+      postsource         += texture-lasttexture;
+      postwidth           = 1;
+      postx               = pixx;
+      lasttexture         = texture;
       return;
    }
 
@@ -576,8 +576,8 @@ byte vgaCeiling[]=
 static void VGAClearScreen (void)
 {
    int y;
-   byte ceiling=vgaCeiling[gamestate.episode*10+mapon];
-   byte *ptr = vbuf;
+   byte ceiling = vgaCeiling[gamestate.episode*10+mapon];
+   byte *ptr    = vbuf;
 
    for(y = 0; y < viewheight / 2; y++, ptr += vbufPitch)
       memset(ptr, ceiling, viewwidth);
@@ -617,8 +617,9 @@ static int CalcRotate (objtype *ob)
    while (angle<0)
       angle+=ANGLES;
 
-   if (ob->state->rotate == 2)             /* 2 rotation pain frame */
-      return 0;               /* pain with shooting frame bugfix */
+   /* 2 rotation pain frame */
+   if (ob->state->rotate == 2)
+      return 0; /* pain with shooting frame bugfix */
 
    return angle/(ANGLES/8);
 }
@@ -641,8 +642,9 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
    word rightpix      = (word)Retro_SwapLES16(shape->rightpix);
    scale              = height >> 3; /* low three bits are fractional */
 
+   /* too close or far away? */
    if(!scale)
-      return;   /* too close or far away */
+      return;   
 
    pixheight          = scale * SPRITESCALEFACTOR;
    actx               = xcenter-scale;
@@ -650,17 +652,19 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
 
    cmdptr             = (word *)shape->dataofs;
 
-   for(i= leftpix, pixcnt= i * pixheight, rpix = (pixcnt >> 6) + actx; i <= rightpix; i++, cmdptr++)
+   for(i= leftpix, pixcnt= i * pixheight, rpix = (pixcnt >> 6) + actx;
+         i <= rightpix;
+         i++, cmdptr++)
    {
       lpix=rpix;
 
-      if(lpix>=viewwidth)
+      if(lpix >= viewwidth)
          break;
 
       pixcnt += pixheight;
       rpix    = (pixcnt >> 6) + actx;
 
-      if(lpix!=rpix && rpix>0)
+      if(lpix != rpix && rpix > 0)
       {
          if(lpix < 0)
             lpix=0;
@@ -674,27 +678,28 @@ static void ScaleShape (int xcenter, int shapenum, unsigned height, uint32_t fla
          {
             if(wallheight[lpix] <= (int)height)
             {
-               line=cline;
+               line = cline;
+
                while((endy = READWORD(&line)) != 0)
                {
-                  endy >>= 1;
-                  newstart = READWORD(&line);
-                  starty = READWORD(&line) >> 1;
-                  j=starty;
-                  ycnt=j*pixheight;
-                  screndy=(ycnt>>6)+upperedge;
+                  endy     >>= 1;
+                  newstart   = READWORD(&line);
+                  starty     = READWORD(&line) >> 1;
+                  ycnt       = starty * pixheight;
+                  screndy    = (ycnt >> 6) + upperedge;
 
                   if(screndy<0)
-                     vmem=vbuf+lpix;
+                     vmem    = vbuf+lpix;
                   else
-                     vmem=vbuf+screndy*vbufPitch+lpix;
+                     vmem    = vbuf + screndy * vbufPitch + lpix;
 
-                  for(;j<endy;j++)
+                  for(j = starty; j < endy; j++)
                   {
-                     scrstarty=screndy;
-                     ycnt+=pixheight;
-                     screndy=(ycnt>>6)+upperedge;
-                     if(scrstarty!=screndy && screndy>0)
+                     scrstarty  = screndy;
+                     ycnt      += pixheight;
+                     screndy    = (ycnt>>6) + upperedge;
+
+                     if(scrstarty != screndy && screndy > 0)
                      {
                         col=((byte *)shape)[newstart+j];
 
@@ -764,30 +769,30 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
 
             while((endy = READWORD(&line)) != 0)
             {
-               endy >>= 1;
-               newstart = READWORD(&line);
-               starty = READWORD(&line) >> 1;
-               j=starty;
-               ycnt=j*pixheight;
-               screndy=(ycnt>>6)+upperedge;
+               endy     >>= 1;
+               newstart   = READWORD(&line);
+               starty     = READWORD(&line) >> 1;
+               ycnt       = starty * pixheight;
+               screndy    = (ycnt>>6)+upperedge;
 
                if(screndy<0)
-                  vmem=vbuf+lpix;
+                  vmem    = vbuf+lpix;
                else
-                  vmem=vbuf+screndy*vbufPitch+lpix;
+                  vmem    = vbuf+screndy*vbufPitch+lpix;
 
-               for(;j<endy;j++)
+               for(j = starty; j < endy; j++)
                {
-                  scrstarty=screndy;
-                  ycnt+=pixheight;
-                  screndy=(ycnt>>6)+upperedge;
+                  scrstarty  = screndy;
+                  ycnt      += pixheight;
+                  screndy    = (ycnt >> 6) + upperedge;
 
-                  if(scrstarty!=screndy && screndy>0)
+                  if(scrstarty != screndy && screndy > 0)
                   {
                      col=((byte *)shape)[newstart+j];
-                     if (scrstarty<0)
-                        scrstarty=0;
-                     if (screndy>viewheight)
+
+                     if (scrstarty < 0)
+                        scrstarty = 0;
+                     if (screndy > viewheight)
                         screndy=viewheight,j=endy;
 
                      while(scrstarty<screndy)
@@ -842,24 +847,30 @@ static void DrawScaleds (void)
    /* place static objects */
    for (statptr = &statobjlist[0] ; statptr !=laststatobj ; statptr++)
    {
+      /* object has been deleted? */
       if ((visptr->shapenum = statptr->shapenum) == -1)
-         continue; /* object has been deleted */
-
+         continue; 
+      
+      /* not visable? */
       if (!*statptr->visspot)
-         continue; /* not visable. */
+         continue; 
 
       if (TransformTile (statptr->tilex,statptr->tiley,
                &visptr->viewx,&visptr->viewheight) && statptr->flags & FL_BONUS)
       {
          GetBonus (statptr);
+
+         /* object has been taken? */
          if(statptr->shapenum == -1)
-            continue;                                           // object has been taken
+            continue;
       }
 
+      /* too close to the object? */
       if (!visptr->viewheight)
-         continue;                                               // to close to the object
+         continue;
 
-      if (visptr < &vislist[MAXVISABLE-1])    // don't let it overflow
+      /* don't let it overflow */
+      if (visptr < &vislist[MAXVISABLE-1])
       {
          visptr->flags = (short) statptr->flags;
          visptr++;
@@ -869,8 +880,9 @@ static void DrawScaleds (void)
    /* place active objects */
    for (obj = player->next;obj;obj=obj->next)
    {
+      /* no shape? */
       if ((visptr->shapenum = obj->state->shapenum)==0)
-         continue;                                               // no shape
+         continue;
 
       spotloc  = (obj->tilex<<mapshift)+obj->tiley;   // optimize: keep in struct?
       visspot  = &spotvis[0][0]+spotloc;
@@ -889,18 +901,23 @@ static void DrawScaleds (void)
       {
          obj->active = ac_yes;
          TransformActor (obj);
+
+         /* too close or far away? */
          if (!obj->viewheight)
-            continue;                                               // too close or far away
+            continue;
 
          visptr->viewx       = obj->viewx;
          visptr->viewheight  = obj->viewheight;
+
+         /* special shape? */
          if (visptr->shapenum == -1)
-            visptr->shapenum = obj->temp1;  // special shape
+            visptr->shapenum = obj->temp1;
 
          if (obj->state->rotate)
             visptr->shapenum += CalcRotate (obj);
 
-         if (visptr < &vislist[MAXVISABLE-1])    // don't let it overflow
+         /* don't let it overflow. */
+         if (visptr < &vislist[MAXVISABLE-1])
          {
             visptr->flags = (short) obj->flags;
 
@@ -922,7 +939,7 @@ static void DrawScaleds (void)
    for (i = 0; i<numvisable; i++)
    {
       least = 32000;
-      for (visstep=&vislist[0] ; visstep<visptr ; visstep++)
+      for (visstep = &vislist[0]; visstep<visptr; visstep++)
       {
          height = visstep->viewheight;
          if (height < least)
@@ -933,7 +950,8 @@ static void DrawScaleds (void)
       }
 
       /* draw farthest */
-      ScaleShape(farthest->viewx, farthest->shapenum, farthest->viewheight, farthest->flags);
+      ScaleShape(farthest->viewx, farthest->shapenum,
+            farthest->viewheight, farthest->flags);
 
       farthest->viewheight = 32000;
    }
@@ -1039,7 +1057,7 @@ static void AsmRefresh(void)
          xpartial=xpartialup;
          ypartial=ypartialdown;
       }
-      else if(angl<1800)
+      else if(angl < 1800)
       {
          xtilestep=-1;
          ytilestep=-1;
@@ -1048,16 +1066,16 @@ static void AsmRefresh(void)
          xpartial=xpartialdown;
          ypartial=ypartialdown;
       }
-      else if(angl<2700)
+      else if(angl < 2700)
       {
          xtilestep= -1;
-         ytilestep= 1;
+         ytilestep=  1;
          xstep    = -finetangent[2700-1-angl];
          ystep    = finetangent[angl-1800];
          xpartial = xpartialdown;
          ypartial = ypartialup;
       }
-      else if(angl<3600)
+      else if(angl < 3600)
       {
          xtilestep= 1;
          ytilestep= 1;
@@ -1082,7 +1100,9 @@ static void AsmRefresh(void)
                || pwalldir == di_west && xtilestep == -1)
          {
             int32_t yintbuf = yintercept - ((ystep * (64 - pwallpos)) >> 6);
-            if((yintbuf >> 16) == focalty)   // ray hits pushwall back?
+
+            /* ray hits pushwall back? */
+            if((yintbuf >> 16) == focalty)
             {
                if(pwalldir == di_east)
                   xintercept = (focaltx << TILESHIFT) + (pwallpos << 10);
@@ -1099,7 +1119,9 @@ static void AsmRefresh(void)
                ||  pwalldir == di_north && ytilestep == -1)
          {
             int32_t xintbuf = xintercept - ((xstep * (64 - pwallpos)) >> 6);
-            if((xintbuf >> 16) == focaltx)   // ray hits pushwall back?
+
+            /* ray hits pushwall back? */
+            if((xintbuf >> 16) == focaltx)
             {
                xintercept = xintbuf;
                if(pwalldir == di_south)
