@@ -301,7 +301,7 @@ static void ScalePost(void)
 ====================
 */
 
-void HitVertWall (void)
+static void HitVertWall (void)
 {
    int wallpic;
    int texture = ((yintercept+texdelta)>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
@@ -370,7 +370,7 @@ void HitVertWall (void)
 ====================
 */
 
-void HitHorizWall(void)
+static void HitHorizWall(void)
 {
    int wallpic;
    int texture = ((xintercept+texdelta)>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
@@ -434,7 +434,7 @@ void HitHorizWall(void)
 ====================
 */
 
-void HitHorizDoor (void)
+static void HitHorizDoor (void)
 {
    int doorpage;
    int doornum = tilehit&0x7f;
@@ -494,7 +494,7 @@ void HitHorizDoor (void)
 ====================
 */
 
-void HitVertDoor (void)
+static void HitVertDoor (void)
 {
    int doorpage;
    int doornum = tilehit&0x7f;
@@ -1037,9 +1037,6 @@ void CalcTics (void)
    if (tics > MAXTICS)
       tics = MAXTICS;
 }
-
-
-//==========================================================================
 
 static void AsmRefresh(void)
 {
