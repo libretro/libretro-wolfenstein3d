@@ -11,7 +11,7 @@
 =============================================================================
 */
 
-// the door is the last picture before the sprites
+/* the door is the last picture before the sprites */
 #define DOORWALL        (PMSpriteStart-8)
 
 #define ACTORSIZE       0x4000
@@ -380,7 +380,10 @@ void HitHorizWall(void)
    else
       texture = TEXTUREMASK-texture;
 
-   if (lastside == 0 && lastintercept==ytile && lasttilehit==tilehit && !(lasttilehit & 0x40))
+   if (lastside == 0 
+         && lastintercept == ytile
+         && lasttilehit   == tilehit
+         && !(lasttilehit & 0x40))
    {
       ScalePost();
       if((pixx&3) && texture == lasttexture)
@@ -442,7 +445,7 @@ void HitHorizDoor (void)
       ScalePost();
       if((pixx&3) && texture == lasttexture)
       {
-         postx=pixx;
+         postx            = pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
@@ -495,7 +498,7 @@ void HitVertDoor (void)
 {
    int doorpage;
    int doornum = tilehit&0x7f;
-   int texture = ((yintercept-doorposition[doornum])>>TEXTUREFROMFIXEDSHIFT)&TEXTUREMASK;
+   int texture = ((yintercept - doorposition[doornum]) >> TEXTUREFROMFIXEDSHIFT) & TEXTUREMASK;
 
    if (lasttilehit == tilehit)
    {
@@ -503,7 +506,7 @@ void HitVertDoor (void)
 
       if((pixx&3) && texture == lasttexture)
       {
-         postx=pixx;
+         postx            = pixx;
          wallheight[pixx] = wallheight[pixx-1];
          return;
       }
@@ -743,67 +746,71 @@ static void SimpleScaleShape (int xcenter, int shapenum, unsigned height)
    int upperedge      = viewheight / 2 - scale;
    word *cmdptr       = shape->dataofs;
 
-   for(i = leftpix, pixcnt = i * pixheight, rpix = (pixcnt >> 6) + actx; i <= rightpix; i++, cmdptr++)
+   for(i = leftpix, pixcnt = i * pixheight, rpix = (pixcnt >> 6) + actx;
+         i <= rightpix;
+         i++, cmdptr++)
    {
       lpix      = rpix;
 
       if(lpix >= viewwidth)
          break;
-     
+
       pixcnt   += pixheight;
       rpix      = (pixcnt>>6)+actx;
 
-      if(lpix!=rpix && rpix>0)
+      if (lpix == rpix)
+         continue;
+      if (rpix <= 0)
+         continue;
+
+      if(lpix < 0)
+         lpix = 0;
+      if(rpix > viewwidth)
+         rpix = viewwidth, i = rightpix + 1;
+      cline   = (byte *)shape + (word)Retro_SwapLES16(*cmdptr);
+
+      while(lpix < rpix)
       {
-         if(lpix < 0)
-            lpix = 0;
-         if(rpix > viewwidth)
-            rpix = viewwidth, i = rightpix + 1;
-         cline   = (byte *)shape + (word)Retro_SwapLES16(*cmdptr);
+         line=cline;
 
-         while(lpix < rpix)
+         while((endy = READWORD(&line)) != 0)
          {
-            line=cline;
+            endy     >>= 1;
+            newstart   = READWORD(&line);
+            starty     = READWORD(&line) >> 1;
+            ycnt       = starty * pixheight;
+            screndy    = (ycnt>>6)+upperedge;
 
-            while((endy = READWORD(&line)) != 0)
+            if(screndy<0)
+               vmem    = vbuf+lpix;
+            else
+               vmem    = vbuf+screndy*vbufPitch+lpix;
+
+            for(j = starty; j < endy; j++)
             {
-               endy     >>= 1;
-               newstart   = READWORD(&line);
-               starty     = READWORD(&line) >> 1;
-               ycnt       = starty * pixheight;
-               screndy    = (ycnt>>6)+upperedge;
+               scrstarty  = screndy;
+               ycnt      += pixheight;
+               screndy    = (ycnt >> 6) + upperedge;
 
-               if(screndy<0)
-                  vmem    = vbuf+lpix;
-               else
-                  vmem    = vbuf+screndy*vbufPitch+lpix;
-
-               for(j = starty; j < endy; j++)
+               if(scrstarty != screndy && screndy > 0)
                {
-                  scrstarty  = screndy;
-                  ycnt      += pixheight;
-                  screndy    = (ycnt >> 6) + upperedge;
+                  col = ((byte *)shape)[newstart+j];
 
-                  if(scrstarty != screndy && screndy > 0)
+                  if (scrstarty < 0)
+                     scrstarty = 0;
+                  if (screndy > viewheight)
+                     screndy=viewheight,j=endy;
+
+                  while(scrstarty < screndy)
                   {
-                     col=((byte *)shape)[newstart+j];
-
-                     if (scrstarty < 0)
-                        scrstarty = 0;
-                     if (screndy > viewheight)
-                        screndy=viewheight,j=endy;
-
-                     while(scrstarty < screndy)
-                     {
-                        *vmem=col;
-                        vmem+=vbufPitch;
-                        scrstarty++;
-                     }
+                     *vmem=col;
+                     vmem+=vbufPitch;
+                     scrstarty++;
                   }
                }
             }
-            lpix++;
          }
+         lpix++;
       }
    }
 }
