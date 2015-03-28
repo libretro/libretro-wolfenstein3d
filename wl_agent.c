@@ -412,7 +412,7 @@ void TakeDamage (int points,objtype *attacker)
    if (gamestate.health<=0)
    {
       gamestate.health = 0;
-      playstate = ex_died;
+      playstate = EX_DIED;
       killerobj = attacker;
    }
 
@@ -798,7 +798,7 @@ void GetBonus (statobj_t *check)
          spearx = player->x;
          speary = player->y;
          spearangle = player->angle;
-         playstate = ex_completed;
+         playstate = EX_COMPLETED;
 #endif
    }
 
@@ -1124,9 +1124,9 @@ void Cmd_Use (void)
 
       tilemap[checkx][checky]++;              /* flip switch */
       if (*(mapsegs[0]+(player->tiley<<mapshift)+player->tilex) == ALTELEVATORTILE)
-         playstate = ex_secretlevel;
+         playstate = EX_SECRETLEVEL;
       else
-         playstate = ex_completed;
+         playstate = EX_COMPLETED;
       SD_PlaySound (LEVELDONESND);
       SD_WaitSoundDone();
    }

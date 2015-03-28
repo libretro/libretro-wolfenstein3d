@@ -421,7 +421,7 @@ void PollControls (void)
       controly = *demoptr++;
 
       if (demoptr == lastdemoptr)
-         playstate = ex_completed;   /* demo is done */
+         playstate = EX_COMPLETED;   /* demo is done */
 
       controlx *= (int) tics;
       controly *= (int) tics;
@@ -481,7 +481,7 @@ void PollControls (void)
       *demoptr++ = controly;
 
       if (demoptr >= lastdemoptr - 8)
-         playstate = ex_completed;
+         playstate = EX_COMPLETED;
       else
       {
          controlx *= (int) tics;
@@ -677,7 +677,7 @@ void CheckKeys (void)
         if (!startgame && !loadedgame)
             ContinueMusic (lastoffs);
         if (loadedgame)
-            playstate = ex_abort;
+            playstate = EX_ABORT;
         lasttimecount = GetTimeCount();
         if (MousePresent && IN_IsInputGrabbed())
             IN_CenterMouse();     /* Clear accumulated mouse movement */
@@ -1198,8 +1198,7 @@ int32_t funnyticount;
 
 void PlayLoop (void)
 {
-
-   playstate = ex_stillplaying;
+   playstate = EX_STILLPLAYING;
    lasttimecount = GetTimeCount();
    frameon = 0;
    anglefrac = 0;
@@ -1265,12 +1264,12 @@ void PlayLoop (void)
          if (IN_CheckAck ())
          {
             IN_ClearKeysDown ();
-            playstate = ex_abort;
+            playstate = EX_ABORT;
          }
       }
    }
    while (!playstate && !startgame);
 
-   if (playstate != ex_died)
+   if (playstate != EX_DIED)
       FinishPaletteShifts ();
 }

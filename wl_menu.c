@@ -647,7 +647,7 @@ CP_CheckQuick (ScanCode scancode)
             if (Confirm (ENDGAMESTR))
 #endif
             {
-                playstate = ex_died;
+                playstate = EX_DIED;
                 killerobj = NULL;
                 pickquick = gamestate.lives = 0;
             }
@@ -701,7 +701,7 @@ CP_CheckQuick (ScanCode scancode)
                     ContinueMusic (lastgamemusicoffset);
 
                 if (loadedgame)
-                    playstate = ex_abort;
+                    playstate = EX_ABORT;
                 lasttimecount = GetTimeCount ();
 
                 if (MousePresent && IN_IsInputGrabbed())
@@ -772,7 +772,7 @@ CP_CheckQuick (ScanCode scancode)
                     ContinueMusic (lastgamemusicoffset);
 
                 if (loadedgame)
-                    playstate = ex_abort;
+                    playstate = EX_ABORT;
 
                 lasttimecount = GetTimeCount ();
 
@@ -847,7 +847,7 @@ CP_EndGame (int unused)
     if(!res) return 0;
 
     pickquick = gamestate.lives = 0;
-    playstate = ex_died;
+    playstate = EX_DIED;
     killerobj = NULL;
 
     MainMenu[savegame].active = 0;

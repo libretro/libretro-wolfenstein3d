@@ -270,7 +270,7 @@ int DebugKeys (void)
         return 1;
     }
     if (Keyboard[sc_E])             // E = quit level
-        playstate = ex_completed;
+        playstate = EX_COMPLETED;
 
     if (Keyboard[sc_F])             // F = facing spot
     {
@@ -470,7 +470,7 @@ again:
 #endif
             {
                 gamestate.mapon = level-1;
-                playstate = ex_warped;
+                playstate = EX_WARPED;
             }
         }
         return 1;

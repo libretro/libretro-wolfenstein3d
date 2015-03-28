@@ -845,16 +845,16 @@ typedef struct
 
 typedef enum
 {
-    ex_stillplaying,
-    ex_completed,
-    ex_died,
-    ex_warped,
-    ex_resetgame,
-    ex_loadedgame,
-    ex_victorious,
-    ex_abort,
-    ex_demodone,
-    ex_secretlevel
+    EX_STILLPLAYING = 0,
+    EX_COMPLETED,
+    EX_DIED,
+    EX_WARPED,
+    EX_RESETGAME,
+    EX_LOADEDGAME,
+    EX_VICTORIOUS,
+    EX_ABORT,
+    EX_DEMODONE,
+    EX_SECRETLEVEL
 } exit_t;
 
 

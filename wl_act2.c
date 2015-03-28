@@ -1795,7 +1795,7 @@ void SpawnAngel (int tilex, int tiley)
 
 void A_Victory (objtype *)
 {
-   playstate = ex_victorious;
+   playstate = EX_VICTORIOUS;
 }
 
 
@@ -3658,7 +3658,7 @@ void T_BJYell (objtype *ob)
 
 void T_BJDone (objtype *ob)
 {
-    playstate = ex_victorious;                              // exit castle tile
+    playstate = EX_VICTORIOUS;                              // exit castle tile
 }
 
 
@@ -3721,7 +3721,7 @@ void    A_StartDeathCam (objtype *ob)
 
    if (gamestate.victoryflag)
    {
-      playstate = ex_victorious;                              // exit castle tile
+      playstate = EX_VICTORIOUS;                              // exit castle tile
       return;
    }
 

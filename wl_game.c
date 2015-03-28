@@ -1242,7 +1242,7 @@ startplayloop:
       StopMusic ();
       ingame = false;
 
-      if (demorecord && playstate != ex_warped)
+      if (demorecord && playstate != EX_WARPED)
          FinishDemoRecord ();
 
       if (startgame || loadedgame)
@@ -1250,8 +1250,8 @@ startplayloop:
 
       switch (playstate)
       {
-         case ex_completed:
-         case ex_secretlevel:
+         case EX_COMPLETED:
+         case EX_SECRETLEVEL:
             if(viewsize == 21) DrawPlayScreen();
             gamestate.keys = 0;
             DrawKeys ();
@@ -1306,7 +1306,7 @@ startplayloop:
                gamestate.mapon = ElevatorBackTo[gamestate.episode]; /* back from secret */
             else
                /* GOING TO SECRET LEVEL */
-               if (playstate == ex_secretlevel)
+               if (playstate == EX_SECRETLEVEL)
                   gamestate.mapon = 9;
 #else
 
@@ -1314,7 +1314,7 @@ startplayloop:
 #define FROMSECRET2             11
 
             /* GOING TO SECRET LEVEL */
-            if (playstate == ex_secretlevel)
+            if (playstate == EX_SECRETLEVEL)
                switch(gamestate.mapon)
                {
                   case FROMSECRET1:
@@ -1342,7 +1342,7 @@ startplayloop:
                   gamestate.mapon++;
             break;
 
-         case ex_died:
+         case EX_DIED:
             Died ();
             died = true;                    /* don't "get psyched!" */
 
@@ -1362,7 +1362,7 @@ startplayloop:
             MainMenu[viewscores].routine = CP_ViewScores;
             return;
 
-         case ex_victorious:
+         case EX_VICTORIOUS:
             if(viewsize == 21) DrawPlayScreen();
 #ifndef SPEAR
             VW_FadeOut ();
