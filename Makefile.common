@@ -1,0 +1,27 @@
+INCFLAGS := -I$(CORE_DIR) -I$(CORE_DIR)/libretro -I$(CORE_DIR)/include
+
+SOURCES_C += $(CORE_DIR)/fmopl.c
+SOURCES_C += $(CORE_DIR)/id_ca.c
+SOURCES_C += $(CORE_DIR)/id_in.c
+SOURCES_C += $(CORE_DIR)/id_pm.c
+SOURCES_C += $(CORE_DIR)/id_sd.c
+SOURCES_C += $(CORE_DIR)/id_us_1.c
+SOURCES_C += $(CORE_DIR)/id_vh.c
+SOURCES_C += $(CORE_DIR)/id_vl.c
+SOURCES_C += $(CORE_DIR)/signon.c
+SOURCES_C += $(CORE_DIR)/wl_act1.c
+SOURCES_C += $(CORE_DIR)/wl_act2.c
+SOURCES_C += $(CORE_DIR)/wl_agent.c
+SOURCES_C += $(CORE_DIR)/wl_debug.c
+SOURCES_C += $(CORE_DIR)/wl_draw.c
+SOURCES_C += $(CORE_DIR)/wl_game.c
+SOURCES_C += $(CORE_DIR)/wl_inter.c
+SOURCES_C += $(CORE_DIR)/wl_main.c
+SOURCES_C += $(CORE_DIR)/wl_menu.c
+SOURCES_C += $(CORE_DIR)/wl_play.c
+SOURCES_C += $(CORE_DIR)/wl_state.c
+SOURCES_C += $(CORE_DIR)/wl_text.c
+SOURCES_C += $(CORE_DIR)/SDL_mixer/effect_position.c
+SOURCES_C += $(CORE_DIR)/SDL_mixer/effects_internal.c
+SOURCES_C += $(CORE_DIR)/SDL_mixer/mixer.c
+SOURCES_C += $(CORE_DIR)/SDL_mixer/music.c
