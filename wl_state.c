@@ -1045,6 +1045,8 @@ void DamageActor (objtype *ob, unsigned damage)
                     NewState (ob,&s_sspain1);
 
                 break;
+            default:
+                break;
         }
     }
 }

@@ -159,6 +159,9 @@ void ControlMovement (objtype *ob)
    oldx = player->x;
    oldy = player->y;
 
+   (void)oldx;
+   (void)oldy;
+
    if(buttonstate[bt_strafeleft])
    {
       angle = ob->angle + ANGLES/4;
