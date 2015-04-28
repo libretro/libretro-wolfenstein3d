@@ -564,6 +564,8 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
                redraw = true;
                checkkey = false;
                break;
+            default:
+               break;
          }
       }
 
