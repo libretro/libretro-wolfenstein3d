@@ -1680,20 +1680,6 @@ static void OPLSetUpdateHandler(FM_OPL *OPL,OPL_UPDATEHANDLER UpdateHandler,int 
    OPL->UpdateParam = param;
 }
 
-static int OPLWrite(FM_OPL *OPL,int a,int v)
-{
-   if( !(a&1) )
-   {   /* address port */
-      OPL->address = v & 0xff;
-   }
-   else
-   {   /* data port */
-      if(OPL->UpdateHandler) OPL->UpdateHandler(OPL->UpdateParam,0);
-      OPLWriteReg(OPL,OPL->address,v);
-   }
-   return OPL->status>>7;
-}
-
 static unsigned char OPLRead(FM_OPL *OPL,int a)
 {
    if( !(a&1) )
