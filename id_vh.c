@@ -221,7 +221,7 @@ void LoadLatchMem (void)
    if(!surf)
       Quit("Unable to create surface for tiles!");
 
-   SDL_SetColors(surf, (SDL_Color*)gamepal, 0, 256);
+   LR_SetColors(surf, gamepal, 0, 256);
 
    latchpics[0] = surf;
    CA_CacheGrChunk (STARTTILE8);
@@ -246,7 +246,7 @@ void LoadLatchMem (void)
 
       if(!surf)
          Quit("Unable to create surface for picture!");
-      SDL_SetColors(surf, (SDL_Color*)gamepal, 0, 256);
+      LR_SetColors(surf, gamepal, 0, 256);
 
       latchpics[2+i-start] = surf;
       CA_CacheGrChunk (i);

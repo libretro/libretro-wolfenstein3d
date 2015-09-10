@@ -79,7 +79,7 @@ void    VL_SetVGAPlaneMode (void)
       exit(1);
    }
 
-   SDL_SetColors(screen, (SDL_Color*)gamepal, 0, 256);
+   LR_SetColors(screen, gamepal, 0, 256);
    memcpy(curpal, gamepal, sizeof(LR_Color) * 256);
 
    screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
@@ -89,7 +89,7 @@ void    VL_SetVGAPlaneMode (void)
       printf("Unable to create screen buffer surface: %s\n", SDL_GetError());
       exit(1);
    }
-   SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
+   LR_SetColors(screenBuffer, gamepal, 0, 256);
 
    screenPitch = screen->pitch;
    bufferPitch = screenBuffer->pitch;
