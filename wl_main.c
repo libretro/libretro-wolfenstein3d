@@ -1640,6 +1640,24 @@ void CheckParameters(int argc, char *argv[])
     }
 }
 
+static void retro_init(void)
+{
+}
+
+static void retro_load_game(int argc, char *argv[])
+{
+   CheckParameters(argc, argv);
+
+   CheckForEpisodes();
+
+   InitGame();
+}
+
+static void retro_run(void)
+{
+   DemoLoop();
+}
+
 /*
 ==========================
 =
@@ -1650,15 +1668,11 @@ void CheckParameters(int argc, char *argv[])
 
 int main (int argc, char *argv[])
 {
+   retro_init();
+   retro_load_game(argc, argv);
 
-    CheckParameters(argc, argv);
+   retro_run();
 
-    CheckForEpisodes();
-
-    InitGame();
-
-    DemoLoop();
-
-    Quit("Demo loop exited???");
-    return 1;
+   Quit("Demo loop exited???");
+   return 1;
 }
