@@ -56,8 +56,6 @@ static KeyboardDef KbdDefs = {
 int JoyNumButtons;
 static int JoyNumHats;
 
-static bool GrabInput = false;
-
 /*
 =============================================================================
 
@@ -190,11 +188,7 @@ static void processEvent(SDL_Event *event)
       case SDL_KEYDOWN:
          {
             if(event->key.keysym.sym==SDLK_SCROLLOCK || event->key.keysym.sym==SDLK_F12)
-            {
-               GrabInput = !GrabInput;
-               SDL_WM_GrabInput(GrabInput ? SDL_GRAB_ON : SDL_GRAB_OFF);
                return;
-            }
 
             LastScan = event->key.keysym.sym;
             SDLMod mod = SDL_GetModState();
@@ -335,14 +329,6 @@ void IN_Startup(void)
       return;
 
    IN_ClearKeysDown();
-
-   SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
-
-   if(fullscreen || forcegrabmouse)
-   {
-      GrabInput = true;
-      SDL_WM_GrabInput(SDL_GRAB_ON);
-   }
 
    // I didn't find a way to ask libSDL whether a mouse is present, yet...
 
@@ -560,7 +546,7 @@ int IN_MouseButtons (void)
 
 bool IN_IsInputGrabbed()
 {
-   return GrabInput;
+   return false;
 }
 
 void IN_CenterMouse()
