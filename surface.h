@@ -50,4 +50,6 @@ SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
       uint32_t Bmask,
       uint32_t Amask);
 
+void LR_FreeSurface(SDL_Surface* surface);
+
 #endif

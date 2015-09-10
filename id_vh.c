@@ -327,8 +327,8 @@ static boolean FizzleFadeFinish(SDL_Surface *source_copy, SDL_Surface *screen_co
    VL_UnlockSurface(screen_copy);
    VL_ScreenToScreen(screen_copy, screenBuffer);
    VH_UpdateScreen();
-   SDL_FreeSurface(source_copy);
-   SDL_FreeSurface(screen_copy);
+   LR_FreeSurface(source_copy);
+   LR_FreeSurface(screen_copy);
    return false;
 }
 
@@ -364,8 +364,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
          VL_ScreenToScreen(screen_copy, screenBuffer);
          VH_UpdateScreen();
 
-         SDL_FreeSurface(source_copy);
-         SDL_FreeSurface(screen_copy);
+         LR_FreeSurface(source_copy);
+         LR_FreeSurface(screen_copy);
          return true;
       }
 

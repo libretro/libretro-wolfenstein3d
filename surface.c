@@ -154,3 +154,8 @@ SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
 {
    return SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
 }
+
+void LR_FreeSurface(SDL_Surface* surface)
+{
+   SDL_FreeSurface(surface);
+}
