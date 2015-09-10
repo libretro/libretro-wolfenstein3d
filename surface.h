@@ -41,4 +41,13 @@ int LR_Init(uint32_t flags);
 
 void LR_Quit(void);
 
+SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
+      int    width,
+      int    height,
+      int    depth,
+      uint32_t Rmask,
+      uint32_t Gmask,
+      uint32_t Bmask,
+      uint32_t Amask);
+
 #endif

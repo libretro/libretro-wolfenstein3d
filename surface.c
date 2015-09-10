@@ -118,7 +118,7 @@ void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color)
       }
 }
 
-void LR_Delay(Uint32 ms)
+void LR_Delay(uint32_t ms)
 {
    rarch_sleep(ms);
 }
@@ -141,4 +141,16 @@ int LR_Init(uint32_t flags)
 void LR_Quit(void)
 {
    SDL_Quit();
+}
+
+SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
+      int    width,
+      int    height,
+      int    depth,
+      uint32_t Rmask,
+      uint32_t Gmask,
+      uint32_t Bmask,
+      uint32_t Amask)
+{
+   return SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
 }

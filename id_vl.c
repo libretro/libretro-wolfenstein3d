@@ -79,7 +79,7 @@ void    VL_SetVGAPlaneMode (void)
    LR_SetColors(screen, gamepal, 0, 256);
    memcpy(curpal, gamepal, sizeof(LR_Color) * 256);
 
-   screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
+   screenBuffer = LR_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
          screenHeight, 8, 0, 0, 0, 0);
    if(!screenBuffer)
       exit(1);

@@ -215,7 +215,7 @@ void LoadLatchMem (void)
    byte *src;
 
    /* tile 8s */
-   SDL_Surface *surf = SDL_CreateRGBSurface(SDL_HWSURFACE, 8*8,
+   SDL_Surface *surf = LR_CreateRGBSurface(SDL_HWSURFACE, 8*8,
          ((NUMTILE8 + 7) / 8) * 8, 8, 0, 0, 0, 0);
 
    if(!surf)
@@ -242,7 +242,7 @@ void LoadLatchMem (void)
    {
       width  = pictable[i-STARTPICS].width;
       height = pictable[i-STARTPICS].height;
-      surf   = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+      surf   = LR_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
 
       if(!surf)
          Quit("Unable to create surface for picture!");
