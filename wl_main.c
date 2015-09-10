@@ -1036,7 +1036,7 @@ void DoJukebox(void)
 
 #ifndef SPEAR
 #ifndef UPLOAD
-    start = ((SDL_GetTicks()/10)%3)*6;
+    start = ((LR_GetTicks()/10)%3)*6;
 #else
     start = 0;
 #endif

@@ -58,6 +58,7 @@ SRCS += wl_menu.cpp
 SRCS += wl_play.cpp
 SRCS += wl_state.cpp
 SRCS += wl_text.cpp
+SRCS += surface.cpp
 SRCS += SDL_mixer/effect_position.cpp
 SRCS += SDL_mixer/effects_internal.cpp
 SRCS += SDL_mixer/mixer.cpp

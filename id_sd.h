@@ -8,6 +8,8 @@
 #ifndef __ID_SD__
 #define __ID_SD__
 
+#include "surface.h"
+
 #define TickBase        70      // 70Hz per tick - used as a base for timer 0
 
 typedef enum
@@ -117,7 +119,7 @@ extern  SMMode          MusicMode;
 extern  int             DigiMap[];
 extern  int             DigiChannel[];
 
-#define GetTimeCount()  ((SDL_GetTicks()*7)/100)
+#define GetTimeCount()  ((LR_GetTicks()*7)/100)
 
 static inline void Delay(int wolfticks)
 {

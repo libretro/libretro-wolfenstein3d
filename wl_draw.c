@@ -1022,7 +1022,7 @@ void CalcTics (void)
    if (lasttimecount > (int32_t) GetTimeCount())
       lasttimecount = GetTimeCount();    /* if the game was paused a LONG time */
 
-   curtime = SDL_GetTicks();
+   curtime = LR_GetTicks();
    tics = (curtime * 7) / 100 - lasttimecount;
 
    if(!tics)

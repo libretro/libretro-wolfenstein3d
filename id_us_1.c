@@ -750,7 +750,7 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
 void US_InitRndT(int randomize)
 {
    if(randomize)
-      rndindex = (SDL_GetTicks() >> 4) & 0xff;
+      rndindex = (LR_GetTicks() >> 4) & 0xff;
    else
       rndindex = 0;
 }

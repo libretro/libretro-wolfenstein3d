@@ -28,6 +28,7 @@
 #include "SDL_timer.h"
 
 #include "SDL_mixer.h"
+#include "../surface.h"
 
 #define __MIX_INTERNAL_EFFECT__
 #include "effects_internal.h"
@@ -190,7 +191,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
       mix_music(music_data, stream, len);
 
    /* Mix any playing channels... */
-   sdl_ticks = SDL_GetTicks();
+   sdl_ticks = LR_GetTicks();
    for ( i=0; i<num_channels; ++i )
    {
       if( ! mix_channel[i].paused )
@@ -688,7 +689,7 @@ int Mix_PlayChannelTimed(int which, Mix_Chunk *chunk, int loops, int ticks)
    /* Queue up the audio data for this channel */
    if ( which >= 0 && which < num_channels )
    {
-      Uint32 sdl_ticks = SDL_GetTicks();
+      Uint32 sdl_ticks = LR_GetTicks();
       if (Mix_Playing(which))
          _Mix_channel_done_playing(which);
       mix_channel[which].samples = chunk->abuf;
@@ -718,7 +719,7 @@ int Mix_ExpireChannel(int which, int ticks)
    }
    else if ( which < num_channels )
    {
-      mix_channel[which].expire = (ticks>0) ? (SDL_GetTicks() + ticks) : 0;
+      mix_channel[which].expire = (ticks>0) ? (LR_GetTicks() + ticks) : 0;
       ++ status;
    }
    return(status);
@@ -880,7 +881,7 @@ void Mix_CloseAudio(void)
 /* Pause a particular channel (or all) */
 void Mix_Pause(int which)
 {
-   Uint32 sdl_ticks = SDL_GetTicks();
+   Uint32 sdl_ticks = LR_GetTicks();
    if ( which == -1 )
    {
       int i;
@@ -901,7 +902,7 @@ void Mix_Pause(int which)
 /* Resume a paused channel */
 void Mix_Resume(int which)
 {
-   Uint32 sdl_ticks = SDL_GetTicks();
+   Uint32 sdl_ticks = LR_GetTicks();
 
    if (which == -1)
    {
@@ -995,7 +996,7 @@ int Mix_GroupOldest(int tag)
 {
    int i;
    int chan = -1;
-   Uint32 mintime = SDL_GetTicks();
+   Uint32 mintime = LR_GetTicks();
 
    for( i=0; i < num_channels; i ++ )
    {
