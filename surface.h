@@ -31,6 +31,8 @@ uint32_t LR_GetTicks(void);
 
 void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color);
 
+void LR_Delay(Uint32 ms);
+
 void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstcolor, int ncolors);
 
 int LR_SetColors(SDL_Surface *surface, LR_Color *colors, int firstcolor, int ncolors);
