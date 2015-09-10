@@ -624,5 +624,5 @@ void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
 
 void VL_ScreenToScreen (SDL_Surface *source, SDL_Surface *dest)
 {
-   SDL_BlitSurface(source, NULL, dest, NULL);
+   SDL_UpperBlit(source, NULL, dest, NULL);
 }
