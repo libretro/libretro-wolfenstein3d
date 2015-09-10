@@ -73,13 +73,7 @@ static inline void VL_Bar      (int x, int y, int width, int height, int color)
 
 static inline void VL_ClearScreen(int color)
 {
-   unsigned i, j;
-   for (i = 0; i < curSurface->w; i++)
-      for (j = 0; j < curSurface->h; j++)
-      {
-         uint8_t *pix = (uint8_t*)curSurface->pixels + j * curSurface->pitch + i * 4;
-         *(uint32_t*)pix = color;
-      }
+   LR_FillRect(curSurface, NULL, color);
 }
 
 void VL_MungePic                (byte *source, unsigned width, unsigned height);

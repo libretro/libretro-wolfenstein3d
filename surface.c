@@ -16,6 +16,8 @@
 #include <time.h>
 #endif
 
+#include "surface.h"
+
 typedef uint64_t retro_perf_tick_t;
 
 static retro_perf_tick_t rarch_get_perf_counter(void)
@@ -73,4 +75,18 @@ static retro_perf_tick_t rarch_get_perf_counter(void)
 uint32_t LR_GetTicks(void)
 {
    return (uint32_t)rarch_get_perf_counter();
+}
+
+void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color)
+{
+   unsigned i, j;
+   const SDL_Rect *rect = (const SDL_Rect*)rect_data;
+   (void)rect;
+
+   for (i = 0; i < surface->w; i++)
+      for (j = 0; j < surface->h; j++)
+      {
+         uint8_t *pix = (uint8_t*)surface->pixels + j * surface->pitch + i * 4;
+         *(uint32_t*)pix = color;
+      }
 }
