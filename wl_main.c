@@ -1318,12 +1318,11 @@ static void DemoLoop(void)
       EnableEndGameMenuItem();
       NewGame(param_difficulty,0);
 
+      gamestate.episode  = 0;
+      gamestate.mapon    = param_tedlevel;
 #ifndef SPEAR
-      gamestate.episode = param_tedlevel/10;
-      gamestate.mapon = param_tedlevel%10;
-#else
-      gamestate.episode = 0;
-      gamestate.mapon = param_tedlevel;
+      gamestate.episode  = param_tedlevel/10;
+      gamestate.mapon   %= 10;
 #endif
       GameLoop();
       Quit (NULL);
@@ -1429,10 +1428,8 @@ static void DemoLoop(void)
       if (Keyboard[sc_Tab] && param_debugmode)
          RecordDemo ();
       else
-         US_ControlPanel (0);
-#else
-      US_ControlPanel (0);
 #endif
+      US_ControlPanel (0);
 
       if (startgame || loadedgame)
       {
