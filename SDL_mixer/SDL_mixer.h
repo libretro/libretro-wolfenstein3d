@@ -71,7 +71,7 @@ void Mix_Quit(void);
 #endif
 
 /* Good default values for a PC soundcard */
-#define MIX_DEFAULT_FREQUENCY   22050
+#define MIX_DEFAULT_FREQUENCY   44010
 #ifdef MSB_FIRST
 #define MIX_DEFAULT_FORMAT  AUDIO_S16MSB
 #else
