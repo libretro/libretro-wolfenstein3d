@@ -1120,10 +1120,7 @@ static void InitGame(void)
 
    /* initialize SDL */
    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
-   {
-      printf("Unable to init SDL: %s\n", SDL_GetError());
       exit(1);
-   }
    atexit(SDL_Quit);
 
    int numJoysticks = SDL_NumJoysticks();
