@@ -113,28 +113,6 @@ static  Direction   DirTable[] =        // Quick lookup for total direction
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//  INL_GetMouseButtons() - Gets the status of the mouse buttons from the
-//      mouse driver
-//
-///////////////////////////////////////////////////////////////////////////
-static int INL_GetMouseButtons(void)
-{
-   int buttons = SDL_GetMouseState(NULL, NULL);
-   int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-   int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
-
-   buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
-
-   if(middlePressed)
-      buttons |= 1 << 2;
-   if(rightPressed)
-      buttons |= 1 << 1;
-
-   return buttons;
-}
-
-///////////////////////////////////////////////////////////////////////////
-//
 //  IN_GetJoyDelta() - Returns the relative movement of the specified
 //      joystick (from +/-127)
 //
@@ -332,7 +310,7 @@ void IN_Startup(void)
 
    // I didn't find a way to ask libSDL whether a mouse is present, yet...
 
-   MousePresent = true;
+   MousePresent = false;
 
    IN_Started = true;
 }
@@ -441,9 +419,6 @@ void IN_StartAck(void)
 
    buttons = IN_JoyButtons() << 4;
 
-   if(MousePresent)
-      buttons |= IN_MouseButtons();
-
    for(i = 0; i < NUMBUTTONS; i++, buttons >>= 1)
       if(buttons & 1)
          btnstate[i] = true;
@@ -539,8 +514,6 @@ boolean IN_UserInput(longword delay)
 */
 int IN_MouseButtons (void)
 {
-   if (MousePresent)
-      return INL_GetMouseButtons();
    return 0;
 }
 
@@ -551,5 +524,4 @@ bool IN_IsInputGrabbed()
 
 void IN_CenterMouse()
 {
-   SDL_WarpMouse(screenWidth / 2, screenHeight / 2);
 }
