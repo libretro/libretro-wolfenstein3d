@@ -113,7 +113,7 @@ static  int                     sqHackSeqLen;
 static  longword                sqHackTime;
 
 
-static void SDL_SoundFinished(void)
+static void SD_SoundFinished(void)
 {
    SoundNumber   = (soundnames)0;
    SoundPriority = 0;
@@ -126,7 +126,7 @@ void SD_StopDigitized(void)
    DigiPriority = 0;
    SoundPositioned = false;
    if ((DigiMode == sds_PC) && (SoundMode == sdm_PC))
-      SDL_SoundFinished();
+      SD_SoundFinished();
 
    switch (DigiMode)
    {
@@ -302,7 +302,7 @@ void SD_SetDigiDevice(SDSMode mode)
       DigiMode = mode;
 }
 
-void SDL_SetupDigi(void)
+static void SD_SetupDigi(void)
 {
    /* Correct padding enforced by PM_Startup() */
    int i;
@@ -373,17 +373,17 @@ void SDL_SetupDigi(void)
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_ALStopSound() - Turns off any sound effects playing through the
+//      SD_ALStopSound() - Turns off any sound effects playing through the
 //              AdLib card
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_ALStopSound(void)
+static void SD_ALStopSound(void)
 {
    alSound = 0;
    YM3812Write(0, alFreqH + 0, 0);
 }
 
-static void SDL_AlSetFXInst(Instrument *inst)
+static void SD_AlSetFXInst(Instrument *inst)
 {
    byte m = 0;      /* modulator cell for channel 0 */
    byte c = 3;      /* carrier cell for channel 0 */
@@ -403,15 +403,15 @@ static void SDL_AlSetFXInst(Instrument *inst)
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_ALPlaySound() - Plays the specified sound on the AdLib card
+//      SD_ALPlaySound() - Plays the specified sound on the AdLib card
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_ALPlaySound(AdLibSound *sound)
+static void SD_ALPlaySound(AdLibSound *sound)
 {
    Instrument      *inst;
    byte            *data;
 
-   SDL_ALStopSound();
+   SD_ALStopSound();
 
    alLengthLeft = sound->common.length;
    data         = sound->data;
@@ -420,32 +420,32 @@ static void SDL_ALPlaySound(AdLibSound *sound)
 
    if (!(inst->mSus | inst->cSus))
    {
-      Quit("SDL_ALPlaySound() - Bad instrument");
+      Quit("SD_ALPlaySound() - Bad instrument");
    }
 
-   SDL_AlSetFXInst(inst);
+   SD_AlSetFXInst(inst);
    alSound = (byte *)data;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_ShutAL() - Shuts down the AdLib card for sound effects
+//      SD_ShutAL() - Shuts down the AdLib card for sound effects
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_ShutAL(void)
+static void SD_ShutAL(void)
 {
    alSound = 0;
    YM3812Write(0, alEffects,0);
    YM3812Write(0, alFreqH + 0,0);
-   SDL_AlSetFXInst(&alZeroInst);
+   SD_AlSetFXInst(&alZeroInst);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_CleanAL() - Totally shuts down the AdLib card
+//      SD_CleanAL() - Totally shuts down the AdLib card
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_CleanAL(void)
+static void SD_CleanAL(void)
 {
    int     i;
 
@@ -456,22 +456,22 @@ static void SDL_CleanAL(void)
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_StartAL() - Starts up the AdLib card for sound effects
+//      SD_StartAL() - Starts up the AdLib card for sound effects
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_StartAL(void)
+static void SD_StartAL(void)
 {
    YM3812Write(0, alEffects, 0);
-   SDL_AlSetFXInst(&alZeroInst);
+   SD_AlSetFXInst(&alZeroInst);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_DetectAdLib() - Determines if there's an AdLib (or SoundBlaster
+//      SD_DetectAdLib() - Determines if there's an AdLib (or SoundBlaster
 //              emulating an AdLib) present
 //
 ///////////////////////////////////////////////////////////////////////////
-static boolean SDL_DetectAdLib(void)
+static boolean SD_DetectAdLib(void)
 {
    unsigned i;
    for (i = 1; i <= 0xf5; i++)       /* Zero all the registers */
@@ -484,20 +484,20 @@ static boolean SDL_DetectAdLib(void)
 
 ////////////////////////////////////////////////////////////////////////////
 //
-//      SDL_ShutDevice() - turns off whatever device was being used for sound fx
+//      SD_ShutDevice() - turns off whatever device was being used for sound fx
 //
 ////////////////////////////////////////////////////////////////////////////
-static void SDL_ShutDevice(void)
+static void SD_ShutDevice(void)
 {
    switch (SoundMode)
    {
       case sdm_PC:
 #if 0
-         SDL_ShutPC();
+         SD_ShutPC();
 #endif
          break;
       case sdm_AdLib:
-         SDL_ShutAL();
+         SD_ShutAL();
          break;
    }
    SoundMode = sdm_Off;
@@ -505,26 +505,26 @@ static void SDL_ShutDevice(void)
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_CleanDevice() - totally shuts down all sound devices
+//      SD_CleanDevice() - totally shuts down all sound devices
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_CleanDevice(void)
+static void SD_CleanDevice(void)
 {
    if ((SoundMode == sdm_AdLib) || (MusicMode == smm_AdLib))
-      SDL_CleanAL();
+      SD_CleanAL();
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//      SDL_StartDevice() - turns on whatever device is to be used for sound fx
+//      SD_StartDevice() - turns on whatever device is to be used for sound fx
 //
 ///////////////////////////////////////////////////////////////////////////
-static void SDL_StartDevice(void)
+static void SD_StartDevice(void)
 {
    switch (SoundMode)
    {
       case sdm_AdLib:
-         SDL_StartAL();
+         SD_StartAL();
          break;
    }
    SoundNumber = (soundnames) 0;
@@ -571,9 +571,9 @@ boolean SD_SetSoundMode(SDMode mode)
 
    if (result && (mode != SoundMode))
    {
-      SDL_ShutDevice();
+      SD_ShutDevice();
       SoundMode = mode;
-      SDL_StartDevice();
+      SD_StartDevice();
    }
 
    return(result);
@@ -616,7 +616,7 @@ longword curAlLengthLeft = 0;
 int soundTimeCounter = 5;
 int samplesPerMusicTick;
 
-void SDL_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
+static void SD_IMFMusicPlayer(void *udata, Uint8 *stream, int len)
 {
    int stereolen = len>>1;
    int sampleslen = stereolen>>1;
@@ -712,7 +712,7 @@ void SD_Startup(void)
 
    /* Initialize music */
 
-   samplesPerMusicTick = 44100 / 700; /* SDL_t0FastAsmService played at 700Hzs */
+   samplesPerMusicTick = 44100 / 700; /*played at 700Hzs */
 
    if(YM3812Init(1, 3579545, 44100))
       printf("Unable to create virtual OPL!!\n");
@@ -722,7 +722,7 @@ void SD_Startup(void)
 
    YM3812Write(0,1,0x20); /* Set WSE=1 */
 
-   Mix_HookMusic(SDL_IMFMusicPlayer, 0);
+   Mix_HookMusic(SD_IMFMusicPlayer, 0);
    Mix_ChannelFinished(SD_ChannelFinished);
    AdLibPresent = true;
    SoundBlasterPresent = true;
@@ -732,7 +732,7 @@ void SD_Startup(void)
    SD_SetSoundMode(sdm_Off);
    SD_SetMusicMode(smm_Off);
 
-   SDL_SetupDigi();
+   SD_SetupDigi();
 
    SD_Started = true;
 }
@@ -832,11 +832,11 @@ boolean SD_PlaySound(soundnames sound)
    {
       case sdm_PC:
 #if 0
-         SDL_PCPlaySound((PCSound *)s);
+         SD_PCPlaySound((PCSound *)s);
 #endif
          break;
       case sdm_AdLib:
-         SDL_ALPlaySound((AdLibSound *)s);
+         SD_ALPlaySound((AdLibSound *)s);
          break;
    }
 
@@ -886,17 +886,17 @@ SD_StopSound(void)
    {
       case sdm_PC:
 #if 0
-         SDL_PCStopSound();
+         SD_PCStopSound();
 #endif
          break;
       case sdm_AdLib:
-         SDL_ALStopSound();
+         SD_ALStopSound();
          break;
    }
 
    SoundPositioned = false;
 
-   SDL_SoundFinished();
+   SD_SoundFinished();
 }
 
 ///////////////////////////////////////////////////////////////////////////
