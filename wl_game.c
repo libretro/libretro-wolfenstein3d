@@ -1360,9 +1360,7 @@ startplayloop:
          SD_StopSound();
          SD_PlaySound(GETSPEARSND);
          if (DigiMode != sds_Off)
-         {
-            Delay(150);
-         }
+            LR_Delay(150);
          else
             SD_WaitSoundDone();
 
