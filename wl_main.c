@@ -1455,6 +1455,8 @@ void CheckParameters(int argc, char *argv[])
     int defaultSampleRate = 44100;
     unsigned i;
 
+    screenBits = 16;
+
     for(i = 1; i < argc; i++)
     {
         char *arg = argv[i];
@@ -1504,31 +1506,6 @@ void CheckParameters(int argc, char *argv[])
                 unsigned factor = screenWidth / 320;
                 if(screenWidth % 320 || screenHeight != 200 * factor && screenHeight != 240 * factor)
                     printf("Screen size must be a multiple of 320x200 or 320x240!\n"), hasError = true;
-            }
-        }
-        else IFARG("--bits")
-        {
-            if(++i >= argc)
-            {
-                printf("The bits option is missing the color depth argument!\n");
-                hasError = true;
-            }
-            else
-            {
-                screenBits = atoi(argv[i]);
-                switch(screenBits)
-                {
-                    case 8:
-                    case 16:
-                    case 24:
-                    case 32:
-                        break;
-
-                    default:
-                        printf("Screen color depth must be 8, 16, 24, or 32!\n");
-                        hasError = true;
-                        break;
-                }
             }
         }
         else IFARG("--joystick")
