@@ -901,8 +901,8 @@ void ContinueMusic(int offs)
 #define WHITETICS       6
 
 
-SDL_Color redshifts[NUMREDSHIFTS][256];
-SDL_Color whiteshifts[NUMWHITESHIFTS][256];
+LR_Color redshifts[NUMREDSHIFTS][256];
+LR_Color whiteshifts[NUMWHITESHIFTS][256];
 
 int damagecount, bonuscount;
 boolean palshifted;
@@ -917,7 +917,7 @@ boolean palshifted;
 
 void InitRedShifts (void)
 {
-   SDL_Color *workptr, *baseptr;
+   LR_Color *workptr, *baseptr;
    int i, j, delta;
 
    /* fade through intermediate frames */

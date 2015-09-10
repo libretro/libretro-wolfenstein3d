@@ -9,6 +9,14 @@ typedef struct LR_Surface
    SDL_Surface *surf;
 } LR_Surface;
 
+typedef struct LR_Color
+{
+   uint8_t r;
+   uint8_t g;
+   uint8_t b;
+   uint8_t unused;
+} LR_Color;
+
 #define RED_EXPAND   3
 #define GREEN_EXPAND 2
 #define BLUE_EXPAND  3
@@ -22,5 +30,7 @@ typedef struct LR_Surface
 uint32_t LR_GetTicks(void);
 
 void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color);
+
+void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstcolor, int ncolors);
 
 #endif

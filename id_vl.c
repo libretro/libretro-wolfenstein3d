@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "wl_def.h"
+#include "surface.h"
 
 boolean fullscreen = false;
 
@@ -24,14 +25,14 @@ unsigned scaleFactor;
 boolean  screenfaded;
 unsigned bordercolor;
 
-SDL_Color palette1[256], palette2[256];
-SDL_Color curpal[256];
+LR_Color palette1[256], palette2[256];
+LR_Color curpal[256];
 
 
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
-SDL_Color gamepal[]={
+LR_Color gamepal[]={
 #ifdef SPEAR
     #include "sodpal.inc"
 #else
@@ -78,8 +79,8 @@ void    VL_SetVGAPlaneMode (void)
       exit(1);
    }
 
-   SDL_SetColors(screen, gamepal, 0, 256);
-   memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
+   SDL_SetColors(screen, (SDL_Color*)gamepal, 0, 256);
+   memcpy(curpal, gamepal, sizeof(LR_Color) * 256);
 
    screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
          screenHeight, 8, 0, 0, 0, 0);
@@ -88,7 +89,7 @@ void    VL_SetVGAPlaneMode (void)
       printf("Unable to create screen buffer surface: %s\n", SDL_GetError());
       exit(1);
    }
-   SDL_SetColors(screenBuffer, gamepal, 0, 256);
+   SDL_SetColors(screenBuffer, (SDL_Color*)gamepal, 0, 256);
 
    screenPitch = screen->pitch;
    bufferPitch = screenBuffer->pitch;
@@ -125,7 +126,7 @@ void    VL_SetVGAPlaneMode (void)
 =================
 */
 
-void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors)
+void VL_ConvertPalette(byte *srcpal, LR_Color *destpal, int numColors)
 {
    unsigned i;
 
@@ -148,7 +149,7 @@ void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors)
 void VL_FillPalette (int red, int green, int blue)
 {
     int i;
-    SDL_Color pal[256];
+    LR_Color pal[256];
 
     for(i = 0; i < 256; i++)
     {
@@ -170,10 +171,10 @@ void VL_FillPalette (int red, int green, int blue)
 
 void VL_SetColor    (int color, int red, int green, int blue)
 {
-   SDL_Color col = { red, green, blue };
+   LR_Color col = { red, green, blue };
    curpal[color] = col;
 
-   SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
+   LR_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
    VH_UpdateScreen();
 }
 
@@ -187,7 +188,7 @@ void VL_SetColor    (int color, int red, int green, int blue)
 
 void VL_GetColor    (int color, int *red, int *green, int *blue)
 {
-   SDL_Color *col = &curpal[color];
+   LR_Color *col = &curpal[color];
 
    *red   = col->r;
    *green = col->g;
@@ -202,11 +203,11 @@ void VL_GetColor    (int color, int *red, int *green, int *blue)
 =================
 */
 
-void VL_SetPalette (SDL_Color *palette, bool forceupdate)
+void VL_SetPalette (LR_Color *palette, bool forceupdate)
 {
-   memcpy(curpal, palette, sizeof(SDL_Color) * 256);
+   memcpy(curpal, palette, sizeof(LR_Color) * 256);
 
-   SDL_SetPalette(curSurface, SDL_LOGPAL, palette, 0, 256);
+   LR_SetPalette(curSurface, SDL_LOGPAL, palette, 0, 256);
    if (forceupdate)
       VH_UpdateScreen();
 }
@@ -219,9 +220,9 @@ void VL_SetPalette (SDL_Color *palette, bool forceupdate)
 =================
 */
 
-void VL_GetPalette (SDL_Color *palette)
+void VL_GetPalette (LR_Color *palette)
 {
-   memcpy(palette, curpal, sizeof(SDL_Color) * 256);
+   memcpy(palette, curpal, sizeof(LR_Color) * 256);
 }
 
 /*
@@ -237,7 +238,7 @@ void VL_GetPalette (SDL_Color *palette)
 void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 {
    int         i,j,orig,delta;
-   SDL_Color   *origptr, *newptr;
+   LR_Color   *origptr, *newptr;
 
    red   = red * 255 / 63;
    green = green * 255 / 63;
@@ -245,7 +246,7 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 
    VL_WaitVBL(1);
    VL_GetPalette(palette1);
-   memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
+   memcpy(palette2, palette1, sizeof(LR_Color) * 256);
 
    /* fade through intermediate frames */
    for (i = 0; i < steps; i++)
@@ -287,13 +288,13 @@ void VL_FadeOut (int start, int end, int red, int green, int blue, int steps)
 =================
 */
 
-void VL_FadeIn (int start, int end, SDL_Color *palette, int steps)
+void VL_FadeIn (int start, int end, LR_Color *palette, int steps)
 {
    int i,j,delta;
 
    VL_WaitVBL(1);
    VL_GetPalette(palette1);
-   memcpy(palette2, palette1, sizeof(SDL_Color) * 256);
+   memcpy(palette2, palette1, sizeof(LR_Color) * 256);
 
    /* fade through intermediate frames */
    for (i = 0;i < steps; i++)

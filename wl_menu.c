@@ -427,7 +427,7 @@ US_ControlPanel (ScanCode scancode)
 
             VW_UpdateScreen ();
 
-            SDL_Color pal[256];
+            LR_Color pal[256];
             CA_CacheGrChunk (IDGUYSPALETTE);
             VL_ConvertPalette(grsegs[IDGUYSPALETTE], pal, 256);
             VL_FadeIn (0, 255, pal, 30);

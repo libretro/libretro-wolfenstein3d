@@ -221,7 +221,7 @@ void LoadLatchMem (void)
    if(!surf)
       Quit("Unable to create surface for tiles!");
 
-   SDL_SetColors(surf, gamepal, 0, 256);
+   SDL_SetColors(surf, (SDL_Color*)gamepal, 0, 256);
 
    latchpics[0] = surf;
    CA_CacheGrChunk (STARTTILE8);
@@ -246,7 +246,7 @@ void LoadLatchMem (void)
 
       if(!surf)
          Quit("Unable to create surface for picture!");
-      SDL_SetColors(surf, gamepal, 0, 256);
+      SDL_SetColors(surf, (SDL_Color*)gamepal, 0, 256);
 
       latchpics[2+i-start] = surf;
       CA_CacheGrChunk (i);
@@ -289,7 +289,7 @@ static const uint32_t rndmasks[] = {
 static unsigned int rndbits_y;
 static unsigned int rndmask;
 
-extern SDL_Color curpal[256];
+extern LR_Color curpal[256];
 
 /* Returns the number of bits needed to represent the given value */
 static int log2_ceil(uint32_t x)

@@ -1382,7 +1382,7 @@ static void DemoLoop(void)
 #ifndef DEMOTEST
 
 #ifdef SPEAR
-         SDL_Color pal[256];
+         LR_Color pal[256];
          /* title page */
          CA_CacheGrChunk (TITLEPALETTE);
          VL_ConvertPalette(grsegs[TITLEPALETTE], pal, 256);

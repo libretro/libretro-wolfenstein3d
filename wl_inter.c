@@ -38,7 +38,7 @@ void ClearSplitVWB (void)
 
 static void EndScreen (int palette, int screen)
 {
-   SDL_Color pal[256];
+   LR_Color pal[256];
    CA_CacheScreen (screen);
    VW_UpdateScreen ();
    CA_CacheGrChunk (palette);
@@ -52,7 +52,7 @@ static void EndScreen (int palette, int screen)
 
 static void EndSpear (void)
 {
-   SDL_Color pal[256];
+   LR_Color pal[256];
 
    EndScreen (END1PALETTE, ENDSCREEN11PIC);
 

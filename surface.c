@@ -90,3 +90,8 @@ void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color)
          *(uint32_t*)pix = color;
       }
 }
+
+void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstcolor, int ncolors)
+{
+   SDL_SetPalette(surface, flags, (SDL_Color*)colors, firstcolor, ncolors);
+}
