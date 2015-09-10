@@ -108,8 +108,7 @@ uint32_t LR_GetTicks(void)
 void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color)
 {
    unsigned i, j;
-   const SDL_Rect *rect = (const SDL_Rect*)rect_data;
-   (void)rect;
+   (void)rect_data;
 
    for (i = 0; i < surface->w; i++)
       for (j = 0; j < surface->h; j++)
