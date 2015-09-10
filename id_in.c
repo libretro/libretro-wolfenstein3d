@@ -53,7 +53,6 @@ static KeyboardDef KbdDefs = {
     sc_PgDn                 // downright
 };
 
-static SDL_Joystick *Joystick;
 int JoyNumButtons;
 static int JoyNumHats;
 
@@ -144,45 +143,8 @@ static int INL_GetMouseButtons(void)
 ///////////////////////////////////////////////////////////////////////////
 void IN_GetJoyDelta(int *dx,int *dy)
 {
-   int x, y;
-
-   if(!Joystick)
-   {
-      *dx = *dy = 0;
-      return;
-   }
-
-   SDL_JoystickUpdate();
-
-   x = SDL_JoystickGetAxis(Joystick, 0) >> 8;
-   y = SDL_JoystickGetAxis(Joystick, 1) >> 8;
-
-   if(param_joystickhat != -1)
-   {
-      uint8_t hatState = SDL_JoystickGetHat(Joystick, param_joystickhat);
-
-      if(hatState & SDL_HAT_RIGHT)
-         x += 127;
-      else if(hatState & SDL_HAT_LEFT)
-         x -= 127;
-      if(hatState & SDL_HAT_DOWN)
-         y += 127;
-      else if(hatState & SDL_HAT_UP)
-         y -= 127;
-
-      if(x < -128)
-         x = -128;
-      else if(x > 127)
-         x = 127;
-
-      if(y < -128)
-         y = -128;
-      else if(y > 127)
-         y = 127;
-   }
-
-   *dx = x;
-   *dy = y;
+   *dx = *dy = 0;
+   return;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -193,30 +155,9 @@ void IN_GetJoyDelta(int *dx,int *dy)
 ///////////////////////////////////////////////////////////////////////////
 void IN_GetJoyFineDelta(int *dx, int *dy)
 {
-   int x, y;
-   if(!Joystick)
-   {
-      *dx = 0;
-      *dy = 0;
-      return;
-   }
-
-   SDL_JoystickUpdate();
-   x = SDL_JoystickGetAxis(Joystick, 0);
-   y = SDL_JoystickGetAxis(Joystick, 1);
-
-   if(x < -128)
-      x = -128;
-   else if(x > 127)
-      x = 127;
-
-   if(y < -128)
-      y = -128;
-   else if(y > 127)
-      y = 127;
-
-   *dx = x;
-   *dy = y;
+   *dx = 0;
+   *dy = 0;
+   return;
 }
 
 /*
@@ -229,22 +170,12 @@ void IN_GetJoyFineDelta(int *dx, int *dy)
 
 int IN_JoyButtons(void)
 {
-   unsigned i;
-   int res = 0;
-
-   if(!Joystick)
-      return 0;
-
-   SDL_JoystickUpdate();
-
-   for(i = 0; i < JoyNumButtons && i < 32; i++)
-      res |= SDL_JoystickGetButton(Joystick, i) << i;
-   return res;
+   return 0;
 }
 
 boolean IN_JoyPresent(void)
 {
-   return Joystick != NULL;
+   return false;
 }
 
 static void processEvent(SDL_Event *event)
@@ -405,19 +336,6 @@ void IN_Startup(void)
 
    IN_ClearKeysDown();
 
-   if(param_joystickindex >= 0 && param_joystickindex < SDL_NumJoysticks())
-   {
-      Joystick = SDL_JoystickOpen(param_joystickindex);
-      if(Joystick)
-      {
-         JoyNumButtons = SDL_JoystickNumButtons(Joystick);
-         if(JoyNumButtons > 32) JoyNumButtons = 32;      // only up to 32 buttons are supported
-         JoyNumHats = SDL_JoystickNumHats(Joystick);
-         if(param_joystickhat < -1 || param_joystickhat >= JoyNumHats)
-            Quit("The joystickhat param must be between 0 and %i!", JoyNumHats - 1);
-      }
-   }
-
    SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 
    if(fullscreen || forcegrabmouse)
@@ -442,9 +360,6 @@ void IN_Shutdown(void)
 {
    if (!IN_Started)
       return;
-
-   if(Joystick)
-      SDL_JoystickClose(Joystick);
 
    IN_Started = false;
 }
