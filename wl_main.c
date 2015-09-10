@@ -1119,19 +1119,9 @@ static void InitGame(void)
 #endif
 
    /* initialize SDL */
-   if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
+   if(LR_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
       exit(1);
-   atexit(SDL_Quit);
-
-   int numJoysticks = SDL_NumJoysticks();
-   if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
-   {
-      if(!numJoysticks)
-         printf("No joysticks are available to SDL!\n");
-      else
-         printf("The joystick index must be between -1 and %i!\n", numJoysticks - 1);
-      exit(1);
-   }
+   atexit(LR_Quit);
 
    SignonScreen ();
 
