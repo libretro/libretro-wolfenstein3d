@@ -1128,25 +1128,24 @@ static position_args *get_position_arg(int channel)
     void *rc;
     int i;
 
-    if (channel < 0) {
-        if (pos_args_global == NULL) {
-            pos_args_global = malloc(sizeof (position_args));
-            if (pos_args_global == NULL) {
-                Mix_SetError("Out of memory");
-                return(NULL);
-            }
-            init_position_args(pos_args_global);
-        }
+    if (channel < 0)
+    {
+       if (pos_args_global == NULL)
+       {
+          pos_args_global = malloc(sizeof (position_args));
+          if (!pos_args_global)
+             return(NULL);
+          init_position_args(pos_args_global);
+       }
 
-        return(pos_args_global);
+       return(pos_args_global);
     }
 
-    if (channel >= position_channels) {
+    if (channel >= position_channels)
+    {
         rc = realloc(pos_args_array, (channel + 1) * sizeof (position_args *));
-        if (rc == NULL) {
-            Mix_SetError("Out of memory");
+        if (rc == NULL)
             return(NULL);
-        }
         pos_args_array = (position_args **) rc;
         for (i = position_channels; i <= channel; i++) {
             pos_args_array[i] = NULL;
@@ -1154,12 +1153,11 @@ static position_args *get_position_arg(int channel)
         position_channels = channel + 1;
     }
 
-    if (pos_args_array[channel] == NULL) {
+    if (pos_args_array[channel] == NULL)
+    {
         pos_args_array[channel] = (position_args *)malloc(sizeof(position_args));
-        if (pos_args_array[channel] == NULL) {
-            Mix_SetError("Out of memory");
+        if (pos_args_array[channel] == NULL)
             return(NULL);
-        }
         init_position_args(pos_args_array[channel]);
     }
 
@@ -1169,106 +1167,106 @@ static position_args *get_position_arg(int channel)
 
 static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
 {
-    Mix_EffectFunc_t f = NULL;
+   Mix_EffectFunc_t f = NULL;
 
-    switch (format) {
-        case AUDIO_U8:
-        switch (channels) {
+   switch (format) {
+      case AUDIO_U8:
+         switch (channels) {
             case 1:
             case 2:
-                    f = (_Eff_build_volume_table_u8()) ? _Eff_position_table_u8 :
-                                                        _Eff_position_u8;
-                break;
-                case 4:
-                        f = _Eff_position_u8_c4;
-                break;
-                case 6:
-                        f = _Eff_position_u8_c6;
-                break;
-        }
-            break;
+               f = (_Eff_build_volume_table_u8()) ? _Eff_position_table_u8 :
+                  _Eff_position_u8;
+               break;
+            case 4:
+               f = _Eff_position_u8_c4;
+               break;
+            case 6:
+               f = _Eff_position_u8_c6;
+               break;
+         }
+         break;
 
-        case AUDIO_S8:
-        switch (channels) {
+      case AUDIO_S8:
+         switch (channels) {
             case 1:
             case 2:
-                    f = (_Eff_build_volume_table_s8()) ? _Eff_position_table_s8 :
-                                                        _Eff_position_s8;
-                break;
-                case 4:
-                        f = _Eff_position_s8_c4;
-                break;
-                case 6:
-                        f = _Eff_position_s8_c6;
-                break;
-        }
-            break;
+               f = (_Eff_build_volume_table_s8()) ? _Eff_position_table_s8 :
+                  _Eff_position_s8;
+               break;
+            case 4:
+               f = _Eff_position_s8_c4;
+               break;
+            case 6:
+               f = _Eff_position_s8_c6;
+               break;
+         }
+         break;
 
-        case AUDIO_U16LSB:
-        switch (channels) {
+      case AUDIO_U16LSB:
+         switch (channels) {
             case 1:
             case 2:
-                    f = _Eff_position_u16lsb;
-                break;
-                case 4:
-                    f = _Eff_position_u16lsb_c4;
-                break;
-                case 6:
-                    f = _Eff_position_u16lsb_c6;
-                break;
-        }
-            break;
+               f = _Eff_position_u16lsb;
+               break;
+            case 4:
+               f = _Eff_position_u16lsb_c4;
+               break;
+            case 6:
+               f = _Eff_position_u16lsb_c6;
+               break;
+         }
+         break;
 
-        case AUDIO_S16LSB:
-        switch (channels) {
+      case AUDIO_S16LSB:
+         switch (channels) {
             case 1:
             case 2:
-                    f = _Eff_position_s16lsb;
-                break;
-                case 4:
-                    f = _Eff_position_s16lsb_c4;
-                break;
-                case 6:
-                    f = _Eff_position_s16lsb_c6;
-                break;
-        }
-            break;
+               f = _Eff_position_s16lsb;
+               break;
+            case 4:
+               f = _Eff_position_s16lsb_c4;
+               break;
+            case 6:
+               f = _Eff_position_s16lsb_c6;
+               break;
+         }
+         break;
 
-        case AUDIO_U16MSB:
-        switch (channels) {
+      case AUDIO_U16MSB:
+         switch (channels) {
             case 1:
             case 2:
-                    f = _Eff_position_u16msb;
-                break;
-                case 4:
-                    f = _Eff_position_u16msb_c4;
-                break;
-                case 6:
-                    f = _Eff_position_u16msb_c6;
-                break;
-        }
-            break;
+               f = _Eff_position_u16msb;
+               break;
+            case 4:
+               f = _Eff_position_u16msb_c4;
+               break;
+            case 6:
+               f = _Eff_position_u16msb_c6;
+               break;
+         }
+         break;
 
-        case AUDIO_S16MSB:
-        switch (channels) {
+      case AUDIO_S16MSB:
+         switch (channels) {
             case 1:
             case 2:
-                    f = _Eff_position_s16msb;
-                break;
-                case 4:
-                    f = _Eff_position_s16msb_c4;
-                break;
-                case 6:
-                    f = _Eff_position_s16msb_c6;
-                break;
-        }
-            break;
+               f = _Eff_position_s16msb;
+               break;
+            case 4:
+               f = _Eff_position_s16msb_c4;
+               break;
+            case 6:
+               f = _Eff_position_s16msb_c6;
+               break;
+         }
+         break;
 
-        default:
-            Mix_SetError("Unsupported audio format");
-    }
+      default:
+         break;
+   }
 
-    return(f);
+   return(f);
 }
 
 static Uint8 speaker_amplitude[6];

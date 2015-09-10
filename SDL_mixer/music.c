@@ -244,7 +244,6 @@ static int music_internal_play(Mix_Music *music, double position)
    switch (music->type)
    {
       default:
-         Mix_SetError("Can't play unknown music type");
          retval = -1;
          break;
    }
@@ -256,10 +255,7 @@ skip:
       if ( position > 0.0 )
       {
          if ( music_internal_position(position) < 0 )
-         {
-            Mix_SetError("Position not implemented for music type");
             retval = -1;
-         }
       }
       else
          music_internal_position(0.0);
@@ -282,16 +278,9 @@ int Mix_SetMusicPosition(double position)
    int retval;
 
    if ( music_playing )
-   {
       retval = music_internal_position(position);
-      if ( retval < 0 )
-         Mix_SetError("Position not implemented for music type");
-   }
    else
-   {
-      Mix_SetError("Music isn't playing");
       retval = -1;
-   }
 
    return(retval);
 }

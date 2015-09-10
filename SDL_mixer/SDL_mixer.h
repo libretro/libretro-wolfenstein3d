@@ -433,10 +433,6 @@ extern Mix_Chunk * Mix_GetChunk(int channel);
 /* Close the mixer, halting all playing audio */
 extern void Mix_CloseAudio(void);
 
-/* We'll use SDL for reporting errors */
-#define Mix_SetError    SDL_SetError
-#define Mix_GetError    SDL_GetError
-
 #include "close_code.h"
 
 #endif /* _SDL_MIXER_H */

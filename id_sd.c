@@ -270,10 +270,7 @@ int SD_PlayDigitized(word which,int leftpos,int rightpos)
    }
 
    if(Mix_PlayChannel(channel, sample, 0) == -1)
-   {
-      printf("Unable to play sound: %s\n", Mix_GetError());
-      return 0;
-   }
+      return 0; /* Unable to play sound */
 
    return channel;
 }
@@ -708,10 +705,7 @@ void SD_Startup(void)
       return;
 
    if(Mix_OpenAudio(44100, AUDIO_S16, 2, 2048))
-   {
-      printf("Unable to open audio: %s\n", Mix_GetError());
-      return;
-   }
+      return; /* Unable to open audio */
 
    Mix_ReserveChannels(2);  /* reserve player and boss weapon channels */
    Mix_GroupChannels(2, MIX_CHANNELS-1, 1); /* group remaining channels */

@@ -434,14 +434,12 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
    int samplesize;
 
    /* rcg06012001 Make sure src is valid */
-   if ( ! src ) {
-      SDL_SetError("Mix_LoadWAV_RW with NULL src");
+   if ( ! src )
       return(NULL);
-   }
 
    /* Make sure audio has been opened */
-   if ( ! audio_opened ) {
-      SDL_SetError("Audio device hasn't been opened");
+   if ( ! audio_opened )
+   {
       if ( freesrc )
          SDL_RWclose(src);
       return(NULL);
@@ -451,7 +449,6 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
    chunk = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
    if ( chunk == NULL )
    {
-      SDL_SetError("Out of memory");
       if ( freesrc )
          SDL_RWclose(src);
       return(NULL);
@@ -470,7 +467,6 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
                (Uint8 **)&chunk->abuf, &chunk->alen);
          break;
       default:
-         SDL_SetError("Unrecognized sound file type");
          if ( freesrc )
             SDL_RWclose(src);
          loaded = NULL;
@@ -504,7 +500,6 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
 
       if ( wavecvt.buf == NULL )
       {
-         SDL_SetError("Out of memory");
          free(chunk->abuf);
          free(chunk);
          return(NULL);
@@ -538,18 +533,12 @@ Mix_Chunk *Mix_QuickLoad_WAV(Uint8 *mem)
 
    /* Make sure audio has been opened */
    if ( ! audio_opened )
-   {
-      SDL_SetError("Audio device hasn't been opened");
       return(NULL);
-   }
 
    /* Allocate the chunk memory */
    chunk = (Mix_Chunk *)calloc(1,sizeof(Mix_Chunk));
    if ( chunk == NULL )
-   {
-      SDL_SetError("Out of memory");
       return(NULL);
-   }
 
    /* Essentially just skip to the audio data (no error checking - fast) */
    chunk->allocated = 0;
@@ -658,15 +647,9 @@ int Mix_PlayChannelTimed(int which, Mix_Chunk *chunk, int loops, int ticks)
 
    /* Don't play null pointers :-) */
    if ( chunk == NULL )
-   {
-      Mix_SetError("Tried to play a NULL chunk");
       return(-1);
-   }
    if ( !checkchunkintegral(chunk))
-   {
-      Mix_SetError("Tried to play a chunk with a bad frame");
       return(-1);
-   }
 
    /* Lock the mixer while modifying the playing channels */
       /* If which is -1, play on the first free channel */
@@ -678,10 +661,7 @@ int Mix_PlayChannelTimed(int which, Mix_Chunk *chunk, int loops, int ticks)
             break;
       }
       if ( i == num_channels )
-      {
-         Mix_SetError("No free channels available");
          which = -1;
-      }
       else
          which = i;
    }
@@ -1044,23 +1024,14 @@ static int _Mix_register_effect(effect_info **e, Mix_EffectFunc_t f,
    effect_info *new_e;
 
    if (!e)
-   {
-      Mix_SetError("Internal error");
       return(0);
-   }
 
    if (f == NULL)
-   {
-      Mix_SetError("NULL effect callback");
       return(0);
-   }
 
    new_e = malloc(sizeof (effect_info));
    if (!new_e)
-   {
-      Mix_SetError("Out of memory");
       return(0);
-   }
 
    new_e->callback = f;
    new_e->done_callback = d;
@@ -1095,10 +1066,7 @@ static int _Mix_remove_effect(int channel, effect_info **e, Mix_EffectFunc_t f)
    effect_info *next = NULL;
 
    if (!e)
-   {
-      Mix_SetError("Internal error");
       return(0);
-   }
 
    for (cur = *e; cur != NULL; cur = cur->next)
    {
@@ -1119,7 +1087,6 @@ static int _Mix_remove_effect(int channel, effect_info **e, Mix_EffectFunc_t f)
       prev = cur;
    }
 
-   Mix_SetError("No such effect registered");
    return(0);
 }
 
@@ -1130,10 +1097,7 @@ static int _Mix_remove_all_effects(int channel, effect_info **e)
    effect_info *next;
 
    if (!e)
-   {
-      Mix_SetError("Internal error");
       return(0);
-   }
 
    for (cur = *e; cur != NULL; cur = next)
    {
@@ -1157,10 +1121,7 @@ int _Mix_RegisterEffect_locked(int channel, Mix_EffectFunc_t f,
    else
    {
       if ((channel < 0) || (channel >= num_channels))
-      {
-         Mix_SetError("Invalid channel number");
          return(0);
-      }
       e = &mix_channel[channel].effects;
    }
 
@@ -1176,10 +1137,7 @@ int _Mix_UnregisterEffect_locked(int channel, Mix_EffectFunc_t f)
    else
    {
       if ((channel < 0) || (channel >= num_channels))
-      {
-         Mix_SetError("Invalid channel number");
          return(0);
-      }
       e = &mix_channel[channel].effects;
    }
 
@@ -1195,10 +1153,7 @@ int _Mix_UnregisterAllEffects_locked(int channel)
    else
    {
       if ((channel < 0) || (channel >= num_channels))
-      {
-         Mix_SetError("Invalid channel number");
          return(0);
-      }
       e = &mix_channel[channel].effects;
    }
 
