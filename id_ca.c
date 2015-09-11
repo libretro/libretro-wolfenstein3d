@@ -1016,7 +1016,7 @@ void CA_CacheScreen (int chunk)
    CHECKMALLOCRESULT(pic);
    CAL_HuffExpand((byte *) source, pic, expanded, grhuffman);
 
-   vbuf = VL_LockSurface(curSurface);
+   vbuf = VL_LockSurface(curSurface->surf);
    for(y = 0, scy = 0; y < 200; y++, scy += scaleFactor)
    {
       for(x = 0, scx = 0; x < 320; x++, scx += scaleFactor)
@@ -1027,7 +1027,7 @@ void CA_CacheScreen (int chunk)
                vbuf[(scy + i) * curPitch + scx + j] = col;
       }
    }
-   VL_UnlockSurface(curSurface);
+   VL_UnlockSurface(curSurface->surf);
    free(pic);
    free(bigbufferseg);
 }
