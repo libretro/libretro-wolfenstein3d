@@ -1335,9 +1335,7 @@ static int DemoLoop(unsigned id)
             gamestate.episode  = param_tedlevel/10;
             gamestate.mapon   %= 10;
 #endif
-            id = GameLoop();
-            if (id == -1)
-               return JE_QUIT;
+             GameLoop();
             return JE_LOOP;
          }
 
@@ -1445,11 +1443,7 @@ static int DemoLoop(unsigned id)
 
          if (startgame || loadedgame)
          {
-            id = GameLoop ();
-
-            if (id == -1)
-               return JE_QUIT;
-
+             GameLoop ();
             if(!param_nowait)
             {
                VW_FadeOut();

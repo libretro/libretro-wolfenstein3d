@@ -926,7 +926,7 @@ extern  LR_Surface     latchpics[NUMLATCHPICS];
 extern  char            demoname[13];
 
 void    SetupGameLevel (void);
-int    GameLoop (void);
+void    GameLoop (void);
 void    DrawPlayBorder (void);
 void    DrawStatusBorder (byte color);
 void    DrawPlayScreen (void);
