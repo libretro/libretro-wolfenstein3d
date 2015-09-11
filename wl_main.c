@@ -37,6 +37,14 @@ extern byte signon[];
 #define VIEWWIDTH       256                     // size of view window
 #define VIEWHEIGHT      144
 
+enum 
+{
+   JE_NONE = 0,
+   JE_LOOP,
+   JE_RETURN,
+   JE_QUIT
+};
+
 /*
 =============================================================================
 
@@ -1307,29 +1315,34 @@ void Quit (const char *errorStr, ...)
 */
 
 
-static void DemoLoop(void)
+static int DemoLoop(unsigned id)
 {
-   int LastDemo = 0;
+   static int LastDemo = 0;
 
-   /* check for launch from ted */
-   if (param_tedlevel != -1)
+   switch (id)
    {
-      param_nowait = true;
-      EnableEndGameMenuItem();
-      NewGame(param_difficulty,0);
+      case JE_NONE:
+         /* check for launch from ted */
+         if (param_tedlevel != -1)
+         {
+            param_nowait = true;
+            EnableEndGameMenuItem();
+            NewGame(param_difficulty,0);
 
-      gamestate.episode  = 0;
-      gamestate.mapon    = param_tedlevel;
+            gamestate.episode  = 0;
+            gamestate.mapon    = param_tedlevel;
 #ifndef SPEAR
-      gamestate.episode  = param_tedlevel/10;
-      gamestate.mapon   %= 10;
+            gamestate.episode  = param_tedlevel/10;
+            gamestate.mapon   %= 10;
 #endif
-      GameLoop();
-      Quit (NULL);
-   }
+            id = GameLoop();
+            if (id == -1)
+               return JE_QUIT;
+            return JE_LOOP;
+         }
 
 
-   /* main game cycle */
+         /* main game cycle */
 #ifndef DEMOTEST
 
 #ifndef UPLOAD
@@ -1337,110 +1350,116 @@ static void DemoLoop(void)
 #ifndef GOODTIMES
 #ifndef SPEAR
 #ifndef JAPAN
-   if (!param_nowait)
-      NonShareware();
+         if (!param_nowait)
+            NonShareware();
 #endif
 #else
 #ifndef GOODTIMES
 #ifndef SPEARDEMO
-   extern void CopyProtection(void);
-   if(!param_goodtimes)
-      CopyProtection();
+         extern void CopyProtection(void);
+         if(!param_goodtimes)
+            CopyProtection();
 #endif
 #endif
 #endif
 #endif
 #endif
 
-   StartCPMusic(INTROSONG);
+         StartCPMusic(INTROSONG);
 
 #ifndef JAPAN
-   if (!param_nowait)
-      PG13 ();
+         if (!param_nowait)
+            PG13 ();
 #endif
 
 #endif
-
-   while (1)
-   {
-      while (!param_nowait)
-      {
+         return JE_LOOP;
+      case JE_LOOP:
+         while (!param_nowait)
+         {
 #ifndef DEMOTEST
 
 #ifdef SPEAR
-         LR_Color pal[256];
-         /* title page */
-         CA_CacheGrChunk (TITLEPALETTE);
-         VL_ConvertPalette(grsegs[TITLEPALETTE], pal, 256);
+            LR_Color pal[256];
+            /* title page */
+            CA_CacheGrChunk (TITLEPALETTE);
+            VL_ConvertPalette(grsegs[TITLEPALETTE], pal, 256);
 
-         CA_CacheGrChunk (TITLE1PIC);
-         VWB_DrawPic (0,0,TITLE1PIC);
-         UNCACHEGRCHUNK (TITLE1PIC);
+            CA_CacheGrChunk (TITLE1PIC);
+            VWB_DrawPic (0,0,TITLE1PIC);
+            UNCACHEGRCHUNK (TITLE1PIC);
 
-         CA_CacheGrChunk (TITLE2PIC);
-         VWB_DrawPic (0,80,TITLE2PIC);
-         UNCACHEGRCHUNK (TITLE2PIC);
-         VW_UpdateScreen ();
-         VL_FadeIn(0,255,pal,30);
+            CA_CacheGrChunk (TITLE2PIC);
+            VWB_DrawPic (0,80,TITLE2PIC);
+            UNCACHEGRCHUNK (TITLE2PIC);
+            VW_UpdateScreen ();
+            VL_FadeIn(0,255,pal,30);
 
-         UNCACHEGRCHUNK (TITLEPALETTE);
+            UNCACHEGRCHUNK (TITLEPALETTE);
 #else
-         CA_CacheScreen (TITLEPIC);
-         VW_UpdateScreen ();
-         VW_FadeIn();
+            CA_CacheScreen (TITLEPIC);
+            VW_UpdateScreen ();
+            VW_FadeIn();
 #endif
-         if (IN_UserInput(TickBase*15))
-            break;
-         VW_FadeOut();
-         /* credits page */
-         CA_CacheScreen (CREDITSPIC);
-         VW_UpdateScreen();
-         VW_FadeIn ();
-         if (IN_UserInput(TickBase*10))
-            break;
-         VW_FadeOut ();
-         DrawHighScores ();
-         VW_UpdateScreen ();
-         VW_FadeIn ();
+            if (IN_UserInput(TickBase*15))
+               break;
+            VW_FadeOut();
+            /* credits page */
+            CA_CacheScreen (CREDITSPIC);
+            VW_UpdateScreen();
+            VW_FadeIn ();
+            if (IN_UserInput(TickBase*10))
+               break;
+            VW_FadeOut ();
+            DrawHighScores ();
+            VW_UpdateScreen ();
+            VW_FadeIn ();
 
-         if (IN_UserInput(TickBase*10))
-            break;
+            if (IN_UserInput(TickBase*10))
+               break;
 #endif
-         /* demo */
+            /* demo */
 
 #ifndef SPEARDEMO
-         PlayDemo (LastDemo++%4);
+            PlayDemo (LastDemo++%4);
 #else
-         PlayDemo (0);
+            PlayDemo (0);
 #endif
 
-         if (playstate == EX_ABORT)
-            break;
-         VW_FadeOut();
-         if(screenHeight % 200 != 0)
-            VL_ClearScreen(0);
-         StartCPMusic(INTROSONG);
-      }
-
-      VW_FadeOut ();
-
-#ifdef DEBUGKEYS
-      if (Keyboard[sc_Tab] && param_debugmode)
-         RecordDemo ();
-      else
-#endif
-      US_ControlPanel (0);
-
-      if (startgame || loadedgame)
-      {
-         GameLoop ();
-         if(!param_nowait)
-         {
+            if (playstate == EX_ABORT)
+               return JE_QUIT;
             VW_FadeOut();
+            if(screenHeight % 200 != 0)
+               VL_ClearScreen(0);
             StartCPMusic(INTROSONG);
          }
-      }
+
+         VW_FadeOut ();
+
+#ifdef DEBUGKEYS
+         if (Keyboard[sc_Tab] && param_debugmode)
+            RecordDemo ();
+         else
+#endif
+            US_ControlPanel (0);
+
+         if (startgame || loadedgame)
+         {
+            id = GameLoop ();
+
+            if (id == -1)
+               return JE_QUIT;
+
+            if(!param_nowait)
+            {
+               VW_FadeOut();
+               StartCPMusic(INTROSONG);
+            }
+         }
+         break;
    }
+
+   return JE_LOOP;
 }
 
 void CheckParameters(int argc, char *argv[])
@@ -1624,7 +1643,15 @@ static void retro_load_game(int argc, char *argv[])
 
 static void retro_run(void)
 {
-   DemoLoop();
+   int ret = JE_NONE;
+
+   for (;;)
+   {
+      ret = DemoLoop(ret);
+
+      if (ret == JE_QUIT)
+         break;
+   }
 }
 
 /*

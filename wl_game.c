@@ -38,7 +38,6 @@ int ElevatorBackTo[]={1,1,7,3,5,3};
 void SetupGameLevel (void);
 void DrawPlayScreen (void);
 void LoadLatchMem (void);
-void GameLoop (void);
 
 /*
 =============================================================================
@@ -1296,101 +1295,100 @@ static int GamePlayStateIterate(boolean *died)
 ===================
 */
 
-void GameLoop (void)
+int GameLoop (void)
 {
-   boolean died;
-   boolean restartgame = true;
+   static boolean died;
+   static boolean restartgame = true;
 
-   do
+repeat:
+   if (restartgame)
    {
-      if (restartgame)
-      {
-         SD_StopDigitized ();
-         SETFONTCOLOR(0,15);
-         VW_FadeOut();
-         DrawPlayScreen ();
-         died = false;
-         restartgame = false;
-      }
+      SD_StopDigitized ();
+      SETFONTCOLOR(0,15);
+      VW_FadeOut();
+      DrawPlayScreen ();
+      died = false;
+      restartgame = false;
+   }
 
-      if (!loadedgame)
-         gamestate.score = gamestate.oldscore;
-      if(!died || viewsize != 21)
-         DrawScore();
+   if (!loadedgame)
+      gamestate.score = gamestate.oldscore;
+   if(!died || viewsize != 21)
+      DrawScore();
 
-      startgame = false;
-      if (!loadedgame)
-         SetupGameLevel ();
+   startgame = false;
+   if (!loadedgame)
+      SetupGameLevel ();
 
 #ifdef SPEAR
-      if (gamestate.mapon == 20)      /* give them the key always */
-      {
-         gamestate.keys |= 1;
-         DrawKeys ();
-      }
+   if (gamestate.mapon == 20)      /* give them the key always */
+   {
+      gamestate.keys |= 1;
+      DrawKeys ();
+   }
 #endif
 
-      ingame = true;
-      if(loadedgame)
-      {
-         ContinueMusic(lastgamemusicoffset);
-         loadedgame = false;
-      }
-      else
-         StartMusic ();
+   ingame = true;
+   if(loadedgame)
+   {
+      ContinueMusic(lastgamemusicoffset);
+      loadedgame = false;
+   }
+   else
+      StartMusic ();
 
-      if (!died)
-         PreloadGraphics (); /* TODO: Let this do something useful! */
-      else
-      {
-         died = false;
-         fizzlein = true;
-      }
+   if (!died)
+      PreloadGraphics (); /* TODO: Let this do something useful! */
+   else
+   {
+      died = false;
+      fizzlein = true;
+   }
 
-      DrawLevel ();
+   DrawLevel ();
 
 #ifdef SPEAR
 startplayloop:
 #endif
-      PlayLoop ();
+   PlayLoop ();
 
 #ifdef SPEAR
-      if (spearflag)
-      {
-         SD_StopSound();
-         SD_PlaySound(GETSPEARSND);
-         if (DigiMode != sds_Off)
-            LR_Delay(150);
-         else
-            SD_WaitSoundDone();
+   if (spearflag)
+   {
+      SD_StopSound();
+      SD_PlaySound(GETSPEARSND);
+      if (DigiMode != sds_Off)
+         LR_Delay(150);
+      else
+         SD_WaitSoundDone();
 
-         SD_StopDigitized ();
-         gamestate.oldscore = gamestate.score;
-         gamestate.mapon = 20;
-         SetupGameLevel ();
-         StartMusic ();
-         player->x = spearx;
-         player->y = speary;
-         player->angle = (short)spearangle;
-         spearflag = false;
-         Thrust (0,0);
-         goto startplayloop;
-      }
+      SD_StopDigitized ();
+      gamestate.oldscore = gamestate.score;
+      gamestate.mapon = 20;
+      SetupGameLevel ();
+      StartMusic ();
+      player->x = spearx;
+      player->y = speary;
+      player->angle = (short)spearangle;
+      spearflag = false;
+      Thrust (0,0);
+      goto startplayloop;
+   }
 #endif
 
-      StopMusic ();
-      ingame = false;
+   StopMusic ();
+   ingame = false;
 
-      if (demorecord && playstate != EX_WARPED)
-         FinishDemoRecord ();
+   if (demorecord && playstate != EX_WARPED)
+      FinishDemoRecord ();
 
-      if (startgame || loadedgame)
-      {
-         restartgame = true;
-         continue;
-      }
+   if (startgame || loadedgame)
+   {
+      restartgame = true;
+      goto repeat;
+   }
 
-      if (GamePlayStateIterate(&died) != 0)
-         return;
-   }while(1);
+   if (GamePlayStateIterate(&died) != 0)
+      return -1;
+   return 0;
 }
