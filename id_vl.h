@@ -70,7 +70,7 @@ static inline void VL_Bar      (int x, int y, int width, int height, int color)
 
 static inline void VL_ClearScreen(int color)
 {
-   LR_FillRect(curSurface->surf, NULL, color);
+   LR_FillRect(curSurface, NULL, color);
 }
 
 void VL_MungePic                (byte *source, unsigned width, unsigned height);

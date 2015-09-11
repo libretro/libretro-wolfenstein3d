@@ -351,8 +351,8 @@ boolean FizzleFade (LR_Surface *source, int x1, int y1,
    /* can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     * can't rely on screenBuffer as source for same reason: every flip it has to be updated
     */
-   source_copy.surf = LR_ConvertSurface(source->surf, source->surf->format, source->surf->flags);
-   screen_copy.surf = LR_ConvertSurface(screen->surf, screen->surf->format, screen->surf->flags);
+   source_copy.surf = LR_ConvertSurface(source, source->surf->format, source->surf->flags);
+   screen_copy.surf = LR_ConvertSurface(screen, screen->surf->format, screen->surf->flags);
    srcptr      = VL_LockSurface(&source_copy);
 
    do

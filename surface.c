@@ -105,15 +105,15 @@ uint32_t LR_GetTicks(void)
    return (uint32_t)rarch_get_perf_counter();
 }
 
-void LR_FillRect(SDL_Surface *surface, const void *rect_data, uint32_t color)
+void LR_FillRect(LR_Surface *surface, const void *rect_data, uint32_t color)
 {
    unsigned i, j;
    (void)rect_data;
 
-   for (i = 0; i < surface->w; i++)
-      for (j = 0; j < surface->h; j++)
+   for (i = 0; i < surface->surf->w; i++)
+      for (j = 0; j < surface->surf->h; j++)
       {
-         uint8_t *pix = (uint8_t*)surface->pixels + j * surface->pitch + i * 4;
+         uint8_t *pix = (uint8_t*)surface->surf->pixels + j * surface->surf->pitch + i * 4;
          *(uint32_t*)pix = color;
       }
 }
@@ -175,9 +175,9 @@ SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags)
    return SDL_SetVideoMode(width, height, bpp, flags);
 }
 
-SDL_Surface *LR_ConvertSurface(SDL_Surface *src, SDL_PixelFormat *fmt, uint32_t flags)
+SDL_Surface *LR_ConvertSurface(LR_Surface *src, SDL_PixelFormat *fmt, uint32_t flags)
 {
-   return SDL_ConvertSurface(src, fmt, flags);
+   return SDL_ConvertSurface(src->surf, fmt, flags);
 }
 
 uint32_t LR_MapRGB(SDL_PixelFormat *fmt, uint8_t r, uint8_t g, uint8_t b)
