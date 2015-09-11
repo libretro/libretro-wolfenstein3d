@@ -159,3 +159,8 @@ void LR_FreeSurface(SDL_Surface* surface)
 {
    SDL_FreeSurface(surface);
 }
+
+int LR_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
+{
+   return SDL_UpperBlit(src, srcrect, dst, dstrect);
+}

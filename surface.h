@@ -52,4 +52,6 @@ SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
 
 void LR_FreeSurface(SDL_Surface* surface);
 
+int LR_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
+
 #endif
