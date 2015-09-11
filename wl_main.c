@@ -41,6 +41,7 @@ enum
 {
    JE_NONE = 0,
    JE_LOOP,
+   JE_LOOP2,
    JE_RETURN,
    JE_QUIT
 };
@@ -1335,10 +1336,8 @@ static int DemoLoop(unsigned id)
             gamestate.episode  = param_tedlevel/10;
             gamestate.mapon   %= 10;
 #endif
-             GameLoop();
-            return JE_LOOP;
+            return JE_LOOP2;
          }
-
 
          /* main game cycle */
 #ifndef DEMOTEST
@@ -1442,8 +1441,12 @@ static int DemoLoop(unsigned id)
             US_ControlPanel (0);
 
          if (startgame || loadedgame)
+            return JE_LOOP2;
+         break;
+      case JE_LOOP2:
+         GameLoop();
+         if (param_tedlevel == -1)
          {
-             GameLoop ();
             if(!param_nowait)
             {
                VW_FadeOut();
@@ -1453,7 +1456,7 @@ static int DemoLoop(unsigned id)
          break;
    }
 
-   return JE_LOOP;
+   return JE_LOOP2;
 }
 
 void CheckParameters(int argc, char *argv[])
