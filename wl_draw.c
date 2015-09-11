@@ -1530,7 +1530,7 @@ void ThreeDRefresh (void)
    /* Detect all sprites over player fix */
    spotvis[player->tilex][player->tiley] = 1;
 
-   vbuf       = VL_LockSurface(screenBuffer->surf);
+   vbuf       = VL_LockSurface(screenBuffer);
    vbuf      += screenofs;
    vbufPitch  = bufferPitch;
 
@@ -1548,7 +1548,7 @@ void ThreeDRefresh (void)
    if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
       ShowActStatus();
 
-   VL_UnlockSurface(screenBuffer->surf);
+   VL_UnlockSurface(screenBuffer);
    vbuf = NULL;
 
    /* show screen and time last cycle */
