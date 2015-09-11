@@ -54,4 +54,6 @@ void LR_FreeSurface(SDL_Surface* surface);
 
 int LR_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
 
+int LR_Flip(SDL_Surface *screen);
+
 #endif

@@ -164,3 +164,8 @@ int LR_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Re
 {
    return SDL_UpperBlit(src, srcrect, dst, dstrect);
 }
+
+int LR_Flip(SDL_Surface *screen)
+{
+   return SDL_Flip(screen);
+}
