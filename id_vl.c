@@ -631,5 +631,5 @@ void VL_LatchToScreenScaledCoord(LR_Surface *source, int xsrc, int ysrc,
 
 void VL_ScreenToScreen (LR_Surface *source, LR_Surface *dest)
 {
-   LR_BlitSurface(source->surf, NULL, dest->surf, NULL);
+   LR_BlitSurface(source, NULL, dest, NULL);
 }

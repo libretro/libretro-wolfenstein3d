@@ -160,9 +160,9 @@ void LR_FreeSurface(SDL_Surface* surface)
    SDL_FreeSurface(surface);
 }
 
-int LR_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
+int LR_BlitSurface(LR_Surface *src, SDL_Rect *srcrect, LR_Surface *dst, SDL_Rect *dstrect)
 {
-   return SDL_UpperBlit(src, srcrect, dst, dstrect);
+   return SDL_UpperBlit(src->surf, srcrect, dst->surf, dstrect);
 }
 
 int LR_Flip(SDL_Surface *screen)
