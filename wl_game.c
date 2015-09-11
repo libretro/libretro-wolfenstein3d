@@ -1295,12 +1295,11 @@ static int GamePlayStateIterate(boolean *died)
 =
 ===================
 */
+boolean died;
+boolean restartgame = true;
 
 void GameLoop (void)
 {
-   boolean died;
-   boolean restartgame = true;
-
    do
    {
       if (restartgame)
