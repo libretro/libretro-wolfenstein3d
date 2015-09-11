@@ -34,7 +34,7 @@ CCFLAGS += -Wsequence-point -Iinclude -ISDL_mixer
 
 CXXFLAGS += $(CFLAGS)
 
-LDFLAGS += $(LDFLAGS_SDL)
+LDFLAGS += $(LDFLAGS_SDL) -lm
 
 SRCS :=
 SRCS += fmopl.cpp
@@ -75,7 +75,7 @@ all: $(BINARY)
 
 $(BINARY): $(OBJS)
 	@echo '===> LD $@'
-	$(Q)$(CXX) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
+	$(Q)$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
 
 .c.o:
 	@echo '===> CC $<'
