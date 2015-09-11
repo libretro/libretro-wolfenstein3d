@@ -1443,8 +1443,6 @@ static void DemoLoop(void)
    }
 }
 
-#define IFARG(str) if(!strcmp(arg, (str)))
-
 void CheckParameters(int argc, char *argv[])
 {
     bool hasError = false, showHelp = false;
@@ -1458,22 +1456,22 @@ void CheckParameters(int argc, char *argv[])
     {
         char *arg = argv[i];
 #ifndef SPEAR
-        IFARG("--goobers")
+        if(!strcmp(arg, ("--goobers")))
 #else
-        IFARG("--debugmode")
+        if(!strcmp(arg, ("--debugmode")))
 #endif
             param_debugmode = true;
-        else IFARG("--baby")
+        else if(!strcmp(arg, ("--baby")))
             param_difficulty = 0;
-        else IFARG("--easy")
+        else if(!strcmp(arg, ("--easy")))
             param_difficulty = 1;
-        else IFARG("--normal")
+        else if(!strcmp(arg, ("--normal")))
             param_difficulty = 2;
-        else IFARG("--hard")
+        else if(!strcmp(arg, ("--hard")))
             param_difficulty = 3;
-        else IFARG("--nowait")
+        else if(!strcmp(arg, ("--nowait")))
             param_nowait = true;
-        else IFARG("--tedlevel")
+        else if(!strcmp(arg, ("--tedlevel")))
         {
             if(++i >= argc)
             {
@@ -1482,14 +1480,14 @@ void CheckParameters(int argc, char *argv[])
             }
             else param_tedlevel = atoi(argv[i]);
         }
-        else IFARG("--windowed")
+        else if(!strcmp(arg, ("--windowed")))
             fullscreen = false;
-        else IFARG("--windowed-mouse")
+        else if(!strcmp(arg, ("--windowed-mouse")))
         {
             fullscreen = false;
             forcegrabmouse = true;
         }
-        else IFARG("--res")
+        else if(!strcmp(arg, ("--res")))
         {
             if(i + 2 >= argc)
             {
@@ -1505,7 +1503,7 @@ void CheckParameters(int argc, char *argv[])
                     printf("Screen size must be a multiple of 320x200 or 320x240!\n"), hasError = true;
             }
         }
-        else IFARG("--joystick")
+        else if(!strcmp(arg, ("--joystick")))
         {
             if(++i >= argc)
             {
@@ -1514,7 +1512,7 @@ void CheckParameters(int argc, char *argv[])
             }
             else param_joystickindex = atoi(argv[i]);   // index is checked in InitGame
         }
-        else IFARG("--joystickhat")
+        else if(!strcmp(arg, ("--joystickhat")))
         {
             if(++i >= argc)
             {
@@ -1523,7 +1521,7 @@ void CheckParameters(int argc, char *argv[])
             }
             else param_joystickhat = atoi(argv[i]);
         }
-        else IFARG("--mission")
+        else if(!strcmp(arg, ("--mission")))
         {
             if(++i >= argc)
             {
@@ -1540,7 +1538,7 @@ void CheckParameters(int argc, char *argv[])
                 }
             }
         }
-        else IFARG("--configdir")
+        else if(!strcmp(arg, ("--configdir")))
         {
             if(++i >= argc)
             {
@@ -1563,11 +1561,11 @@ void CheckParameters(int argc, char *argv[])
                 }
             }
         }
-        else IFARG("--goodtimes")
+        else if(!strcmp(arg, ("--goodtimes")))
             param_goodtimes = true;
-        else IFARG("--ignorenumchunks")
+        else if(!strcmp(arg, ("--ignorenumchunks")))
             param_ignorenumchunks = true;
-        else IFARG("--help")
+        else if(!strcmp(arg, ("--help")))
             showHelp = true;
         else hasError = true;
     }
