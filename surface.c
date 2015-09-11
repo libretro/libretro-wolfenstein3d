@@ -165,9 +165,9 @@ int LR_BlitSurface(LR_Surface *src, SDL_Rect *srcrect, LR_Surface *dst, SDL_Rect
    return SDL_UpperBlit(src->surf, srcrect, dst->surf, dstrect);
 }
 
-int LR_Flip(SDL_Surface *screen)
+int LR_Flip(LR_Surface *screen)
 {
-   return SDL_Flip(screen);
+   return SDL_Flip(screen->surf);
 }
 
 SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags)

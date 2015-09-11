@@ -54,7 +54,7 @@ void LR_FreeSurface(SDL_Surface* surface);
 
 int LR_BlitSurface(LR_Surface *src, SDL_Rect *srcrect, LR_Surface *dst, SDL_Rect *dstrect);
 
-int LR_Flip(SDL_Surface *screen);
+int LR_Flip(LR_Surface *screen);
 
 SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags);
 
