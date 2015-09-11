@@ -1119,7 +1119,7 @@ static void InitGame(void)
 #endif
 
    /* initialize SDL */
-   if(LR_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+   if(LR_Init(0) < 0)
       exit(1);
    atexit(LR_Quit);
 

@@ -135,7 +135,7 @@ int LR_SetColors(SDL_Surface *surface, LR_Color *colors, int firstcolor, int nco
 
 int LR_Init(uint32_t flags)
 {
-   return SDL_Init(flags);
+   return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 }
 
 void LR_Quit(void)
@@ -168,4 +168,9 @@ int LR_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Re
 int LR_Flip(SDL_Surface *screen)
 {
    return SDL_Flip(screen);
+}
+
+SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags)
+{
+   return SDL_SetVideoMode(width, height, bpp, flags);
 }

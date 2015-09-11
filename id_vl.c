@@ -66,7 +66,7 @@ void VL_Shutdown (void)
 void    VL_SetVGAPlaneMode (void)
 {
    screenBits = 16;
-   screen     = SDL_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
+   screen     = LR_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
 
    if(!screen)
       exit(1);
