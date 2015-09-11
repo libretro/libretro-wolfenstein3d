@@ -1170,38 +1170,6 @@ static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
    Mix_EffectFunc_t f = NULL;
 
    switch (format) {
-      case AUDIO_U8:
-         switch (channels) {
-            case 1:
-            case 2:
-               f = (_Eff_build_volume_table_u8()) ? _Eff_position_table_u8 :
-                  _Eff_position_u8;
-               break;
-            case 4:
-               f = _Eff_position_u8_c4;
-               break;
-            case 6:
-               f = _Eff_position_u8_c6;
-               break;
-         }
-         break;
-
-      case AUDIO_S8:
-         switch (channels) {
-            case 1:
-            case 2:
-               f = (_Eff_build_volume_table_s8()) ? _Eff_position_table_s8 :
-                  _Eff_position_s8;
-               break;
-            case 4:
-               f = _Eff_position_s8_c4;
-               break;
-            case 6:
-               f = _Eff_position_s8_c6;
-               break;
-         }
-         break;
-
       case AUDIO_U16LSB:
          switch (channels) {
             case 1:
