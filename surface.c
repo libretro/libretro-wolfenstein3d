@@ -174,3 +174,13 @@ SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags)
 {
    return SDL_SetVideoMode(width, height, bpp, flags);
 }
+
+SDL_Surface *LR_ConvertSurface(SDL_Surface *src, SDL_PixelFormat *fmt, uint32_t flags)
+{
+   return SDL_ConvertSurface(src, fmt, flags);
+}
+
+uint32_t LR_MapRGB(SDL_PixelFormat *fmt, uint8_t r, uint8_t g, uint8_t b)
+{
+   return SDL_MapRGB(fmt, r, g, b);
+}

@@ -58,4 +58,8 @@ int LR_Flip(SDL_Surface *screen);
 
 SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags);
 
+SDL_Surface *LR_ConvertSurface(SDL_Surface *src, SDL_PixelFormat *fmt, uint32_t flags);
+
+uint32_t LR_MapRGB(SDL_PixelFormat *fmt, uint8_t r, uint8_t g, uint8_t b);
+
 #endif

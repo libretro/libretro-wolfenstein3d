@@ -350,8 +350,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
    /* can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     * can't rely on screenBuffer as source for same reason: every flip it has to be updated
     */
-   source_copy = SDL_ConvertSurface(source, source->format, source->flags);
-   screen_copy = SDL_ConvertSurface(screen, screen->format, screen->flags);
+   source_copy = LR_ConvertSurface(source, source->format, source->flags);
+   screen_copy = LR_ConvertSurface(screen, screen->format, screen->flags);
    srcptr      = VL_LockSurface(source_copy);
 
    do
@@ -394,7 +394,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
 
          /* copy one pixel */
          col     = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-         fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
+         fullcol = LR_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
          memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
                &fullcol, screen->format->BytesPerPixel);
 
