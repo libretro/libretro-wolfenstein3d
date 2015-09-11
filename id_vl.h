@@ -21,7 +21,8 @@ void Quit (const char *error,...);
 
 //===========================================================================
 
-extern SDL_Surface *screen, *screenBuffer, *curSurface;
+extern LR_Surface *screen, *screenBuffer;
+extern SDL_Surface *curSurface;
 
 extern  boolean  fullscreen;
 extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch, curPitch;

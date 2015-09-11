@@ -11,10 +11,10 @@ unsigned screenHeight = 200;
 unsigned screenBits = -1;      // use "best" color depth according to libSDL
 
 
-SDL_Surface *screen = NULL;
+LR_Surface *screen = NULL;
 unsigned screenPitch;
 
-SDL_Surface *screenBuffer = NULL;
+LR_Surface *screenBuffer = NULL;
 unsigned bufferPitch;
 
 SDL_Surface *curSurface = NULL;
@@ -52,6 +52,13 @@ CASSERT(lengthof(gamepal) == 256)
 
 void VL_Shutdown (void)
 {
+   if (screenBuffer)
+      free(screenBuffer);
+   if (screen)
+      free(screen);
+
+   screenBuffer = NULL;
+   screen       = NULL;
 }
 
 
@@ -66,24 +73,29 @@ void VL_Shutdown (void)
 void    VL_SetVGAPlaneMode (void)
 {
    screenBits = 16;
-   screen     = LR_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
 
-   if(!screen)
+   screen     = (LR_Surface*)calloc(1, sizeof(*screen));
+
+   screen->surf     = LR_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
+
+   if(!screen->surf)
       exit(1);
 
-   LR_SetColors(screen, gamepal, 0, 256);
+   LR_SetColors(screen->surf, gamepal, 0, 256);
    memcpy(curpal, gamepal, sizeof(LR_Color) * 256);
 
-   screenBuffer = LR_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
+   screenBuffer = (LR_Surface*)calloc(1, sizeof(*screenBuffer));
+
+   screenBuffer->surf = LR_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
          screenHeight, 8, 0, 0, 0, 0);
-   if(!screenBuffer)
+   if(!screenBuffer->surf)
       exit(1);
-   LR_SetColors(screenBuffer, gamepal, 0, 256);
+   LR_SetColors(screenBuffer->surf, gamepal, 0, 256);
 
-   screenPitch = screen->pitch;
-   bufferPitch = screenBuffer->pitch;
+   screenPitch = screen->surf->pitch;
+   bufferPitch = screenBuffer->surf->pitch;
 
-   curSurface = screenBuffer;
+   curSurface = screenBuffer->surf;
    curPitch = bufferPitch;
 
    scaleFactor = screenWidth/320;

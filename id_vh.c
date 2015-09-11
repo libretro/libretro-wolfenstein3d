@@ -106,8 +106,8 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 
 void VH_UpdateScreen(void)
 {
-   VL_ScreenToScreen(screenBuffer, screen);
-   LR_Flip(screen);
+   VL_ScreenToScreen(screenBuffer->surf, screen->surf);
+   LR_Flip(screen->surf);
 }
 
 
@@ -325,14 +325,14 @@ static boolean FizzleFadeFinish(SDL_Surface *source_copy, SDL_Surface *screen_co
 {
    VL_UnlockSurface(source_copy);
    VL_UnlockSurface(screen_copy);
-   VL_ScreenToScreen(screen_copy, screenBuffer);
+   VL_ScreenToScreen(screen_copy, screenBuffer->surf);
    VH_UpdateScreen();
    LR_FreeSurface(source_copy);
    LR_FreeSurface(screen_copy);
    return false;
 }
 
-boolean FizzleFade (SDL_Surface *source, int x1, int y1,
+boolean FizzleFade (LR_Surface *source, int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable)
 {
    unsigned x, y, frame;
@@ -350,8 +350,8 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
    /* can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     * can't rely on screenBuffer as source for same reason: every flip it has to be updated
     */
-   source_copy = LR_ConvertSurface(source, source->format, source->flags);
-   screen_copy = LR_ConvertSurface(screen, screen->format, screen->flags);
+   source_copy = LR_ConvertSurface(source->surf, source->surf->format, source->surf->flags);
+   screen_copy = LR_ConvertSurface(screen->surf, screen->surf->format, screen->surf->flags);
    srcptr      = VL_LockSurface(source_copy);
 
    do
@@ -361,7 +361,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
       if(abortable && IN_CheckAck ())
       {
          VL_UnlockSurface(source_copy);
-         VL_ScreenToScreen(screen_copy, screenBuffer);
+         VL_ScreenToScreen(screen_copy, screenBuffer->surf);
          VH_UpdateScreen();
 
          LR_FreeSurface(source_copy);
@@ -393,10 +393,10 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
          }
 
          /* copy one pixel */
-         col     = *(srcptr + (y1 + y) * source->pitch + x1 + x);
-         fullcol = LR_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
-         memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
-               &fullcol, screen->format->BytesPerPixel);
+         col     = *(srcptr + (y1 + y) * source->surf->pitch + x1 + x);
+         fullcol = LR_MapRGB(screen->surf->format, curpal[col].r, curpal[col].g, curpal[col].b);
+         memcpy(destptr + (y1 + y) * screen->surf->pitch + (x1 + x) * screen->surf->format->BytesPerPixel,
+               &fullcol, screen->surf->format->BytesPerPixel);
 
          if(rndval == 0)     /* entire sequence has been completed */
             return FizzleFadeFinish(source_copy, screen_copy);
@@ -405,7 +405,7 @@ boolean FizzleFade (SDL_Surface *source, int x1, int y1,
       lastrndval = rndval;
 
       VL_UnlockSurface(screen_copy);
-      VL_ScreenToScreen(screen_copy, screenBuffer);
+      VL_ScreenToScreen(screen_copy, screenBuffer->surf);
       VH_UpdateScreen();
 
       frame++;
