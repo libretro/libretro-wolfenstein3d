@@ -1444,8 +1444,8 @@ static int DemoLoop(unsigned id)
             return JE_LOOP2;
          break;
       case JE_LOOP2:
-         GameLoop();
-         if (param_tedlevel == -1)
+         id = GameLoop();
+         if (param_tedlevel == -1 && id == -1)
          {
             if(!param_nowait)
             {
