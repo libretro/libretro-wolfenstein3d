@@ -1929,10 +1929,7 @@ DrawCtlScreen (void)
         VWB_DrawPic (x, y, C_NOTSELECTEDPIC);
 
     y = CTL_Y + 29;
-    if (joystickenabled)
-        VWB_DrawPic (x, y, C_SELECTEDPIC);
-    else
-        VWB_DrawPic (x, y, C_NOTSELECTEDPIC);
+    VWB_DrawPic (x, y, C_SELECTEDPIC);
 
     //
     // PICK FIRST AVAILABLE SPOT
@@ -2180,34 +2177,6 @@ EnterCtrlData (int index, CustomCtrls * cust, void (*DrawRtn) (int), void (*Prin
                            }
 
                            buttonmouse[result - 1] = order[which];
-                           picked = 1;
-                           SD_PlaySound (SHOOTDOORSND);
-                        }
-                        break;
-
-                    case JOYSTICK:
-                        if (ci.button0)
-                            result = 1;
-                        else if (ci.button1)
-                            result = 2;
-                        else if (ci.button2)
-                            result = 3;
-                        else if (ci.button3)
-                            result = 4;
-
-                        if (result)
-                        {
-                           unsigned z;
-                           for (z = 0; z < 4; z++)
-                           {
-                              if (order[which] == buttonjoy[z])
-                              {
-                                 buttonjoy[z] = bt_nobutton;
-                                 break;
-                              }
-                           }
-
-                           buttonjoy[result - 1] = order[which];
                            picked = 1;
                            SD_PlaySound (SHOOTDOORSND);
                         }
@@ -2631,13 +2600,7 @@ DrawCustJoy (int hilight)
         color = HIGHLIGHT;
     SETFONTCOLOR (color, BKGDCOLOR);
 
-    if (!joystickenabled)
-    {
-        SETFONTCOLOR (DEACTIVE, BKGDCOLOR);
-        CusMenu[3].active = 0;
-    }
-    else
-        CusMenu[3].active = 1;
+    CusMenu[3].active = 1;
 
     PrintY = CST_Y + 13 * 5;
     for (i = 0; i < 4; i++)
@@ -3407,76 +3370,6 @@ ReadAnyControl (ControlInfo * ci)
     int mouseactive = 0;
 
     IN_ReadControl (0, ci);
-
-    if (mouseenabled && IN_IsInputGrabbed())
-    {
-        int mousex, mousey, buttons;
-        buttons = SDL_GetMouseState(&mousex, &mousey);
-        int middlePressed = buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-        int rightPressed = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
-        buttons &= ~(SDL_BUTTON(SDL_BUTTON_MIDDLE) | SDL_BUTTON(SDL_BUTTON_RIGHT));
-        if(middlePressed) buttons |= 1 << 2;
-        if(rightPressed) buttons |= 1 << 1;
-
-        if(mousey - CENTERY < -SENSITIVE)
-        {
-            ci->dir = dir_North;
-            mouseactive = 1;
-        }
-        else if(mousey - CENTERY > SENSITIVE)
-        {
-            ci->dir = dir_South;
-            mouseactive = 1;
-        }
-
-        if(mousex - CENTERX < -SENSITIVE)
-        {
-            ci->dir = dir_West;
-            mouseactive = 1;
-        }
-        else if(mousex - CENTERX > SENSITIVE)
-        {
-            ci->dir = dir_East;
-            mouseactive = 1;
-        }
-
-        if(mouseactive)
-            IN_CenterMouse();
-
-        if (buttons)
-        {
-            ci->button0 = buttons & 1;
-            ci->button1 = buttons & 2;
-            ci->button2 = buttons & 4;
-            ci->button3 = false;
-            mouseactive = 1;
-        }
-    }
-
-    if (joystickenabled && !mouseactive)
-    {
-        int jx, jy, jb;
-
-        IN_GetJoyDelta (&jx, &jy);
-        if (jy < -SENSITIVE)
-            ci->dir = dir_North;
-        else if (jy > SENSITIVE)
-            ci->dir = dir_South;
-
-        if (jx < -SENSITIVE)
-            ci->dir = dir_West;
-        else if (jx > SENSITIVE)
-            ci->dir = dir_East;
-
-        jb = IN_JoyButtons ();
-        if (jb)
-        {
-            ci->button0 = jb & 1;
-            ci->button1 = jb & 2;
-            ci->button2 = jb & 4;
-            ci->button3 = jb & 8;
-        }
-    }
 }
 
 
