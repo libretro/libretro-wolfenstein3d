@@ -65,13 +65,8 @@ void VL_Shutdown (void)
 
 void    VL_SetVGAPlaneMode (void)
 {
-   if(screenBits == -1)
-   {
-      const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
-      screenBits = vidInfo->vfmt->BitsPerPixel;
-   }
-
-   screen = SDL_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
+   screenBits = 16;
+   screen     = SDL_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
 
    if(!screen)
       exit(1);
