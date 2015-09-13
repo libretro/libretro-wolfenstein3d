@@ -1446,18 +1446,18 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
     angle = abs(angle) % 360;  /* make angle between 0 and 359. */
 
     args = get_position_arg(channel);
-    if (!args) {
+    if (!args)
         return(0);
-    }
 
         /* it's a no-op; unregister the effect, if it's registered. */
-    if ((!distance) && (!angle)) {
-        if (args->in_use) {
+    if (!angle)
+    {
+        if (args->in_use)
+        {
             retval = _Mix_UnregisterEffect_locked(channel, f);
             return(retval);
-        } else {
-            return(1);
         }
+        return(1);
     }
 
     if (channels == 2)
@@ -1469,15 +1469,12 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
 
     if (channels == 4 || channels == 6)
     {
-    if (angle > 315) room_angle = 0;
-    else if (angle > 225) room_angle = 270;
-    else if (angle > 135) room_angle = 180;
-    else if (angle > 45) room_angle = 90;
-    else room_angle = 0;
+       if (angle > 315) room_angle = 0;
+       else if (angle > 225) room_angle = 270;
+       else if (angle > 135) room_angle = 180;
+       else if (angle > 45) room_angle = 90;
+       else room_angle = 0;
     }
-
-
-    distance = 255 - distance;  /* flip it to scale Mix_SetDistance() uses. */
 
     set_amplitudes(channels, angle, room_angle);
 
@@ -1493,8 +1490,8 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
     args->center_f = ((float) speaker_amplitude[4]) / 255.0f;
     args->lfe_u8 = speaker_amplitude[5];
     args->lfe_f = ((float) speaker_amplitude[5]) / 255.0f;
-    args->distance_u8 = distance;
-    args->distance_f = ((float) distance) / 255.0f;
+    args->distance_u8 = 255;
+    args->distance_f = ((float) 255) / 255.0f;
     args->room_angle = room_angle;
     if (!args->in_use) {
         args->in_use = 1;
