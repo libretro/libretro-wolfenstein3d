@@ -50,16 +50,7 @@ struct _Mix_Music
 /* Used to calculate fading steps */
 static int ms_per_step;
 
-/* rcg06042009 report available decoders at runtime. */
-static const char **music_decoders = NULL;
-static int num_decoders = 0;
-
 /* Semicolon-separated SoundFont paths */
-
-int Mix_GetNumMusicDecoders(void)
-{
-    return(num_decoders);
-}
 
 /* Local low-level functions prototypes */
 static void music_internal_initialize_volume(void);
@@ -321,11 +312,6 @@ static int music_internal_playing(void)
 void close_music(void)
 {
    Mix_HaltMusic();
-
-   /* rcg06042009 report available decoders at runtime. */
-   free((void *)music_decoders);
-   music_decoders = NULL;
-   num_decoders = 0;
 
    ms_per_step = 0;
 }
