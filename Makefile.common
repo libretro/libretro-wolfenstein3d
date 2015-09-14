@@ -22,6 +22,5 @@ SOURCES_C += $(CORE_DIR)/wl_play.c
 SOURCES_C += $(CORE_DIR)/wl_state.c
 SOURCES_C += $(CORE_DIR)/wl_text.c
 SOURCES_C += $(CORE_DIR)/surface.c
-SOURCES_C += $(CORE_DIR)/SDL_mixer/effect_position.c
 SOURCES_C += $(CORE_DIR)/SDL_mixer/mixer.c
 SOURCES_C += $(CORE_DIR)/SDL_mixer/music.c

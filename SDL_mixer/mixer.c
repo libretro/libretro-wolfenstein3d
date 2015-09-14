@@ -30,9 +30,6 @@
 #include "SDL_mixer.h"
 #include "../surface.h"
 
-#define __MIX_INTERNAL_EFFECT__
-#include "effects_internal.h"
-
 /* Magic numbers for various audio file formats */
 #define RIFF        0x46464952      /* "RIFF" */
 #define WAVE        0x45564157      /* "WAVE" */

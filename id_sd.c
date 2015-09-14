@@ -155,17 +155,6 @@ int SD_GetChannelForDigi(int which)
 
 void SD_SetPosition(int channel, int leftpos, int rightpos)
 {
-   if((leftpos < 0) || (leftpos > 15) || (rightpos < 0) || (rightpos > 15)
-         || ((leftpos == 15) && (rightpos == 15)))
-      Quit("SD_SetPosition: Illegal position");
-
-   switch (DigiMode)
-   {
-      case sds_SoundBlaster:
-         Mix_SetPanning(channel, ((15 - leftpos) << 4) + 15,
-               ((15 - rightpos) << 4) + 15);
-         break;
-   }
 }
 
 static Sint16 GetSample(float csample, byte *samples, int size)
