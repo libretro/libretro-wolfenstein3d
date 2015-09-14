@@ -342,8 +342,6 @@ int Mix_OpenAudio(int frequency, Uint16 format, int nchannels, int chunksize)
    }
    Mix_VolumeMusic(SDL_MIX_MAXVOLUME);
 
-   _Mix_InitEffects();
-
    /* This list is (currently) decided at build time. */
    add_chunk_decoder("WAVE");
 
@@ -808,7 +806,6 @@ void Mix_CloseAudio(void)
          Mix_UnregisterAllEffects(MIX_CHANNEL_POST);
          close_music();
          Mix_HaltChannel(-1);
-         _Mix_DeinitEffects();
          SDL_CloseAudio();
          free(mix_channel);
          mix_channel = NULL;
