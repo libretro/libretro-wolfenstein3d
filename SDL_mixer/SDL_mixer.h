@@ -152,20 +152,10 @@ extern const char * Mix_GetChunkDecoder(int index);
 extern int Mix_GetNumMusicDecoders(void);
 extern const char * Mix_GetMusicDecoder(int index);
 
-/* Find out the music format of a mixer music, or the currently playing
-   music, if 'music' is NULL.
-*/
-extern Mix_MusicType Mix_GetMusicType(const Mix_Music *music);
-
 /* Add your own music player or additional mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
  */
 extern void Mix_HookMusic(void (*mix_func)(void *udata, Uint8 *stream, int len), void *arg);
-
-/* Add your own callback when the music has finished playing.
-   This callback is only called if the music finishes naturally.
- */
-extern void Mix_HookMusicFinished(void (*music_finished)(void));
 
 /* Get a pointer to the user data for the current music hook */
 extern void * Mix_GetMusicHookData(void);
@@ -299,36 +289,6 @@ extern int Mix_SetPanning(int channel, Uint8 left, Uint8 right);
  */
 extern int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance);
 
-
-/* Set the "distance" of a channel. (distance) is an integer from 0 to 255
- *  that specifies the location of the sound in relation to the listener.
- *  Distance 0 is overlapping the listener, and 255 is as far away as possible
- *  A distance of 255 does not guarantee silence; in such a case, you might
- *  want to try changing the chunk's volume, or just cull the sample from the
- *  mixing process with Mix_HaltChannel().
- * For efficiency, the precision of this effect may be limited (distances 1
- *  through 7 might all produce the same effect, 8 through 15 are equal, etc).
- *  (distance) is an integer between 0 and 255 that specifies the space
- *  between the sound and the listener. The larger the number, the further
- *  away the sound is.
- * Setting (distance) to 0 unregisters this effect, since the data would be
- *  unchanged.
- * If you need more precise positional audio, consider using OpenAL for
- *  spatialized effects instead of SDL_mixer. This is only meant to be a
- *  basic effect for simple "3D" games.
- *
- * Setting (channel) to MIX_CHANNEL_POST registers this as a posteffect, and
- *  the distance attenuation will be done to the final mixed stream before
- *  passing it on to the audio device.
- *
- * This uses the Mix_RegisterEffect() API internally.
- *
- * returns zero if error (no such channel or Mix_RegisterEffect() fails),
- *  nonzero if position effect is enabled.
- *  Error messages can be retrieved from Mix_GetError().
- */
-extern int Mix_SetDistance(int channel, Uint8 distance);
-
 /* end of effects API. --ryan. */
 
 
@@ -353,14 +313,8 @@ extern int Mix_GroupChannels(int from, int to, int tag);
    returning -1 if none are available.
  */
 extern int Mix_GroupAvailable(int tag);
-/* Returns the number of channels in a group. This is also a subtle
-   way to get the total number of channels when 'tag' is -1
- */
-extern int Mix_GroupCount(int tag);
 /* Finds the "oldest" sample playing in a group of channels */
 extern int Mix_GroupOldest(int tag);
-/* Finds the "most recent" (i.e. last) sample playing in a group of channels */
-extern int Mix_GroupNewer(int tag);
 
 /* Play an audio chunk on a specific channel.
    If the specified channel is -1, play on the first free channel.
@@ -392,10 +346,6 @@ extern int Mix_HaltMusic(void);
 */
 extern int Mix_ExpireChannel(int channel, int ticks);
 
-/* Query the fading status of a channel */
-extern Mix_Fading Mix_FadingMusic(void);
-extern Mix_Fading Mix_FadingChannel(int which);
-
 /* Pause/Resume a particular channel */
 extern void Mix_Pause(int channel);
 extern void Mix_Resume(int channel);
@@ -419,11 +369,6 @@ extern int Mix_SetMusicPosition(double position);
    If the specified channel is -1, check all channels.
 */
 extern int Mix_Playing(int channel);
-extern int Mix_PlayingMusic(void);
-
-/* Synchro value is set by MikMod from modules while playing */
-extern int Mix_SetSynchroValue(int value);
-extern int Mix_GetSynchroValue(void);
 
 /* Get the Mix_Chunk currently associated with a mixer channel
     Returns NULL if it's an invalid channel, or there's no chunk associated.

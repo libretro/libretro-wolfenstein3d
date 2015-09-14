@@ -85,15 +85,6 @@ static int  music_internal_position(double position);
 static int  music_internal_playing();
 static void music_internal_halt(void);
 
-
-/* Support for hooking when the music has finished */
-static void (*music_finished_hook)(void) = NULL;
-
-void Mix_HookMusicFinished(void (*music_finished)(void))
-{
-   music_finished_hook = music_finished;
-}
-
 /* If music isn't playing, halt it if no looping is required, restart it */
 /* othesrchise. NOP if the music is playing */
 static int music_halt_or_loop (void)
@@ -115,8 +106,6 @@ static int music_halt_or_loop (void)
       else
       {
          music_internal_halt();
-         if (music_finished_hook)
-            music_finished_hook();
 
          return 0;
       }
@@ -154,8 +143,6 @@ void music_mixer(void *udata, Uint8 *stream, int len)
             if ( music_playing->fading == MIX_FADING_OUT )
             {
                music_internal_halt();
-               if ( music_finished_hook )
-                  music_finished_hook();
                return;
             }
             music_playing->fading = MIX_NO_FADING;
@@ -207,23 +194,6 @@ void Mix_FreeMusic(Mix_Music *music)
    }
 
    free(music);
-}
-
-/* Find out the music format of a mixer music, or the currently playing
-   music, if 'music' is NULL.
-*/
-Mix_MusicType Mix_GetMusicType(const Mix_Music *music)
-{
-   Mix_MusicType type = MUS_NONE;
-
-   if (music)
-      type = music->type;
-   else
-   {
-      if (music_playing)
-         type = music_playing->type;
-   }
-   return(type);
 }
 
 /* Play a music chunk.  Returns 0, or -1 if there was an error.
@@ -331,23 +301,9 @@ skip:
 int Mix_HaltMusic(void)
 {
    if ( music_playing )
-   {
       music_internal_halt();
-      if ( music_finished_hook )
-         music_finished_hook();
-   }
 
    return(0);
-}
-
-Mix_Fading Mix_FadingMusic(void)
-{
-   Mix_Fading fading = MIX_NO_FADING;
-
-   if ( music_playing )
-      fading = music_playing->fading;
-
-   return(fading);
 }
 
 /* Pause/Resume the music stream */
@@ -375,27 +331,6 @@ int Mix_PausedMusic(void)
 static int music_internal_playing(void)
 {
    return 0;
-}
-int Mix_PlayingMusic(void)
-{
-   int playing = 0;
-
-   if ( music_playing )
-      playing = music_loops || music_internal_playing();
-
-   return(playing);
-}
-
-int Mix_SetSynchroValue(int i)
-{
-   /* Not supported by any players at this time */
-   return(-1);
-}
-
-int Mix_GetSynchroValue(void)
-{
-   /* Not supported by any players at this time */
-   return(-1);
 }
 
 /* Uninitialize the music players */

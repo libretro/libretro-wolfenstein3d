@@ -959,18 +959,6 @@ int Mix_GroupAvailable(int tag)
     return(-1);
 }
 
-int Mix_GroupCount(int tag)
-{
-    int count = 0;
-    int i;
-    for( i=0; i < num_channels; i ++ )
-    {
-        if ( mix_channel[i].tag==tag || tag==-1 )
-            ++ count;
-    }
-    return(count);
-}
-
 /* Finds the "oldest" sample playing in a group of channels */
 int Mix_GroupOldest(int tag)
 {
@@ -989,28 +977,6 @@ int Mix_GroupOldest(int tag)
    }
    return(chan);
 }
-
-/* Finds the "most recent" (i.e. last) sample playing in a group of channels */
-int Mix_GroupNewer(int tag)
-{
-   int i;
-   int chan = -1;
-   Uint32 maxtime = 0;
-
-   for( i=0; i < num_channels; i ++ )
-   {
-      if ( (mix_channel[i].tag==tag || tag==-1) && mix_channel[i].playing > 0
-            && mix_channel[i].start_time >= maxtime )
-      {
-         maxtime = mix_channel[i].start_time;
-         chan = i;
-      }
-   }
-
-   return(chan);
-}
-
-
 
 /*
  * rcg06122001 The special effects exportable API.
