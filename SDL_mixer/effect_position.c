@@ -37,9 +37,7 @@
 #define __MIX_INTERNAL_EFFECT__
 #include "effects_internal.h"
 
-/*
- * Positional effects...panning, distance attenuation, etc.
- */
+/* Positional effects...panning, distance attenuation, etc. */
 
 typedef struct _Eff_positionargs
 {
@@ -81,7 +79,6 @@ void _Eff_PositionDeinit(void)
     pos_args_array = NULL;
 }
 
-
 /* This just frees up the callback-specific data. */
 static void _Eff_PositionDone(int channel, void *udata)
 {
@@ -98,900 +95,7 @@ static void _Eff_PositionDone(int channel, void *udata)
     }
 }
 
-
-static void _Eff_position_u8(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint8 *ptr = (Uint8 *) stream;
-    int i;
-
-        /*
-         * if there's only a mono channnel (the only way we wouldn't have
-         *  a len divisible by 2 here), then left_f and right_f are always
-         *  1.0, and are therefore throwaways.
-         */
-    if (len % sizeof (Uint16) != 0) {
-        *ptr = (Uint8) (((float) *ptr) * args->distance_f);
-        ptr++;
-        len--;
-    }
-
-    if (args->room_angle == 180)
-    for (i = 0; i < len; i += sizeof (Uint8) * 2) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else for (i = 0; i < len; i += sizeof (Uint8) * 2) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-    }
-}
-static void _Eff_position_u8_c4(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint8 *ptr = (Uint8 *) stream;
-    int i;
-
-        /*
-         * if there's only a mono channnel (the only way we wouldn't have
-         *  a len divisible by 2 here), then left_f and right_f are always
-         *  1.0, and are therefore throwaways.
-         */
-    if (len % sizeof (Uint16) != 0) {
-        *ptr = (Uint8) (((float) *ptr) * args->distance_f);
-        ptr++;
-        len--;
-    }
-
-    if (args->room_angle == 0)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else if (args->room_angle == 90)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else if (args->room_angle == 180)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else if (args->room_angle == 270)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-    }
-}
-
-
-static void _Eff_position_u8_c6(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint8 *ptr = (Uint8 *) stream;
-    int i;
-
-        /*
-         * if there's only a mono channnel (the only way we wouldn't have
-         *  a len divisible by 2 here), then left_f and right_f are always
-         *  1.0, and are therefore throwaways.
-         */
-    if (len % sizeof (Uint16) != 0) {
-        *ptr = (Uint8) (((float) *ptr) * args->distance_f);
-        ptr++;
-        len--;
-    }
-
-    if (args->room_angle == 0)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->center_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->lfe_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else if (args->room_angle == 90)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f/2) + 128)
-            + (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f/2) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->lfe_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else if (args->room_angle == 180)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f/2) + 128)
-            + (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f/2) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->lfe_f) * args->distance_f) + 128);
-        ptr++;
-    }
-    else if (args->room_angle == 270)
-    for (i = 0; i < len; i += sizeof (Uint8) * 6) {
-        /* must adjust the sample so that 0 is the center */
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_rear_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->right_f) * args->distance_f) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_f) * args->distance_f/2) + 128)
-            + (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->left_rear_f) * args->distance_f/2) + 128);
-        ptr++;
-        *ptr = (Uint8) ((Sint8) ((((float) (Sint8) (*ptr - 128))
-            * args->lfe_f) * args->distance_f) + 128);
-        ptr++;
-    }
-}
-
-
-/*
- * This one runs about 10.1 times faster than the non-table version, with
- *  no loss in quality. It does, however, require 64k of memory for the
- *  lookup table. Also, this will only update position information once per
- *  call; the non-table version always checks the arguments for each sample,
- *  in case the user has called Mix_SetPanning() or whatnot again while this
- *  callback is running.
- */
-static void _Eff_position_table_u8(int chan, void *stream, int len, void *udata)
-{
-   volatile position_args *args = (volatile position_args *) udata;
-   Uint8 *ptr = (Uint8 *) stream;
-   Uint32 *p;
-   int i;
-   Uint8 *l = ((Uint8 *) _Eff_volume_table) + (256 * args->left_u8);
-   Uint8 *r = ((Uint8 *) _Eff_volume_table) + (256 * args->right_u8);
-   Uint8 *d = ((Uint8 *) _Eff_volume_table) + (256 * args->distance_u8);
-
-   if (args->room_angle == 180) {
-      Uint8 *temp = l;
-      l = r;
-      r = temp;
-   }
-   /*
-    * if there's only a mono channnel, then l[] and r[] are always
-    *  volume 255, and are therefore throwaways. Still, we have to
-    *  be sure not to overrun the audio buffer...
-    */
-   while (len % sizeof (Uint32) != 0)
-   {
-      *ptr = d[l[*ptr]];
-      ptr++;
-      if (args->channels > 1)
-      {
-         *ptr = d[r[*ptr]];
-         ptr++;
-      }
-      len -= args->channels;
-   }
-
-   p = (Uint32 *) ptr;
-
-   for (i = 0; i < len; i += sizeof (Uint32))
-   {
 #ifdef MSB_FIRST
-      *p = (d[l[(*p & 0xFF000000) >> 24]] << 24) |
-         (d[r[(*p & 0x00FF0000) >> 16]] << 16) |
-         (d[l[(*p & 0x0000FF00) >>  8]] <<  8) |
-         (d[r[(*p & 0x000000FF)      ]]      ) ;
-#else
-      *p = (d[r[(*p & 0xFF000000) >> 24]] << 24) |
-         (d[l[(*p & 0x00FF0000) >> 16]] << 16) |
-         (d[r[(*p & 0x0000FF00) >>  8]] <<  8) |
-         (d[l[(*p & 0x000000FF)      ]]      ) ;
-#endif
-      ++p;
-   }
-}
-
-
-static void _Eff_position_s8(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint8 *ptr = (Sint8 *) stream;
-    int i;
-
-        /*
-         * if there's only a mono channnel (the only way we wouldn't have
-         *  a len divisible by 2 here), then left_f and right_f are always
-         *  1.0, and are therefore throwaways.
-         */
-    if (len % sizeof (Sint16) != 0) {
-        *ptr = (Sint8) (((float) *ptr) * args->distance_f);
-        ptr++;
-        len--;
-    }
-
-    if (args->room_angle == 180)
-    for (i = 0; i < len; i += sizeof (Sint8) * 2) {
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f);
-        ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f);
-        ptr++;
-    }
-    else
-    for (i = 0; i < len; i += sizeof (Sint8) * 2) {
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f);
-        ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f);
-        ptr++;
-    }
-}
-static void _Eff_position_s8_c4(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint8 *ptr = (Sint8 *) stream;
-    int i;
-
-        /*
-         * if there's only a mono channnel (the only way we wouldn't have
-         *  a len divisible by 2 here), then left_f and right_f are always
-         *  1.0, and are therefore throwaways.
-         */
-    if (len % sizeof (Sint16) != 0) {
-        *ptr = (Sint8) (((float) *ptr) * args->distance_f);
-        ptr++;
-        len--;
-    }
-
-    for (i = 0; i < len; i += sizeof (Sint8) * 4) {
-      switch (args->room_angle) {
-       case 0:
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-    break;
-       case 90:
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-    break;
-       case 180:
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-    break;
-       case 270:
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-    break;
-      }
-    }
-}
-static void _Eff_position_s8_c6(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint8 *ptr = (Sint8 *) stream;
-    int i;
-
-        /*
-         * if there's only a mono channnel (the only way we wouldn't have
-         *  a len divisible by 2 here), then left_f and right_f are always
-         *  1.0, and are therefore throwaways.
-         */
-    if (len % sizeof (Sint16) != 0) {
-        *ptr = (Sint8) (((float) *ptr) * args->distance_f);
-        ptr++;
-        len--;
-    }
-
-    for (i = 0; i < len; i += sizeof (Sint8) * 6) {
-      switch (args->room_angle) {
-       case 0:
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->center_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->lfe_f) * args->distance_f); ptr++;
-    break;
-       case 90:
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f / 2)
-           + (Sint8)((((float) *ptr) * args->right_f) * args->distance_f / 2); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->lfe_f) * args->distance_f); ptr++;
-    break;
-       case 180:
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f / 2)
-           + (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f / 2); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->lfe_f) * args->distance_f); ptr++;
-    break;
-       case 270:
-        *ptr = (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_rear_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->right_f) * args->distance_f); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->left_f) * args->distance_f / 2)
-           + (Sint8)((((float) *ptr) * args->left_rear_f) * args->distance_f / 2); ptr++;
-        *ptr = (Sint8)((((float) *ptr) * args->lfe_f) * args->distance_f); ptr++;
-    break;
-      }
-    }
-}
-
-
-/*
- * This one runs about 10.1 times faster than the non-table version, with
- *  no loss in quality. It does, however, require 64k of memory for the
- *  lookup table. Also, this will only update position information once per
- *  call; the non-table version always checks the arguments for each sample,
- *  in case the user has called Mix_SetPanning() or whatnot again while this
- *  callback is running.
- */
-static void _Eff_position_table_s8(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint8 *ptr = (Sint8 *) stream;
-    Uint32 *p;
-    int i;
-    Sint8 *l = ((Sint8 *) _Eff_volume_table) + (256 * args->left_u8);
-    Sint8 *r = ((Sint8 *) _Eff_volume_table) + (256 * args->right_u8);
-    Sint8 *d = ((Sint8 *) _Eff_volume_table) + (256 * args->distance_u8);
-
-    if (args->room_angle == 180) {
-        Sint8 *temp = l;
-        l = r;
-        r = temp;
-    }
-
-
-    while (len % sizeof (Uint32) != 0) {
-        *ptr = d[l[*ptr]];
-        ptr++;
-        if (args->channels > 1) {
-            *ptr = d[r[*ptr]];
-            ptr++;
-        }
-        len -= args->channels;
-    }
-
-    p = (Uint32 *) ptr;
-
-    for (i = 0; i < len; i += sizeof (Uint32)) {
-#ifdef MSB_FIRST
-        *p = (d[l[((Sint16)(Sint8)((*p & 0xFF000000) >> 24))+128]] << 24) |
-             (d[r[((Sint16)(Sint8)((*p & 0x00FF0000) >> 16))+128]] << 16) |
-             (d[l[((Sint16)(Sint8)((*p & 0x0000FF00) >>  8))+128]] <<  8) |
-             (d[r[((Sint16)(Sint8)((*p & 0x000000FF)      ))+128]]      ) ;
-#else
-        *p = (d[r[((Sint16)(Sint8)((*p & 0xFF000000) >> 24))+128]] << 24) |
-             (d[l[((Sint16)(Sint8)((*p & 0x00FF0000) >> 16))+128]] << 16) |
-             (d[r[((Sint16)(Sint8)((*p & 0x0000FF00) >>  8))+128]] <<  8) |
-             (d[l[((Sint16)(Sint8)((*p & 0x000000FF)      ))+128]]      ) ;
-#endif
-        ++p;
-    }
-
-
-}
-
-
-/* !!! FIXME : Optimize the code for 16-bit samples? */
-
-static void _Eff_position_u16lsb(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint16 *ptr = (Uint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Uint16) * 2) {
-        Sint16 sampl = (Sint16) (Retro_SwapLE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (Retro_SwapLE16(*(ptr+1)) - 32768);
-
-        Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapr = (Uint16) ((Sint16) (((float) sampr * args->right_f)
-                                    * args->distance_f) + 32768);
-
-    if (args->room_angle == 180) {
-            *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-            *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-    }
-    else {
-            *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-            *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-    }
-    }
-}
-static void _Eff_position_u16lsb_c4(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint16 *ptr = (Uint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Uint16) * 4) {
-        Sint16 sampl = (Sint16) (Retro_SwapLE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (Retro_SwapLE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (Retro_SwapLE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (Retro_SwapLE16(*(ptr+3)) - 32768);
-
-        Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapr = (Uint16) ((Sint16) (((float) sampr * args->right_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaplr = (Uint16) ((Sint16) (((float) samplr * args->left_rear_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaprr = (Uint16) ((Sint16) (((float) samprr * args->right_rear_f)
-                                    * args->distance_f) + 32768);
-
-    switch (args->room_angle) {
-        case 0:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-            break;
-        case 90:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-            break;
-        case 180:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-            break;
-        case 270:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-            break;
-    }
-    }
-}
-static void _Eff_position_u16lsb_c6(int chan, void *stream, int len, void *udata)
-{
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint16 *ptr = (Uint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Uint16) * 6) {
-        Sint16 sampl = (Sint16) (Retro_SwapLE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (Retro_SwapLE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (Retro_SwapLE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (Retro_SwapLE16(*(ptr+3)) - 32768);
-        Sint16 sampce = (Sint16) (Retro_SwapLE16(*(ptr+4)) - 32768);
-        Sint16 sampwf = (Sint16) (Retro_SwapLE16(*(ptr+5)) - 32768);
-
-        Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapr = (Uint16) ((Sint16) (((float) sampr * args->right_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaplr = (Uint16) ((Sint16) (((float) samplr * args->left_rear_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaprr = (Uint16) ((Sint16) (((float) samprr * args->right_rear_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapce = (Uint16) ((Sint16) (((float) sampce * args->center_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapwf = (Uint16) ((Sint16) (((float) sampwf * args->lfe_f)
-                                    * args->distance_f) + 32768);
-
-    switch (args->room_angle) {
-        case 0:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapce);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
-            break;
-        case 90:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr)/2 + (Uint16) Retro_SwapLE16(swaprr)/2;
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
-            break;
-        case 180:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr)/2 + (Uint16) Retro_SwapLE16(swaplr)/2;
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
-            break;
-        case 270:
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapl)/2 + (Uint16) Retro_SwapLE16(swaplr)/2;
-                *(ptr++) = (Uint16) Retro_SwapLE16(swapwf);
-            break;
-    }
-    }
-}
-
-static void _Eff_position_s16lsb(int chan, void *stream, int len, void *udata)
-{
-   /* 16 signed bits (lsb) * 2 channels. */
-   volatile position_args *args = (volatile position_args *) udata;
-   Sint16 *ptr = (Sint16 *) stream;
-   int i;
-
-   for (i = 0; i < len; i += sizeof (Sint16) * 2) {
-      Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
-               args->left_f) * args->distance_f);
-      Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
-               args->right_f) * args->distance_f);
-      if (args->room_angle == 180) {
-         *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-         *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-      }
-      else {
-         *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-         *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-      }
-   }
-}
-static void _Eff_position_s16lsb_c4(int chan, void *stream, int len, void *udata)
-{
-    /* 16 signed bits (lsb) * 4 channels. */
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint16 *ptr = (Sint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Sint16) * 4) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
-                                    args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
-                                    args->right_f) * args->distance_f);
-        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
-                                    args->left_rear_f) * args->distance_f);
-        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+2))) *
-                                    args->right_rear_f) * args->distance_f);
-    switch (args->room_angle) {
-        case 0:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-            break;
-        case 90:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-            break;
-        case 180:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-            break;
-        case 270:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-            break;
-    }
-    }
-}
-
-static void _Eff_position_s16lsb_c6(int chan, void *stream, int len, void *udata)
-{
-    /* 16 signed bits (lsb) * 6 channels. */
-    volatile position_args *args = (volatile position_args *) udata;
-    Sint16 *ptr = (Sint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Sint16) * 6) {
-        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
-                                    args->left_f) * args->distance_f);
-        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
-                                    args->right_f) * args->distance_f);
-        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+2))) *
-                                    args->left_rear_f) * args->distance_f);
-        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+3))) *
-                                    args->right_rear_f) * args->distance_f);
-        Sint16 swapce = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+4))) *
-                                    args->center_f) * args->distance_f);
-        Sint16 swapwf = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+5))) *
-                                    args->lfe_f) * args->distance_f);
-    switch (args->room_angle) {
-        case 0:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapce);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
-            break;
-        case 90:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr)/2 + (Sint16) Retro_SwapLE16(swaprr)/2;
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
-            break;
-        case 180:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr)/2 + (Sint16) Retro_SwapLE16(swaplr)/2;
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
-            break;
-        case 270:
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapl)/2 + (Sint16) Retro_SwapLE16(swaplr)/2;
-                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
-            break;
-    }
-    }
-}
-
-static void _Eff_position_u16msb(int chan, void *stream, int len, void *udata)
-{
-    /* 16 signed bits (lsb) * 2 channels. */
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint16 *ptr = (Uint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Sint16) * 2) {
-        Sint16 sampl = (Sint16) (Retro_SwapBE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (Retro_SwapBE16(*(ptr+1)) - 32768);
-
-        Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapr = (Uint16) ((Sint16) (((float) sampr * args->right_f)
-                                    * args->distance_f) + 32768);
-
-    if (args->room_angle == 180) {
-            *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-            *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-    }
-    else {
-            *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-            *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-    }
-    }
-}
-static void _Eff_position_u16msb_c4(int chan, void *stream, int len, void *udata)
-{
-    /* 16 signed bits (lsb) * 4 channels. */
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint16 *ptr = (Uint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Sint16) * 4) {
-        Sint16 sampl = (Sint16) (Retro_SwapBE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (Retro_SwapBE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (Retro_SwapBE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (Retro_SwapBE16(*(ptr+3)) - 32768);
-
-        Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapr = (Uint16) ((Sint16) (((float) sampr * args->right_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaplr = (Uint16) ((Sint16) (((float) samplr * args->left_rear_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaprr = (Uint16) ((Sint16) (((float) samprr * args->right_rear_f)
-                                    * args->distance_f) + 32768);
-
-    switch (args->room_angle) {
-        case 0:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-            break;
-        case 90:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-            break;
-        case 180:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-            break;
-        case 270:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-            break;
-    }
-    }
-}
-static void _Eff_position_u16msb_c6(int chan, void *stream, int len, void *udata)
-{
-    /* 16 signed bits (lsb) * 6 channels. */
-    volatile position_args *args = (volatile position_args *) udata;
-    Uint16 *ptr = (Uint16 *) stream;
-    int i;
-
-    for (i = 0; i < len; i += sizeof (Sint16) * 6) {
-        Sint16 sampl = (Sint16) (Retro_SwapBE16(*(ptr+0)) - 32768);
-        Sint16 sampr = (Sint16) (Retro_SwapBE16(*(ptr+1)) - 32768);
-        Sint16 samplr = (Sint16) (Retro_SwapBE16(*(ptr+2)) - 32768);
-        Sint16 samprr = (Sint16) (Retro_SwapBE16(*(ptr+3)) - 32768);
-        Sint16 sampce = (Sint16) (Retro_SwapBE16(*(ptr+4)) - 32768);
-        Sint16 sampwf = (Sint16) (Retro_SwapBE16(*(ptr+5)) - 32768);
-
-        Uint16 swapl = (Uint16) ((Sint16) (((float) sampl * args->left_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapr = (Uint16) ((Sint16) (((float) sampr * args->right_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaplr = (Uint16) ((Sint16) (((float) samplr * args->left_rear_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swaprr = (Uint16) ((Sint16) (((float) samprr * args->right_rear_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapce = (Uint16) ((Sint16) (((float) sampce * args->center_f)
-                                    * args->distance_f) + 32768);
-        Uint16 swapwf = (Uint16) ((Sint16) (((float) sampwf * args->lfe_f)
-                                    * args->distance_f) + 32768);
-
-    switch (args->room_angle) {
-        case 0:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapce);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
-            break;
-        case 90:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr)/2 + (Uint16) Retro_SwapBE16(swaprr)/2;
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
-            break;
-        case 180:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr)/2 + (Uint16) Retro_SwapBE16(swaplr)/2;
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
-            break;
-        case 270:
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaplr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swaprr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapr);
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapl)/2 + (Uint16) Retro_SwapBE16(swaplr)/2;
-                *(ptr++) = (Uint16) Retro_SwapBE16(swapwf);
-            break;
-    }
-    }
-}
-
 static void _Eff_position_s16msb(int chan, void *stream, int len, void *udata)
 {
     /* 16 signed bits (lsb) * 2 channels. */
@@ -1008,6 +112,7 @@ static void _Eff_position_s16msb(int chan, void *stream, int len, void *udata)
         *(ptr++) = (Sint16) Retro_SwapBE16(swapr);
     }
 }
+
 static void _Eff_position_s16msb_c4(int chan, void *stream, int len, void *udata)
 {
     /* 16 signed bits (lsb) * 4 channels. */
@@ -1109,6 +214,132 @@ static void _Eff_position_s16msb_c6(int chan, void *stream, int len, void *udata
     }
     }
 }
+#else
+static void _Eff_position_s16lsb(int chan, void *stream, int len, void *udata)
+{
+   /* 16 signed bits (lsb) * 2 channels. */
+   volatile position_args *args = (volatile position_args *) udata;
+   Sint16 *ptr = (Sint16 *) stream;
+   int i;
+
+   for (i = 0; i < len; i += sizeof (Sint16) * 2) {
+      Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
+               args->left_f) * args->distance_f);
+      Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
+               args->right_f) * args->distance_f);
+      if (args->room_angle == 180) {
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+      }
+      else {
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+         *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+      }
+   }
+}
+
+static void _Eff_position_s16lsb_c4(int chan, void *stream, int len, void *udata)
+{
+    /* 16 signed bits (lsb) * 4 channels. */
+    volatile position_args *args = (volatile position_args *) udata;
+    Sint16 *ptr = (Sint16 *) stream;
+    int i;
+
+    for (i = 0; i < len; i += sizeof (Sint16) * 4) {
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
+                                    args->left_f) * args->distance_f);
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
+                                    args->right_f) * args->distance_f);
+        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
+                                    args->left_rear_f) * args->distance_f);
+        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+2))) *
+                                    args->right_rear_f) * args->distance_f);
+    switch (args->room_angle) {
+        case 0:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+            break;
+        case 90:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+            break;
+        case 180:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+            break;
+        case 270:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+            break;
+    }
+    }
+}
+
+static void _Eff_position_s16lsb_c6(int chan, void *stream, int len, void *udata)
+{
+    /* 16 signed bits (lsb) * 6 channels. */
+    volatile position_args *args = (volatile position_args *) udata;
+    Sint16 *ptr = (Sint16 *) stream;
+    int i;
+
+    for (i = 0; i < len; i += sizeof (Sint16) * 6) {
+        Sint16 swapl = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+0))) *
+                                    args->left_f) * args->distance_f);
+        Sint16 swapr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+1))) *
+                                    args->right_f) * args->distance_f);
+        Sint16 swaplr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+2))) *
+                                    args->left_rear_f) * args->distance_f);
+        Sint16 swaprr = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+3))) *
+                                    args->right_rear_f) * args->distance_f);
+        Sint16 swapce = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+4))) *
+                                    args->center_f) * args->distance_f);
+        Sint16 swapwf = (Sint16) ((((float) (Sint16) Retro_SwapLE16(*(ptr+5))) *
+                                    args->lfe_f) * args->distance_f);
+    switch (args->room_angle) {
+        case 0:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapce);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
+            break;
+        case 90:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr)/2 + (Sint16) Retro_SwapLE16(swaprr)/2;
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
+            break;
+        case 180:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr)/2 + (Sint16) Retro_SwapLE16(swaplr)/2;
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
+            break;
+        case 270:
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaplr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swaprr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapr);
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapl)/2 + (Sint16) Retro_SwapLE16(swaplr)/2;
+                *(ptr++) = (Sint16) Retro_SwapLE16(swapwf);
+            break;
+    }
+    }
+}
+#endif
 
 static void init_position_args(position_args *args)
 {
@@ -1167,74 +398,30 @@ static position_args *get_position_arg(int channel)
 
 static Mix_EffectFunc_t get_position_effect_func(Uint16 format, int channels)
 {
-   Mix_EffectFunc_t f = NULL;
-
-   switch (format) {
-      case AUDIO_U16LSB:
-         switch (channels) {
-            case 1:
-            case 2:
-               f = _Eff_position_u16lsb;
-               break;
-            case 4:
-               f = _Eff_position_u16lsb_c4;
-               break;
-            case 6:
-               f = _Eff_position_u16lsb_c6;
-               break;
-         }
-         break;
-
-      case AUDIO_S16LSB:
-         switch (channels) {
-            case 1:
-            case 2:
-               f = _Eff_position_s16lsb;
-               break;
-            case 4:
-               f = _Eff_position_s16lsb_c4;
-               break;
-            case 6:
-               f = _Eff_position_s16lsb_c6;
-               break;
-         }
-         break;
-
-      case AUDIO_U16MSB:
-         switch (channels) {
-            case 1:
-            case 2:
-               f = _Eff_position_u16msb;
-               break;
-            case 4:
-               f = _Eff_position_u16msb_c4;
-               break;
-            case 6:
-               f = _Eff_position_u16msb_c6;
-               break;
-         }
-         break;
-
-      case AUDIO_S16MSB:
-         switch (channels) {
-            case 1:
-            case 2:
-               f = _Eff_position_s16msb;
-               break;
-            case 4:
-               f = _Eff_position_s16msb_c4;
-               break;
-            case 6:
-               f = _Eff_position_s16msb_c6;
-               break;
-         }
-         break;
-
-      default:
-         break;
+   switch (channels)
+   {
+      case 1:
+      case 2:
+#ifdef MSB_FIRST
+         return _Eff_position_s16msb;
+#else
+         return _Eff_position_s16lsb;
+#endif
+      case 4:
+#ifdef MSB_FIRST
+         return _Eff_position_s16msb_c4;
+#else
+         return _Eff_position_s16lsb_c4;
+#endif
+      case 6:
+#ifdef MSB_FIRST
+         return _Eff_position_s16msb_c6;
+#else
+         return _Eff_position_s16lsb_c6;
+#endif
    }
 
-   return(f);
+   return NULL;
 }
 
 static Uint8 speaker_amplitude[6];
@@ -1368,138 +555,137 @@ static void set_amplitudes(int channels, int angle, int room_angle)
     speaker_amplitude[5] = 255;
 }
 
-int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance);
+int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
+{
+   Mix_EffectFunc_t f = NULL;
+   Uint16 format;
+   int channels;
+   position_args *args = NULL;
+   Sint16 room_angle = 0;
+   int retval = 1;
+
+   Mix_QuerySpec(NULL, &format, &channels);
+   f = get_position_effect_func(format, channels);
+   if (f == NULL)
+      return(0);
+
+   angle = abs(angle) % 360;  /* make angle between 0 and 359. */
+
+   args = get_position_arg(channel);
+   if (!args)
+      return(0);
+
+   /* it's a no-op; unregister the effect, if it's registered. */
+   if (!angle)
+   {
+      if (args->in_use)
+      {
+         retval = _Mix_UnregisterEffect_locked(channel, f);
+         return(retval);
+      }
+      return(1);
+   }
+
+   if (channels == 2)
+   {
+      if (angle > 180)
+         room_angle = 180; /* exchange left and right channels */
+      else room_angle = 0;
+   }
+
+   if (channels == 4 || channels == 6)
+   {
+      if (angle > 315) room_angle = 0;
+      else if (angle > 225) room_angle = 270;
+      else if (angle > 135) room_angle = 180;
+      else if (angle > 45) room_angle = 90;
+      else room_angle = 0;
+   }
+
+   set_amplitudes(channels, angle, room_angle);
+
+   args->left_u8 = speaker_amplitude[0];
+   args->left_f = ((float) speaker_amplitude[0]) / 255.0f;
+   args->right_u8 = speaker_amplitude[1];
+   args->right_f = ((float) speaker_amplitude[1]) / 255.0f;
+   args->left_rear_u8 = speaker_amplitude[2];
+   args->left_rear_f = ((float) speaker_amplitude[2]) / 255.0f;
+   args->right_rear_u8 = speaker_amplitude[3];
+   args->right_rear_f = ((float) speaker_amplitude[3]) / 255.0f;
+   args->center_u8 = speaker_amplitude[4];
+   args->center_f = ((float) speaker_amplitude[4]) / 255.0f;
+   args->lfe_u8 = speaker_amplitude[5];
+   args->lfe_f = ((float) speaker_amplitude[5]) / 255.0f;
+   args->distance_u8 = 255;
+   args->distance_f = ((float) 255) / 255.0f;
+   args->room_angle = room_angle;
+   if (!args->in_use) {
+      args->in_use = 1;
+      retval = _Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void *) args);
+   }
+
+   return(retval);
+}
 
 int Mix_SetPanning(int channel, Uint8 left, Uint8 right)
 {
-    Mix_EffectFunc_t f = NULL;
-    int channels;
-    Uint16 format;
-    position_args *args = NULL;
-    int retval = 1;
+   Mix_EffectFunc_t f = NULL;
+   int channels;
+   Uint16 format;
+   position_args *args = NULL;
+   int retval = 1;
 
-    Mix_QuerySpec(NULL, &format, &channels);
+   Mix_QuerySpec(NULL, &format, &channels);
 
-    if (channels != 2 && channels != 4 && channels != 6)    /* it's a no-op; we call that successful. */
-        return(1);
+   if (channels != 2 && channels != 4 && channels != 6)    /* it's a no-op; we call that successful. */
+      return(1);
 
-    if (channels > 2) {
-        /* left = right = 255 => angle = 0, to unregister effect as when channels = 2 */
-        /* left = 255 =>  angle = -90;  left = 0 => angle = +89 */
-        int angle = 0;
-        if ((left != 255) || (right != 255)) {
-        angle = (int)left;
-            angle = 127 - angle;
-        angle = -angle;
-            angle = angle * 90 / 128; /* Make it larger for more effect? */
-        }
-        return( Mix_SetPosition(channel, angle, 0) );
-    }
+   if (channels > 2) {
+      /* left = right = 255 => angle = 0, to unregister effect as when channels = 2 */
+      /* left = 255 =>  angle = -90;  left = 0 => angle = +89 */
+      int angle = 0;
+      if ((left != 255) || (right != 255)) {
+         angle = (int)left;
+         angle = 127 - angle;
+         angle = -angle;
+         angle = angle * 90 / 128; /* Make it larger for more effect? */
+      }
+      return( Mix_SetPosition(channel, angle, 0) );
+   }
 
-    f = get_position_effect_func(format, channels);
-    if (f == NULL)
-        return(0);
+   f = get_position_effect_func(format, channels);
+   if (f == NULL)
+      return(0);
 
-    args = get_position_arg(channel);
-    if (!args) {
-        return(0);
-    }
+   args = get_position_arg(channel);
+   if (!args) {
+      return(0);
+   }
 
-        /* it's a no-op; unregister the effect, if it's registered. */
-    if ((args->distance_u8 == 255) && (left == 255) && (right == 255)) {
-        if (args->in_use) {
-            retval = _Mix_UnregisterEffect_locked(channel, f);
-            return(retval);
-        } else {
-            return(1);
-        }
-    }
+   /* it's a no-op; unregister the effect, if it's registered. */
+   if ((args->distance_u8 == 255) && (left == 255) && (right == 255)) {
+      if (args->in_use) {
+         retval = _Mix_UnregisterEffect_locked(channel, f);
+         return(retval);
+      } else {
+         return(1);
+      }
+   }
 
-    args->left_u8 = left;
-    args->left_f = ((float) left) / 255.0f;
-    args->right_u8 = right;
-    args->right_f = ((float) right) / 255.0f;
-    args->room_angle = 0;
+   args->left_u8 = left;
+   args->left_f = ((float) left) / 255.0f;
+   args->right_u8 = right;
+   args->right_f = ((float) right) / 255.0f;
+   args->room_angle = 0;
 
-    if (!args->in_use) {
-        args->in_use = 1;
-        retval=_Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void*)args);
-    }
+   if (!args->in_use) {
+      args->in_use = 1;
+      retval=_Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void*)args);
+   }
 
-    return(retval);
+   return(retval);
 }
 
-int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
-{
-    Mix_EffectFunc_t f = NULL;
-    Uint16 format;
-    int channels;
-    position_args *args = NULL;
-    Sint16 room_angle = 0;
-    int retval = 1;
-
-    Mix_QuerySpec(NULL, &format, &channels);
-    f = get_position_effect_func(format, channels);
-    if (f == NULL)
-        return(0);
-
-    angle = abs(angle) % 360;  /* make angle between 0 and 359. */
-
-    args = get_position_arg(channel);
-    if (!args)
-        return(0);
-
-        /* it's a no-op; unregister the effect, if it's registered. */
-    if (!angle)
-    {
-        if (args->in_use)
-        {
-            retval = _Mix_UnregisterEffect_locked(channel, f);
-            return(retval);
-        }
-        return(1);
-    }
-
-    if (channels == 2)
-    {
-    if (angle > 180)
-        room_angle = 180; /* exchange left and right channels */
-    else room_angle = 0;
-    }
-
-    if (channels == 4 || channels == 6)
-    {
-       if (angle > 315) room_angle = 0;
-       else if (angle > 225) room_angle = 270;
-       else if (angle > 135) room_angle = 180;
-       else if (angle > 45) room_angle = 90;
-       else room_angle = 0;
-    }
-
-    set_amplitudes(channels, angle, room_angle);
-
-    args->left_u8 = speaker_amplitude[0];
-    args->left_f = ((float) speaker_amplitude[0]) / 255.0f;
-    args->right_u8 = speaker_amplitude[1];
-    args->right_f = ((float) speaker_amplitude[1]) / 255.0f;
-    args->left_rear_u8 = speaker_amplitude[2];
-    args->left_rear_f = ((float) speaker_amplitude[2]) / 255.0f;
-    args->right_rear_u8 = speaker_amplitude[3];
-    args->right_rear_f = ((float) speaker_amplitude[3]) / 255.0f;
-    args->center_u8 = speaker_amplitude[4];
-    args->center_f = ((float) speaker_amplitude[4]) / 255.0f;
-    args->lfe_u8 = speaker_amplitude[5];
-    args->lfe_f = ((float) speaker_amplitude[5]) / 255.0f;
-    args->distance_u8 = 255;
-    args->distance_f = ((float) 255) / 255.0f;
-    args->room_angle = room_angle;
-    if (!args->in_use) {
-        args->in_use = 1;
-        retval = _Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void *) args);
-    }
-
-    return(retval);
-}
 
 
 /* end of effects_position.c ... */
