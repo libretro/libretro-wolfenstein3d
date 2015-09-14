@@ -722,21 +722,6 @@ int Mix_Volume(int which, int volume)
    return(prev_volume);
 }
 
-/* Set volume of a particular chunk */
-int Mix_VolumeChunk(Mix_Chunk *chunk, int volume)
-{
-   int prev_volume;
-
-   prev_volume = chunk->volume;
-   if ( volume >= 0 )
-   {
-      if ( volume > MIX_MAX_VOLUME )
-         volume = MIX_MAX_VOLUME;
-      chunk->volume = volume;
-   }
-   return(prev_volume);
-}
-
 /* Halt playing of a particular channel */
 int Mix_HaltChannel(int which)
 {
@@ -759,19 +744,6 @@ int Mix_HaltChannel(int which)
       if(mix_channel[which].fading != MIX_NO_FADING) /* Restore volume */
          mix_channel[which].volume = mix_channel[which].fade_volume_reset;
       mix_channel[which].fading = MIX_NO_FADING;
-   }
-   return(0);
-}
-
-/* Halt playing of a particular group of channels */
-int Mix_HaltGroup(int tag)
-{
-   int i;
-
-   for ( i=0; i<num_channels; ++i )
-   {
-      if( mix_channel[i].tag == tag )
-         Mix_HaltChannel(i);
    }
    return(0);
 }

@@ -304,12 +304,10 @@ extern int Mix_PlayChannelTimed(int channel, Mix_Chunk *chunk, int loops, int ti
    If the specified volume is -1, just return the current volume.
 */
 extern int Mix_Volume(int channel, int volume);
-extern int Mix_VolumeChunk(Mix_Chunk *chunk, int volume);
 extern int Mix_VolumeMusic(int volume);
 
 /* Halt playing of a particular channel */
 extern int Mix_HaltChannel(int channel);
-extern int Mix_HaltGroup(int tag);
 extern int Mix_HaltMusic(void);
 
 /* Change the expiration delay for a particular channel.
