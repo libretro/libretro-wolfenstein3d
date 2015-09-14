@@ -578,11 +578,6 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
    /* it's a no-op; unregister the effect, if it's registered. */
    if (!angle)
    {
-      if (args->in_use)
-      {
-         retval = _Mix_UnregisterEffect_locked(channel, f);
-         return(retval);
-      }
       return(1);
    }
 
@@ -619,10 +614,6 @@ int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance)
    args->distance_u8 = 255;
    args->distance_f = ((float) 255) / 255.0f;
    args->room_angle = room_angle;
-   if (!args->in_use) {
-      args->in_use = 1;
-      retval = _Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void *) args);
-   }
 
    return(retval);
 }
@@ -663,25 +654,14 @@ int Mix_SetPanning(int channel, Uint8 left, Uint8 right)
    }
 
    /* it's a no-op; unregister the effect, if it's registered. */
-   if ((args->distance_u8 == 255) && (left == 255) && (right == 255)) {
-      if (args->in_use) {
-         retval = _Mix_UnregisterEffect_locked(channel, f);
-         return(retval);
-      } else {
+   if ((args->distance_u8 == 255) && (left == 255) && (right == 255))
          return(1);
-      }
-   }
 
    args->left_u8 = left;
    args->left_f = ((float) left) / 255.0f;
    args->right_u8 = right;
    args->right_f = ((float) right) / 255.0f;
    args->room_angle = 0;
-
-   if (!args->in_use) {
-      args->in_use = 1;
-      retval=_Mix_RegisterEffect_locked(channel, f, _Eff_PositionDone, (void*)args);
-   }
 
    return(retval);
 }

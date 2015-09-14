@@ -122,18 +122,10 @@ void Mix_Quit(void)
     initialized = 0;
 }
 
-static int _Mix_remove_all_effects(int channel, effect_info **e);
-
 static void _Mix_channel_done_playing(int channel)
 {
    if (channel_done_callback)
       channel_done_callback(channel);
-
-   /*
-    * Call internal function directly, to avoid locking audio from
-    *   inside audio callback.
-    */
-   _Mix_remove_all_effects(channel, &mix_channel[channel].effects);
 }
 
 static void *Mix_DoEffects(int chan, void *snd, int len)
@@ -365,7 +357,6 @@ int Mix_AllocateChannels(int numchans)
       int i;
       for(i=numchans; i < num_channels; i++)
       {
-         Mix_UnregisterAllEffects(i);
          Mix_HaltChannel(i);
       }
    }
@@ -801,9 +792,6 @@ void Mix_CloseAudio(void)
    {
       if ( audio_opened == 1 )
       {
-         for (i = 0; i < num_channels; i++)
-            Mix_UnregisterAllEffects(i);
-         Mix_UnregisterAllEffects(MIX_CHANNEL_POST);
          close_music();
          Mix_HaltChannel(-1);
          SDL_CloseAudio();
@@ -937,160 +925,6 @@ int Mix_GroupOldest(int tag)
       }
    }
    return(chan);
-}
-
-/*
- * rcg06122001 The special effects exportable API.
- *  Please see effect_*.c for internally-implemented effects, such
- *  as Mix_SetPanning().
- */
-
-static int _Mix_register_effect(effect_info **e, Mix_EffectFunc_t f,
-                Mix_EffectDone_t d, void *arg)
-{
-   effect_info *new_e;
-
-   if (!e)
-      return(0);
-
-   if (f == NULL)
-      return(0);
-
-   new_e = malloc(sizeof (effect_info));
-   if (!new_e)
-      return(0);
-
-   new_e->callback = f;
-   new_e->done_callback = d;
-   new_e->udata = arg;
-   new_e->next = NULL;
-
-   /* add new effect to end of linked list... */
-   if (*e == NULL)
-      *e = new_e;
-   else
-   {
-      effect_info *cur = *e;
-      while (1)
-      {
-         if (cur->next == NULL)
-         {
-            cur->next = new_e;
-            break;
-         }
-         cur = cur->next;
-      }
-   }
-
-   return(1);
-}
-
-
-static int _Mix_remove_effect(int channel, effect_info **e, Mix_EffectFunc_t f)
-{
-   effect_info *cur;
-   effect_info *prev = NULL;
-   effect_info *next = NULL;
-
-   if (!e)
-      return(0);
-
-   for (cur = *e; cur != NULL; cur = cur->next)
-   {
-      if (cur->callback == f)
-      {
-         next = cur->next;
-         if (cur->done_callback != NULL)
-            cur->done_callback(channel, cur->udata);
-         free(cur);
-
-         /* removing first item of list? */
-         if (prev == NULL)
-            *e = next;
-         else
-            prev->next = next;
-         return(1);
-      }
-      prev = cur;
-   }
-
-   return(0);
-}
-
-
-static int _Mix_remove_all_effects(int channel, effect_info **e)
-{
-   effect_info *cur;
-   effect_info *next;
-
-   if (!e)
-      return(0);
-
-   for (cur = *e; cur != NULL; cur = next)
-   {
-      next = cur->next;
-      if (cur->done_callback != NULL)
-         cur->done_callback(channel, cur->udata);
-      free(cur);
-   }
-   *e = NULL;
-
-   return(1);
-}
-
-int _Mix_RegisterEffect_locked(int channel, Mix_EffectFunc_t f,
-            Mix_EffectDone_t d, void *arg)
-{
-   effect_info **e = NULL;
-
-   if (channel == MIX_CHANNEL_POST)
-      e = &posteffects;
-   else
-   {
-      if ((channel < 0) || (channel >= num_channels))
-         return(0);
-      e = &mix_channel[channel].effects;
-   }
-
-   return _Mix_register_effect(e, f, d, arg);
-}
-
-int _Mix_UnregisterEffect_locked(int channel, Mix_EffectFunc_t f)
-{
-   effect_info **e = NULL;
-
-   if (channel == MIX_CHANNEL_POST)
-      e = &posteffects;
-   else
-   {
-      if ((channel < 0) || (channel >= num_channels))
-         return(0);
-      e = &mix_channel[channel].effects;
-   }
-
-   return _Mix_remove_effect(channel, e, f);
-}
-
-int _Mix_UnregisterAllEffects_locked(int channel)
-{
-   effect_info **e = NULL;
-
-   if (channel == MIX_CHANNEL_POST)
-      e = &posteffects;
-   else
-   {
-      if ((channel < 0) || (channel >= num_channels))
-         return(0);
-      e = &mix_channel[channel].effects;
-   }
-
-   return _Mix_remove_all_effects(channel, e);
-}
-
-int Mix_UnregisterAllEffects(int channel)
-{
-   int retval = _Mix_UnregisterAllEffects_locked(channel);
-   return(retval);
 }
 
 /* end of mixer.c ... */
