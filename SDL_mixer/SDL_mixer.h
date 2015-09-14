@@ -27,34 +27,6 @@
 #include "SDL_audio.h"
 #include "SDL_version.h"
 
-/* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
-*/
-#define SDL_MIXER_MAJOR_VERSION 2
-#define SDL_MIXER_MINOR_VERSION 0
-#define SDL_MIXER_PATCHLEVEL    0
-
-/* This macro can be used to fill a version structure with the compile-time
- * version of the SDL_mixer library.
- */
-#define SDL_MIXER_VERSION(X)                        \
-{                                                   \
-    (X)->major = SDL_MIXER_MAJOR_VERSION;           \
-    (X)->minor = SDL_MIXER_MINOR_VERSION;           \
-    (X)->patch = SDL_MIXER_PATCHLEVEL;              \
-}
-
-/* Backwards compatibility */
-#define MIX_MAJOR_VERSION   SDL_MIXER_MAJOR_VERSION
-#define MIX_MINOR_VERSION   SDL_MIXER_MINOR_VERSION
-#define MIX_PATCHLEVEL      SDL_MIXER_PATCHLEVEL
-#define MIX_VERSION(X)      SDL_MIXER_VERSION(X)
-
-/* This function gets the version of the dynamically linked SDL_mixer library.
-   it should NOT be used to fill a version structure, instead you should
-   use the SDL_MIXER_VERSION() macro.
- */
-const SDL_version * Mix_Linked_Version(void);
-
 /* Loads dynamic libraries and prepares them for use.  Flags should be
    one or more flags from MIX_InitFlags OR'd together.
    It returns the flags successfully initialized, or 0 on failure.

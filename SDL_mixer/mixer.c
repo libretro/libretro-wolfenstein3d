@@ -110,14 +110,6 @@ static void add_chunk_decoder(const char *decoder)
    chunk_decoders[num_decoders++] = decoder;
 }
 
-/* rcg06192001 get linked library's version. */
-const SDL_version *Mix_Linked_Version(void)
-{
-   static SDL_version linked_version;
-   SDL_MIXER_VERSION(&linked_version);
-   return(&linked_version);
-}
-
 static int initialized = 0;
 
 int Mix_Init(int flags)
