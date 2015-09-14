@@ -61,22 +61,6 @@ int Mix_GetNumMusicDecoders(void)
     return(num_decoders);
 }
 
-const char *Mix_GetMusicDecoder(int index)
-{
-   if ((index < 0) || (index >= num_decoders))
-      return NULL;
-   return(music_decoders[index]);
-}
-
-static void add_music_decoder(const char *decoder)
-{
-   void *ptr = realloc((void *)music_decoders, (num_decoders + 1) * sizeof (const char *));
-   if (ptr == NULL)
-      return;  /* oh well, go on without it. */
-   music_decoders = (const char **) ptr;
-   music_decoders[num_decoders++] = decoder;
-}
-
 /* Local low-level functions prototypes */
 static void music_internal_initialize_volume(void);
 static void music_internal_volume(int volume);

@@ -122,7 +122,6 @@ extern void Mix_FreeMusic(Mix_Music *music);
 extern int Mix_GetNumChunkDecoders(void);
 extern const char * Mix_GetChunkDecoder(int index);
 extern int Mix_GetNumMusicDecoders(void);
-extern const char * Mix_GetMusicDecoder(int index);
 
 /* Add your own music player or additional mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
