@@ -31,8 +31,6 @@
 
 int volatile music_active = 1;
 static int volatile music_stopped = 0;
-static int music_loops = 0;
-static Mix_Music * volatile music_playing = NULL;
 static int music_volume = MIX_MAX_VOLUME;
 
 struct _Mix_Music
@@ -57,92 +55,15 @@ static void music_internal_initialize_volume(void);
 static void music_internal_volume(int volume);
 static int  music_internal_play(Mix_Music *music, double position);
 static int  music_internal_position(double position);
-static int  music_internal_playing();
-static void music_internal_halt(void);
-
-/* If music isn't playing, halt it if no looping is required, restart it */
-/* othesrchise. NOP if the music is playing */
-static int music_halt_or_loop (void)
-{
-   /* Restart music if it has to loop */
-
-   if (!music_internal_playing())
-   {
-      /* Restart music if it has to loop at a high level */
-      if (music_loops)
-      {
-         Mix_Fading current_fade;
-         if (music_loops > 0)
-            --music_loops;
-         current_fade = music_playing->fading;
-         music_internal_play(music_playing, 0.0);
-         music_playing->fading = current_fade;
-      }
-      else
-      {
-         music_internal_halt();
-
-         return 0;
-      }
-   }
-
-   return 1;
-}
-
-
 
 /* Mixing function */
 void music_mixer(void *udata, Uint8 *stream, int len)
 {
-   int left = 0;
-
-   if ( music_playing && music_active )
-   {
-      /* Handle fading */
-      if ( music_playing->fading != MIX_NO_FADING )
-      {
-         if ( music_playing->fade_step++ < music_playing->fade_steps )
-         {
-            int volume;
-            int fade_step = music_playing->fade_step;
-            int fade_steps = music_playing->fade_steps;
-
-            if ( music_playing->fading == MIX_FADING_OUT )
-               volume = (music_volume * (fade_steps-fade_step)) / fade_steps;
-            else /* Fading in */
-               volume = (music_volume * fade_step) / fade_steps;
-            music_internal_volume(volume);
-         }
-         else
-         {
-            if ( music_playing->fading == MIX_FADING_OUT )
-            {
-               music_internal_halt();
-               return;
-            }
-            music_playing->fading = MIX_NO_FADING;
-         }
-      }
-
-      music_halt_or_loop();
-      if (!music_internal_playing())
-         return;
-   }
-
-skip:
-   /* Handle seamless music looping */
-   if (left > 0 && left < len)
-   {
-      music_halt_or_loop();
-      if (music_internal_playing())
-         music_mixer(udata, stream+(len-left), left);
-   }
 }
 
 /* Initialize the music players with a certain desired audio format */
 int open_music(SDL_AudioSpec *mixer)
 {
-   music_playing = NULL;
    music_stopped = 0;
    Mix_VolumeMusic(SDL_MIX_MAXVOLUME);
 
@@ -158,16 +79,6 @@ void Mix_FreeMusic(Mix_Music *music)
    if (!music)
       return;
 
-   /* Stop the music if it's currently playing */
-   if (music == music_playing)
-   {
-      /* Wait for any fade out to finish */
-      while (music->fading == MIX_FADING_OUT)
-         rarch_sleep(100);
-      if (music == music_playing)
-         music_internal_halt();
-   }
-
    free(music);
 }
 
@@ -175,41 +86,10 @@ void Mix_FreeMusic(Mix_Music *music)
  */
 static int music_internal_play(Mix_Music *music, double position)
 {
-   int retval = 0;
-
-   /* Note the music we're playing */
-   if ( music_playing )
-      music_internal_halt();
-   music_playing = music;
-
    /* Set the initial volume */
    music_internal_initialize_volume();
 
-   /* Set up for playback */
-   switch (music->type)
-   {
-      default:
-         retval = -1;
-         break;
-   }
-
-skip:
-   /* Set the playback position, note any errors if an offset is used */
-   if ( retval == 0 )
-   {
-      if ( position > 0.0 )
-      {
-         if ( music_internal_position(position) < 0 )
-            retval = -1;
-      }
-      else
-         music_internal_position(0.0);
-   }
-
-   /* If the setup failed, we're not playing any music anymore */
-   if ( retval < 0 )
-      music_playing = NULL;
-   return(retval);
+   return -1;
 }
 
 /* Set the playing music position */
@@ -220,23 +100,13 @@ int music_internal_position(double position)
 
 int Mix_SetMusicPosition(double position)
 {
-   int retval;
-
-   if ( music_playing )
-      retval = music_internal_position(position);
-   else
-      retval = -1;
-
-   return(retval);
+   return -1;
 }
 
 /* Set the music's initial volume */
 static void music_internal_initialize_volume(void)
 {
-   if ( music_playing->fading == MIX_FADING_IN )
-      music_internal_volume(0);
-   else
-      music_internal_volume(music_volume);
+   music_internal_volume(music_volume);
 }
 
 /* Set the music volume */
@@ -253,31 +123,11 @@ int Mix_VolumeMusic(int volume)
    if ( volume > SDL_MIX_MAXVOLUME )
       volume = SDL_MIX_MAXVOLUME;
    music_volume = volume;
-   if ( music_playing )
-      music_internal_volume(music_volume);
    return(prev_volume);
-}
-
-/* Halt playing of music */
-static void music_internal_halt(void)
-{
-   switch (music_playing->type)
-   {
-      default:
-         /* Unknown music type?? */
-         return;
-   }
-
-skip:
-   music_playing->fading = MIX_NO_FADING;
-   music_playing = NULL;
 }
 
 int Mix_HaltMusic(void)
 {
-   if ( music_playing )
-      music_internal_halt();
-
    return(0);
 }
 
@@ -300,12 +150,6 @@ void Mix_RewindMusic(void)
 int Mix_PausedMusic(void)
 {
    return (music_active == 0);
-}
-
-/* Check the status of the music */
-static int music_internal_playing(void)
-{
-   return 0;
 }
 
 /* Uninitialize the music players */
