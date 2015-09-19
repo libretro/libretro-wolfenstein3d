@@ -10,12 +10,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-// Win32
-#ifdef _WIN32
-#include <wtypes.h>
-#include "SDL.h"
-#include "SDL_syswm.h"
-#endif
 #if !defined(_WIN32)
 #   include <stdint.h>
 #   include <string.h>
