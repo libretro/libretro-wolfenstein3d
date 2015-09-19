@@ -26,7 +26,6 @@
 
 #ifndef __LIBRETRO__
 #include "SDL_audio.h"
-#include "SDL_version.h"
 #endif
 
 /* Loads dynamic libraries and prepares them for use.  Flags should be
