@@ -2,7 +2,10 @@
 #define SURFACE_H
 
 #include <stdint.h>
+
+#ifndef __LIBRETRO__
 #include "SDL.h"
+#endif
 
 typedef struct LR_Surface
 {

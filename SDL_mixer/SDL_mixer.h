@@ -24,8 +24,10 @@
 #ifndef _SDL_MIXER_H
 #define _SDL_MIXER_H
 
+#ifndef __LIBRETRO__
 #include "SDL_audio.h"
 #include "SDL_version.h"
+#endif
 
 /* Loads dynamic libraries and prepares them for use.  Flags should be
    one or more flags from MIX_InitFlags OR'd together.
@@ -346,7 +348,5 @@ extern Mix_Chunk * Mix_GetChunk(int channel);
 
 /* Close the mixer, halting all playing audio */
 extern void Mix_CloseAudio(void);
-
-#include "close_code.h"
 
 #endif /* _SDL_MIXER_H */
