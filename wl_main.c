@@ -1625,6 +1625,7 @@ void CheckParameters(int argc, char *argv[])
     }
 }
 
+#ifndef __LIBRETRO__
 static void retro_init(void)
 {
 }
@@ -1651,6 +1652,13 @@ static void retro_run(void)
    }
 }
 
+static void retro_unload_game(void) { }
+
+static void retro_deinit(void)
+{
+   Quit("Demo loop exited???");
+}
+
 /*
 ==========================
 =
@@ -1663,9 +1671,10 @@ int main (int argc, char *argv[])
 {
    retro_init();
    retro_load_game(argc, argv);
-
    retro_run();
+   retro_unload_game();
+   retro_deinit();
 
-   Quit("Demo loop exited???");
    return 1;
 }
+#endif
