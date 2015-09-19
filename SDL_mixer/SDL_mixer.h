@@ -26,6 +26,7 @@
 
 #ifndef __LIBRETRO__
 #include "SDL_audio.h"
+#include "SDL_rwops.h"
 #endif
 
 /* Loads dynamic libraries and prepares them for use.  Flags should be
@@ -56,9 +57,9 @@ void Mix_Quit(void);
 /* The internal format for an audio chunk */
 typedef struct Mix_Chunk {
     int allocated;
-    Uint8 *abuf;
-    Uint32 alen;
-    Uint8 volume;       /* Per-sample volume, 0-128 */
+    uint8_t *abuf;
+    uint32_t alen;
+    uint8_t volume;       /* Per-sample volume, 0-128 */
 } Mix_Chunk;
 
 /* The different fading types supported */
@@ -77,7 +78,7 @@ typedef enum {
 typedef struct _Mix_Music Mix_Music;
 
 /* Open the mixer with a certain audio format */
-int Mix_OpenAudio(int frequency, Uint16 format, int channels, int chunksize);
+int Mix_OpenAudio(int frequency, uint16_t format, int channels, int chunksize);
 
 /* Dynamically change the number of channels managed by the mixer.
    If decreasing the number of channels, the upper channels are
@@ -89,13 +90,13 @@ int Mix_AllocateChannels(int numchans);
 /* Find out what the actual audio device parameters are.
    This function returns 1 if the audio has been opened, 0 otherwise.
  */
-int Mix_QuerySpec(int *frequency,Uint16 *format,int *channels);
+int Mix_QuerySpec(int *frequency, uint16_t *format,int *channels);
 
 /* Load a wave file or a music (.mod .s3m .it .xm) file */
 Mix_Chunk * Mix_LoadWAV_RW(SDL_RWops *src, int freesrc);
 
 /* Load a wave file of the mixer format from a memory buffer */
-extern Mix_Chunk * Mix_QuickLoad_WAV(Uint8 *mem);
+extern Mix_Chunk * Mix_QuickLoad_WAV(uint8_t *mem);
 
 /* Free an audio chunk previously loaded */
 extern void Mix_FreeChunk(Mix_Chunk *chunk);
@@ -127,7 +128,7 @@ extern int Mix_GetNumMusicDecoders(void);
 /* Add your own music player or additional mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
  */
-extern void Mix_HookMusic(void (*mix_func)(void *udata, Uint8 *stream, int len), void *arg);
+extern void Mix_HookMusic(void (*mix_func)(void *udata, uint8_t *stream, int len), void *arg);
 
 /* Get a pointer to the user data for the current music hook */
 extern void * Mix_GetMusicHookData(void);
@@ -219,7 +220,7 @@ extern int Mix_UnregisterAllEffects(int channel);
  *  mode is a no-op, but this call will return successful in that case.
  *  Error messages can be retrieved from Mix_GetError().
  */
-extern int Mix_SetPanning(int channel, Uint8 left, Uint8 right);
+extern int Mix_SetPanning(int channel, uint8_t left, uint8_t right);
 
 
 /* Set the position of a channel. (angle) is an integer from 0 to 360, that
@@ -259,7 +260,7 @@ extern int Mix_SetPanning(int channel, Uint8 left, Uint8 right);
  *  nonzero if position effect is enabled.
  *  Error messages can be retrieved from Mix_GetError().
  */
-extern int Mix_SetPosition(int channel, Sint16 angle, Uint8 distance);
+extern int Mix_SetPosition(int channel, int16_t angle, uint8_t distance);
 
 /* end of effects API. --ryan. */
 
