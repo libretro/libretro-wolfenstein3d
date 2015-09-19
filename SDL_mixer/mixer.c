@@ -50,17 +50,17 @@ static struct _Mix_Channel
     Mix_Chunk *chunk;
     int playing;
     int paused;
-    Uint8 *samples;
+    uint8_t *samples;
     int volume;
     int looping;
     int tag;
-    Uint32 expire;
-    Uint32 start_time;
+    uint32_t expire;
+    uint32_t start_time;
     Mix_Fading fading;
     int fade_volume;
     int fade_volume_reset;
-    Uint32 fade_length;
-    Uint32 ticks_fade;
+    uint32_t fade_length;
+    uint32_t ticks_fade;
     effect_info *effects;
 } *mix_channel = NULL;
 
@@ -78,8 +78,8 @@ extern void close_music(void);
 
 /* Support for user defined music functions, plus the default one */
 extern int volatile music_active;
-extern void music_mixer(void *udata, Uint8 *stream, int len);
-static void (*mix_music)(void *udata, Uint8 *stream, int len) = music_mixer;
+extern void music_mixer(void *udata, uint8_t *stream, int len);
+static void (*mix_music)(void *udata, uint8_t *stream, int len) = music_mixer;
 static void *music_data = NULL;
 
 /* rcg06042009 report available decoders at runtime. */
@@ -156,11 +156,11 @@ static void *Mix_DoEffects(int chan, void *snd, int len)
 
 
 /* Mixing function */
-static void mix_channels(void *udata, Uint8 *stream, int len)
+static void mix_channels(void *udata, uint8_t *stream, int len)
 {
-   Uint8 *mix_input;
+   uint8_t *mix_input;
    int i, mixable, volume = SDL_MIX_MAXVOLUME;
-   Uint32 sdl_ticks;
+   uint32_t sdl_ticks;
 
 #if SDL_VERSION_ATLEAST(1, 3, 0)
    /* Need to initialize the stream in SDL 1.3+ */
@@ -188,7 +188,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
          }
          else if ( mix_channel[i].fading != MIX_NO_FADING )
          {
-            Uint32 ticks = sdl_ticks - mix_channel[i].ticks_fade;
+            uint32_t ticks = sdl_ticks - mix_channel[i].ticks_fade;
             if( ticks > mix_channel[i].fade_length )
             {
                Mix_Volume(i, mix_channel[i].fade_volume_reset); /* Restore the volume */
@@ -275,7 +275,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
 }
 
 /* Open the mixer with a certain desired audio format */
-int Mix_OpenAudio(int frequency, Uint16 format, int nchannels, int chunksize)
+int Mix_OpenAudio(int frequency, uint16_t format, int nchannels, int chunksize)
 {
    int i;
    SDL_AudioSpec desired;
@@ -382,7 +382,7 @@ int Mix_AllocateChannels(int numchans)
 }
 
 /* Return the actual mixer parameters */
-int Mix_QuerySpec(int *frequency, Uint16 *format, int *channels)
+int Mix_QuerySpec(int *frequency, uint16_t *format, int *channels)
 {
    if ( audio_opened )
    {
@@ -405,7 +405,7 @@ int Mix_QuerySpec(int *frequency, Uint16 *format, int *channels)
 /* Load a wave file */
 Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
 {
-   Uint32 magic;
+   uint32_t magic;
    Mix_Chunk *chunk;
    SDL_AudioSpec wavespec, *loaded;
    SDL_AudioCVT wavecvt;
@@ -435,14 +435,14 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
    /* Find out what kind of audio file this is */
    magic = SDL_ReadLE32(src);
    /* Seek backwards for compatibility with older loaders */
-   SDL_RWseek(src, -(int)sizeof(Uint32), RW_SEEK_CUR);
+   SDL_RWseek(src, -(int)sizeof(uint32_t), RW_SEEK_CUR);
 
    switch (magic)
    {
       case WAVE:
       case RIFF:
          loaded = SDL_LoadWAV_RW(src, freesrc, &wavespec,
-               (Uint8 **)&chunk->abuf, &chunk->alen);
+               (uint8_t **)&chunk->abuf, &chunk->alen);
          break;
       default:
          if ( freesrc )
@@ -474,7 +474,7 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
 
       samplesize = ((wavespec.format & 0xFF)/8)*wavespec.channels;
       wavecvt.len = chunk->alen & ~(samplesize-1);
-      wavecvt.buf = (Uint8 *)calloc(1, wavecvt.len*wavecvt.len_mult);
+      wavecvt.buf = (uint8_t *)calloc(1, wavecvt.len*wavecvt.len_mult);
 
       if ( wavecvt.buf == NULL )
       {
@@ -504,10 +504,10 @@ Mix_Chunk *Mix_LoadWAV_RW(SDL_RWops *src, int freesrc)
 }
 
 /* Load a wave file of the mixer format from a memory buffer */
-Mix_Chunk *Mix_QuickLoad_WAV(Uint8 *mem)
+Mix_Chunk *Mix_QuickLoad_WAV(uint8_t *mem)
 {
    Mix_Chunk *chunk;
-   Uint8 magic[4];
+   uint8_t magic[4];
 
    /* Make sure audio has been opened */
    if ( ! audio_opened )
@@ -564,7 +564,7 @@ void Mix_FreeChunk(Mix_Chunk *chunk)
 /* Add your own music player or mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
  */
-void Mix_HookMusic(void (*mix_func)(void *udata, Uint8 *stream, int len),
+void Mix_HookMusic(void (*mix_func)(void *udata, uint8_t *stream, int len),
       void *arg)
 {
    if ( mix_func != NULL )
@@ -647,7 +647,7 @@ int Mix_PlayChannelTimed(int which, Mix_Chunk *chunk, int loops, int ticks)
    /* Queue up the audio data for this channel */
    if ( which >= 0 && which < num_channels )
    {
-      Uint32 sdl_ticks = LR_GetTicks();
+      uint32_t sdl_ticks = LR_GetTicks();
       if (Mix_Playing(which))
          _Mix_channel_done_playing(which);
       mix_channel[which].samples = chunk->abuf;
@@ -807,7 +807,7 @@ void Mix_CloseAudio(void)
 /* Pause a particular channel (or all) */
 void Mix_Pause(int which)
 {
-   Uint32 sdl_ticks = LR_GetTicks();
+   uint32_t sdl_ticks = LR_GetTicks();
    if ( which == -1 )
    {
       int i;
@@ -828,7 +828,7 @@ void Mix_Pause(int which)
 /* Resume a paused channel */
 void Mix_Resume(int which)
 {
-   Uint32 sdl_ticks = LR_GetTicks();
+   uint32_t sdl_ticks = LR_GetTicks();
 
    if (which == -1)
    {
@@ -910,7 +910,7 @@ int Mix_GroupOldest(int tag)
 {
    int i;
    int chan = -1;
-   Uint32 mintime = LR_GetTicks();
+   uint32_t mintime = LR_GetTicks();
 
    for( i=0; i < num_channels; i ++ )
    {

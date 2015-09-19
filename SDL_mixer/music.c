@@ -57,7 +57,7 @@ static int  music_internal_play(Mix_Music *music, double position);
 static int  music_internal_position(double position);
 
 /* Mixing function */
-void music_mixer(void *udata, Uint8 *stream, int len)
+void music_mixer(void *udata, uint8_t *stream, int len)
 {
 }
 
