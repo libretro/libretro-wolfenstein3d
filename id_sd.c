@@ -157,7 +157,7 @@ void SD_SetPosition(int channel, int leftpos, int rightpos)
 {
 }
 
-static Sint16 GetSample(float csample, byte *samples, int size)
+static int16_t GetSample(float csample, byte *samples, int size)
 {
    float val;
    int32_t intval;
@@ -180,7 +180,7 @@ static Sint16 GetSample(float csample, byte *samples, int size)
       intval = -32768;
    else if(intval > 32767)
       intval = 32767;
-   return (Sint16) intval;
+   return (int16_t) intval;
 }
 
 void SD_PrepareSound(int which)
@@ -190,7 +190,7 @@ void SD_PrepareSound(int which)
    int destsamples;
    byte *origsamples;
    byte *wavebuffer;
-   Sint16 *newsamples;
+   int16_t *newsamples;
    float samplestep;
    float cursample = 0.F;
 
@@ -223,7 +223,7 @@ void SD_PrepareSound(int which)
 
    /* alignment is correct, as wavebuffer comes from malloc
     * and sizeof(headchunk) % 4 == 0 and sizeof(wavechunk) % 4 == 0 */
-   newsamples = (Sint16 *)(void *) (wavebuffer + sizeof(headchunk)
+   newsamples = (int16_t *)(void *) (wavebuffer + sizeof(headchunk)
          + sizeof(wavechunk));
    samplestep = (float) ORIGSAMPLERATE / (float)44100;
 
