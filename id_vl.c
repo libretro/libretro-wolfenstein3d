@@ -8,8 +8,6 @@ boolean fullscreen = false;
 
 unsigned screenWidth = 320;
 unsigned screenHeight = 200;
-unsigned screenBits = -1;      // use "best" color depth according to libSDL
-
 
 LR_Surface *screen = NULL;
 unsigned screenPitch;

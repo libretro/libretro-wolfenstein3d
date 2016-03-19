@@ -27,11 +27,9 @@ void VW_UpdateScreen(void)
 
 void    VL_Startup (void)
 {
-   screenBits = 16;
-
    screen     = (LR_Surface*)calloc(1, sizeof(*screen));
 
-   screen->surf     = LR_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
+   screen->surf     = LR_SetVideoMode(screenWidth, screenHeight, 16, 0);
 
    if(!screen->surf)
       exit(1);

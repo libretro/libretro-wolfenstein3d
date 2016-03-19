@@ -1465,8 +1465,6 @@ void CheckParameters(int argc, char *argv[])
     int defaultSampleRate = 44100;
     unsigned i;
 
-    screenBits = 16;
-
     for(i = 1; i < argc; i++)
     {
         char *arg = argv[i];
