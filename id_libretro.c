@@ -14,3 +14,9 @@ void VW_UpdateScreen(void)
    VL_ScreenToScreen(screenBuffer, screen);
    LR_Flip(screen);
 }
+
+
+int IN_MouseButtons (void)
+{
+   return 0;
+}

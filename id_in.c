@@ -504,19 +504,6 @@ boolean IN_UserInput(longword delay)
 }
 
 //===========================================================================
-
-/*
-===================
-=
-= IN_MouseButtons
-=
-===================
-*/
-int IN_MouseButtons (void)
-{
-   return 0;
-}
-
 bool IN_IsInputGrabbed()
 {
    return false;
