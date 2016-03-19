@@ -116,6 +116,15 @@ void VL_GetPalette (LR_Color *palette)
    memcpy(palette, curpal, sizeof(LR_Color) * 256);
 }
 
+byte *VL_LockSurface(LR_Surface *surface)
+{
+   return (byte *) surface->surf->pixels;
+}
+
+void VL_UnlockSurface(LR_Surface *surface)
+{
+}
+
 int IN_MouseButtons (void)
 {
    return 0;

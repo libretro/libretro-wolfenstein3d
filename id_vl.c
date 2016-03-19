@@ -27,7 +27,6 @@ unsigned bordercolor;
 
 LR_Color palette1[256], palette2[256];
 
-#define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
 
 LR_Color gamepal[]={
@@ -171,15 +170,6 @@ void VL_FadeIn (int start, int end, LR_Color *palette, int steps)
 
 =============================================================================
 */
-
-byte *VL_LockSurface(LR_Surface *surface)
-{
-   return (byte *) surface->surf->pixels;
-}
-
-void VL_UnlockSurface(LR_Surface *surface)
-{
-}
 
 /*
 =================
