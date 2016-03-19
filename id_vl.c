@@ -633,3 +633,8 @@ void VL_ScreenToScreen (LR_Surface *source, LR_Surface *dest)
 {
    LR_BlitSurface(source, NULL, dest, NULL);
 }
+
+void VL_WaitVBL(int vbls)
+{
+   rarch_sleep(vbls * 8);
+}

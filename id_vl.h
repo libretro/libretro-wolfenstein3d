@@ -38,7 +38,7 @@ extern LR_Color gamepal[256];
 // VGA hardware routines
 //
 
-#define VL_WaitVBL(a) rarch_sleep((a)*8)
+void VL_WaitVBL(int vbls);
 
 void VL_SetVGAPlaneMode (void);
 void VL_SetTextMode (void);
