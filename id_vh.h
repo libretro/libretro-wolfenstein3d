@@ -81,7 +81,6 @@ void VH_UpdateScreen();
 #define VW_WaitVBL          VL_WaitVBL
 #define VW_FadeIn()         VL_FadeIn(0,255,gamepal,30);
 #define VW_FadeOut()        VL_FadeOut(0,255,0,0,0,30);
-#define VW_ScreenToScreen   VL_ScreenToScreen
 void    VW_MeasurePropString (const char *string, word *width, word *height);
 
 #define LatchDrawChar(x,y,p) VL_LatchToScreen(&latchpics[0],((p)&7)*8,((p)>>3)*8*64,8,8,x,y)
