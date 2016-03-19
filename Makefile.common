@@ -8,6 +8,7 @@ SOURCES_C += $(CORE_DIR)/id_sd.c
 SOURCES_C += $(CORE_DIR)/id_us_1.c
 SOURCES_C += $(CORE_DIR)/id_vh.c
 SOURCES_C += $(CORE_DIR)/id_vl.c
+SOURCES_C += $(CORE_DIR)/id_libretro.c
 SOURCES_C += $(CORE_DIR)/signon.c
 SOURCES_C += $(CORE_DIR)/wl_act1.c
 SOURCES_C += $(CORE_DIR)/wl_act2.c
