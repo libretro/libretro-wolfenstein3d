@@ -104,13 +104,6 @@ void VW_MeasurePropString (const char *string, word *width, word *height)
 =============================================================================
 */
 
-void VW_UpdateScreen(void)
-{
-   VL_ScreenToScreen(screenBuffer, screen);
-   LR_Flip(screen);
-}
-
-
 void VWB_DrawTile8 (int x, int y, int tile)
 {
    LatchDrawChar(x,y,tile);
