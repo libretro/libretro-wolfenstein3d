@@ -68,12 +68,12 @@ void VL_Shutdown (void)
 /*
 =======================
 =
-= VL_SetVGAPlaneMode
+= VL_Startup
 =
 =======================
 */
 
-void    VL_SetVGAPlaneMode (void)
+void    VL_Startup (void)
 {
    screenBits = 16;
 

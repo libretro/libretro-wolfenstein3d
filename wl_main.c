@@ -753,8 +753,7 @@ void SetupWalls (void)
 
 void SignonScreen (void)
 {
-   VL_SetVGAPlaneMode();
-
+   VL_Startup();
    VL_MungePic(signon,320,200);
    VL_MemToScreen(signon,320,200,0,0);
 }

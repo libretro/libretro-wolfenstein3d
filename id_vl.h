@@ -40,8 +40,8 @@ extern LR_Color gamepal[256];
 
 void VL_WaitVBL(int vbls);
 
-void VL_SetVGAPlaneMode (void);
 void VL_SetTextMode (void);
+void VL_Startup (void);
 void VL_Shutdown (void);
 
 void VL_FillPalette (int red, int green, int blue);
