@@ -26,8 +26,6 @@ boolean  screenfaded;
 unsigned bordercolor;
 
 LR_Color palette1[256], palette2[256];
-LR_Color curpal[256];
-
 
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
 #define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
@@ -39,78 +37,6 @@ LR_Color gamepal[]={
     #include "wolfpal.inc"
 #endif
 };
-
-CASSERT(lengthof(gamepal) == 256)
-
-/*
-=======================
-=
-= VL_Shutdown
-=
-=======================
-*/
-
-void VL_Shutdown (void)
-{
-   if (screenBuffer)
-      free(screenBuffer);
-   if (screen)
-      free(screen);
-   if (curSurface)
-      free(curSurface);
-
-   screenBuffer = NULL;
-   screen       = NULL;
-   curSurface   = NULL;
-}
-
-
-/*
-=======================
-=
-= VL_Startup
-=
-=======================
-*/
-
-void    VL_Startup (void)
-{
-   screenBits = 16;
-
-   screen     = (LR_Surface*)calloc(1, sizeof(*screen));
-
-   screen->surf     = LR_SetVideoMode(screenWidth, screenHeight, screenBits, 0);
-
-   if(!screen->surf)
-      exit(1);
-
-   LR_SetColors(screen->surf, gamepal, 0, 256);
-   memcpy(curpal, gamepal, sizeof(LR_Color) * 256);
-
-   screenBuffer = (LR_Surface*)calloc(1, sizeof(*screenBuffer));
-
-   screenBuffer->surf = LR_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
-         screenHeight, 8, 0, 0, 0, 0);
-   if(!screenBuffer->surf)
-      exit(1);
-   LR_SetColors(screenBuffer->surf, gamepal, 0, 256);
-
-   screenPitch = screen->surf->pitch;
-   bufferPitch = screenBuffer->surf->pitch;
-
-   curSurface = (LR_Surface*)calloc(1, sizeof(*curSurface));
-
-   curSurface->surf = screenBuffer->surf;
-   curPitch = bufferPitch;
-
-   scaleFactor = screenWidth/320;
-   if(screenHeight/200 < scaleFactor)
-      scaleFactor = screenHeight/200;
-
-
-   pixelangle = (short *) malloc(screenWidth * sizeof(short));
-   wallheight = (int *) malloc(screenWidth * sizeof(int));
-}
 
 /*
 =============================================================================
@@ -143,36 +69,6 @@ void VL_FillPalette (int red, int green, int blue)
     }
 
     VL_SetPalette(pal, true);
-}
-
-/*
-=================
-=
-= VL_SetPalette
-=
-=================
-*/
-
-void VL_SetPalette (LR_Color *palette, bool forceupdate)
-{
-   memcpy(curpal, palette, sizeof(LR_Color) * 256);
-
-   LR_SetPalette(curSurface->surf, SDL_LOGPAL, palette, 0, 256);
-   if (forceupdate)
-      VW_UpdateScreen();
-}
-
-/*
-=================
-=
-= VL_GetPalette
-=
-=================
-*/
-
-void VL_GetPalette (LR_Color *palette)
-{
-   memcpy(palette, curpal, sizeof(LR_Color) * 256);
 }
 
 /*
