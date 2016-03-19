@@ -109,9 +109,7 @@ void    VL_Startup (void)
 
 
    pixelangle = (short *) malloc(screenWidth * sizeof(short));
-   CHECKMALLOCRESULT(pixelangle);
    wallheight = (int *) malloc(screenWidth * sizeof(int));
-   CHECKMALLOCRESULT(wallheight);
 }
 
 /*
