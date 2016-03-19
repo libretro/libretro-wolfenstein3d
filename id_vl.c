@@ -181,7 +181,7 @@ void VL_SetColor    (int color, int red, int green, int blue)
    curpal[color] = col;
 
    LR_SetPalette(curSurface->surf, SDL_LOGPAL, &col, color, 1);
-   VH_UpdateScreen();
+   VW_UpdateScreen();
 }
 
 /*
@@ -215,7 +215,7 @@ void VL_SetPalette (LR_Color *palette, bool forceupdate)
 
    LR_SetPalette(curSurface->surf, SDL_LOGPAL, palette, 0, 256);
    if (forceupdate)
-      VH_UpdateScreen();
+      VW_UpdateScreen();
 }
 
 /*

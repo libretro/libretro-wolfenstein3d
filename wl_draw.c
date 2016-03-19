@@ -1560,5 +1560,5 @@ void ThreeDRefresh (void)
       lasttimecount = GetTimeCount();          // don't make a big tic count
    }
    else
-      VH_UpdateScreen();
+      VW_UpdateScreen();
 }
