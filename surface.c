@@ -162,6 +162,7 @@ void LR_FreeSurface(SDL_Surface* surface)
 
 int LR_BlitSurface(LR_Surface *src, SDL_Rect *srcrect, LR_Surface *dst, SDL_Rect *dstrect)
 {
+   //printf("src pitch %d, dst pitch %d\n", src->surf->pitch, dst->surf->pitch);
    return SDL_UpperBlit(src->surf, srcrect, dst->surf, dstrect);
 }
 

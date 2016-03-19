@@ -339,7 +339,6 @@ boolean FizzleFade (LR_Surface *source, int x1, int y1,
    unsigned x, y, frame;
    int32_t  rndval;
    unsigned i, p;
-   LR_Surface source_copy, screen_copy;
    byte *srcptr;
    int32_t lastrndval = 0;
    unsigned pixperframe = width * height / frames;
@@ -351,9 +350,7 @@ boolean FizzleFade (LR_Surface *source, int x1, int y1,
    /* can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
     * can't rely on screenBuffer as source for same reason: every flip it has to be updated
     */
-   source_copy.surf = LR_ConvertSurface(source, source->surf->format, source->surf->flags);
-   screen_copy.surf = LR_ConvertSurface(screen, screen->surf->format, screen->surf->flags);
-   srcptr      = VL_LockSurface(&source_copy);
+   srcptr      = VL_LockSurface(source);
 
    do
    {
@@ -361,16 +358,14 @@ boolean FizzleFade (LR_Surface *source, int x1, int y1,
 
       if(abortable && IN_CheckAck ())
       {
-         VL_UnlockSurface(&source_copy);
-         VL_ScreenToScreen(&screen_copy, screenBuffer);
+         VL_UnlockSurface(source);
+         VL_ScreenToScreen(screen, screenBuffer);
          VH_UpdateScreen();
 
-         LR_FreeSurface(source_copy.surf);
-         LR_FreeSurface(screen_copy.surf);
          return true;
       }
 
-      destptr = VL_LockSurface(&screen_copy);
+      destptr = VL_LockSurface(screen);
       rndval  = lastrndval;
 
       for(p = 0; p < pixperframe; p++)
@@ -388,7 +383,7 @@ boolean FizzleFade (LR_Surface *source, int x1, int y1,
          if(x >= width || y >= height)
          {
             if(rndval == 0)     /* entire sequence has been completed */
-               return FizzleFadeFinish(&source_copy, &screen_copy);
+               return FizzleFadeFinish(source, screen);
             p--;
             continue;
          }
@@ -400,18 +395,18 @@ boolean FizzleFade (LR_Surface *source, int x1, int y1,
                &fullcol, screen->surf->format->BytesPerPixel);
 
          if(rndval == 0)     /* entire sequence has been completed */
-            return FizzleFadeFinish(&source_copy, &screen_copy);
+            return FizzleFadeFinish(source, screen);
       }
 
       lastrndval = rndval;
 
-      VL_UnlockSurface(&screen_copy);
-      VL_ScreenToScreen(&screen_copy, screenBuffer);
+      VL_UnlockSurface(screen);
+      VL_ScreenToScreen(screen, screenBuffer);
       VH_UpdateScreen();
 
       frame++;
       Delay(frame - GetTimeCount()); /* don't go too fast */
    } while (1);
 
-   return FizzleFadeFinish(&source_copy, &screen_copy);
+   return FizzleFadeFinish(source, screen);
 }
