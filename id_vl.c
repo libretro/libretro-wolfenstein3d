@@ -170,40 +170,6 @@ void VL_FillPalette (int red, int green, int blue)
 /*
 =================
 =
-= VL_SetColor
-=
-=================
-*/
-
-void VL_SetColor    (int color, int red, int green, int blue)
-{
-   LR_Color col = { red, green, blue };
-   curpal[color] = col;
-
-   LR_SetPalette(curSurface->surf, SDL_LOGPAL, &col, color, 1);
-   VW_UpdateScreen();
-}
-
-/*
-=================
-=
-= VL_GetColor
-=
-=================
-*/
-
-void VL_GetColor    (int color, int *red, int *green, int *blue)
-{
-   LR_Color *col = &curpal[color];
-
-   *red   = col->r;
-   *green = col->g;
-   *blue  = col->b;
-}
-
-/*
-=================
-=
 = VL_SetPalette
 =
 =================

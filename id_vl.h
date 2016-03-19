@@ -46,8 +46,6 @@ void VL_Shutdown (void);
 
 void VL_ConvertPalette(byte *srcpal, LR_Color *destpal, int numColors);
 void VL_FillPalette (int red, int green, int blue);
-void VL_SetColor    (int color, int red, int green, int blue);
-void VL_GetColor    (int color, int *red, int *green, int *blue);
 void VL_SetPalette  (LR_Color *palette, bool forceupdate);
 void VL_GetPalette  (LR_Color *palette);
 void VL_FadeOut     (int start, int end, int red, int green, int blue, int steps);
