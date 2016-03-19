@@ -154,7 +154,7 @@ static void TransformActor (objtype *ob)
 = sets:
 =   screenx,transx,transy,screenheight: projected edge location and size
 =
-= Returns true if the tile is withing getting distance
+= Returns true if the tile is within getting distance
 =
 ========================
 */
@@ -569,22 +569,23 @@ byte vgaCeiling[]=
 /*
 =====================
 =
-= VGAClearScreen
+= ClearScreen
 =
 =====================
 */
 
-static void VGAClearScreen (void)
+static void ClearScreen (void)
 {
    int y;
-   byte ceiling = vgaCeiling[gamestate.episode*10+mapon];
+   unsigned int ceiling = vgaCeiling[gamestate.episode*10+mapon] & 0xFF;
+   unsigned int floor = 0x19;
    byte *ptr    = vbuf;
 
    for(y = 0; y < viewheight / 2; y++, ptr += vbufPitch)
       memset(ptr, ceiling, viewwidth);
 
    for(; y < viewheight; y++, ptr += vbufPitch)
-      memset(ptr, 0x19, viewwidth);
+      memset(ptr, floor, viewwidth);
 }
 
 //==========================================================================
@@ -1537,7 +1538,7 @@ void ThreeDRefresh (void)
    CalcViewVariables();
 
    /* follow the walls from there to the right, drawing as we go */
-   VGAClearScreen ();
+   ClearScreen ();
 
    WallRefresh ();
 
