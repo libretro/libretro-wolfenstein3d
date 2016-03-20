@@ -13,7 +13,7 @@ void VWB_DrawPropString(const char* string)
    byte        *source;
    byte        ch;
    unsigned     i, sy, sx;
-   byte       *vbuf = VL_LockSurface(curSurface);
+   byte       *vbuf = VL_LockSurface(screenBuffer);
    fontstruct *font = (fontstruct *) grsegs[STARTFONT+fontnumber];
    int       height = font->height;
    byte       *dest = vbuf + scaleFactor * (py * curPitch + px);
@@ -41,7 +41,7 @@ void VWB_DrawPropString(const char* string)
       }
    }
 
-   VL_UnlockSurface(curSurface);
+   VL_UnlockSurface(screenBuffer);
 }
 
 /*

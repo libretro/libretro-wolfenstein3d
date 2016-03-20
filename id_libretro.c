@@ -48,9 +48,6 @@ void    VL_Startup (void)
    screenPitch = screen->surf->pitch;
    bufferPitch = screenBuffer->surf->pitch;
 
-   curSurface = (LR_Surface*)calloc(1, sizeof(*curSurface));
-
-   curSurface->surf = screenBuffer->surf;
    curPitch = bufferPitch;
 
    scaleFactor = screenWidth/320;
@@ -76,12 +73,9 @@ void VL_Shutdown (void)
       free(screenBuffer);
    if (screen)
       free(screen);
-   if (curSurface)
-      free(curSurface);
 
    screenBuffer = NULL;
    screen       = NULL;
-   curSurface   = NULL;
 }
 
 /*
@@ -96,7 +90,7 @@ void VL_SetPalette (LR_Color *palette, bool forceupdate)
 {
    memcpy(curpal, palette, sizeof(LR_Color) * 256);
 
-   LR_SetPalette(curSurface->surf, SDL_LOGPAL, palette, 0, 256);
+   LR_SetPalette(screenBuffer->surf, SDL_LOGPAL, palette, 0, 256);
    if (forceupdate)
       VW_UpdateScreen();
 }

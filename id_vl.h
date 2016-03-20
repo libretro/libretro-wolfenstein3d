@@ -21,7 +21,7 @@ void Quit (const char *error,...);
 
 //===========================================================================
 
-extern LR_Surface *screen, *screenBuffer, *curSurface;
+extern LR_Surface *screen, *screenBuffer;
 
 extern  boolean  fullscreen;
 extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch, curPitch;
@@ -67,7 +67,7 @@ static inline void VL_Bar      (int x, int y, int width, int height, int color)
 
 static inline void VL_ClearScreen(int color)
 {
-   LR_FillRect(curSurface, NULL, color);
+   LR_FillRect(screenBuffer, NULL, color);
 }
 
 void VL_MungePic                (byte *source, unsigned width, unsigned height);
