@@ -160,10 +160,98 @@ void LR_FreeSurface(SDL_Surface* surface)
    SDL_FreeSurface(surface);
 }
 
-int LR_BlitSurface(LR_Surface *src, SDL_Rect *srcrect, LR_Surface *dst, SDL_Rect *dstrect)
+int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SDL_Rect *dstrect)
 {
    //printf("src pitch %d, dst pitch %d\n", src->surf->pitch, dst->surf->pitch);
-   return SDL_UpperBlit(src->surf, srcrect, dst->surf, dstrect);
+   SDL_Rect fulldst;
+   int srcx, srcy, w, h;
+   SDL_Surface *src = (SDL_Surface*)lr_src->surf;
+   SDL_Surface *dst = (SDL_Surface*)lr_dst->surf;
+
+   /* Make sure the surfaces aren't locked */
+   if (!src || !dst) {
+      SDL_SetError("SDL_UpperBlit: passed a NULL surface");
+      return (-1);
+   }
+   if (src->locked || dst->locked) {
+      SDL_SetError("Surfaces must not be locked during blit");
+      return (-1);
+   }
+
+   /* If the destination rectangle is NULL, use the entire dest surface */
+   if (dstrect == NULL) {
+      fulldst.x = fulldst.y = 0;
+      dstrect = &fulldst;
+   }
+
+   /* clip the source rectangle to the source surface */
+   if (srcrect) {
+      int maxw, maxh;
+
+      srcx = srcrect->x;
+      w = srcrect->w;
+      if (srcx < 0) {
+         w += srcx;
+         dstrect->x -= srcx;
+         srcx = 0;
+      }
+      maxw = src->w - srcx;
+      if (maxw < w)
+         w = maxw;
+
+      srcy = srcrect->y;
+      h = srcrect->h;
+      if (srcy < 0) {
+         h += srcy;
+         dstrect->y -= srcy;
+         srcy = 0;
+      }
+      maxh = src->h - srcy;
+      if (maxh < h)
+         h = maxh;
+
+   } else {
+      srcx = srcy = 0;
+      w = src->w;
+      h = src->h;
+   }
+
+   /* clip the destination rectangle against the clip rectangle */
+   {
+      SDL_Rect *clip = &dst->clip_rect;
+      int dx, dy;
+
+      dx = clip->x - dstrect->x;
+      if (dx > 0) {
+         w -= dx;
+         dstrect->x += dx;
+         srcx += dx;
+      }
+      dx = dstrect->x + w - clip->x - clip->w;
+      if (dx > 0)
+         w -= dx;
+
+      dy = clip->y - dstrect->y;
+      if (dy > 0) {
+         h -= dy;
+         dstrect->y += dy;
+         srcy += dy;
+      }
+      dy = dstrect->y + h - clip->y - clip->h;
+      if (dy > 0)
+         h -= dy;
+   }
+
+   if (w > 0 && h > 0) {
+      SDL_Rect sr;
+      sr.x = srcx;
+      sr.y = srcy;
+      sr.w = dstrect->w = w;
+      sr.h = dstrect->h = h;
+      return SDL_LowerBlit(src, &sr, dst, dstrect);
+   }
+   dstrect->w = dstrect->h = 0;
+   return 0;
 }
 
 int LR_Flip(LR_Surface *screen)
