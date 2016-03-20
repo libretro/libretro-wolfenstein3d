@@ -77,7 +77,7 @@ void VL_MungePic (byte *source, unsigned width, unsigned height)
       {
          for (x=0;x<pwidth;x++)
             *dest++ = *(srcline+x*4+plane);
-         srcline+=width;
+         srcline += width;
       }
    }
 

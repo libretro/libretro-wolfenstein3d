@@ -216,7 +216,7 @@ byte VL_GetPixel (int x, int y)
 
 void VL_Hlin (unsigned x, unsigned y, unsigned width, int color)
 {
-   Uint8 *dest;
+   uint8_t *dest;
 
    assert(x >= 0 && x + width <= screenWidth
          && y >= 0 && y < screenHeight
@@ -239,7 +239,7 @@ void VL_Hlin (unsigned x, unsigned y, unsigned width, int color)
 
 void VL_Vlin (int x, int y, int height, int color)
 {
-   Uint8 *dest;
+   uint8_t *dest;
 
    assert(x >= 0 && (unsigned) x < screenWidth
          && y >= 0 && (unsigned) y + height <= screenHeight
@@ -267,7 +267,7 @@ void VL_Vlin (int x, int y, int height, int color)
 
 void VL_BarScaledCoord (int scx, int scy, int scwidth, int scheight, int color)
 {
-   Uint8 *dest;
+   uint8_t *dest;
 
    assert(scx >= 0 && (unsigned) scx + scwidth <= screenWidth
          && scy >= 0 && (unsigned) scy + scheight <= screenHeight
