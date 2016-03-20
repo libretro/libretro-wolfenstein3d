@@ -45,7 +45,6 @@ void    VL_Startup (void)
       exit(1);
    LR_SetColors(screenBuffer->surf, gamepal, 0, 256);
 
-   screenPitch = screen->surf->pitch;
    bufferPitch = screenBuffer->surf->pitch;
    scaleFactor = screenWidth/320;
 

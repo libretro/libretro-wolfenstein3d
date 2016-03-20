@@ -10,7 +10,6 @@ unsigned screenWidth = 320;
 unsigned screenHeight = 200;
 
 LR_Surface *screen = NULL;
-unsigned screenPitch;
 
 LR_Surface *screenBuffer = NULL;
 unsigned bufferPitch;
