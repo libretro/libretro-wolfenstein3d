@@ -24,7 +24,7 @@ void Quit (const char *error,...);
 extern LR_Surface *screen, *screenBuffer;
 
 extern  boolean  fullscreen;
-extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch, curPitch;
+extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch;
 extern  unsigned scaleFactor;
 
 extern  boolean  screenfaded;

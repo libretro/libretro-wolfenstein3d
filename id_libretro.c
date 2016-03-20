@@ -47,10 +47,8 @@ void    VL_Startup (void)
 
    screenPitch = screen->surf->pitch;
    bufferPitch = screenBuffer->surf->pitch;
-
-   curPitch = bufferPitch;
-
    scaleFactor = screenWidth/320;
+
    if(screenHeight/200 < scaleFactor)
       scaleFactor = screenHeight/200;
 

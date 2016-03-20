@@ -16,7 +16,7 @@ void VWB_DrawPropString(const char* string)
    byte       *vbuf = VL_LockSurface(screenBuffer);
    fontstruct *font = (fontstruct *) grsegs[STARTFONT+fontnumber];
    int       height = font->height;
-   byte       *dest = vbuf + scaleFactor * (py * curPitch + px);
+   byte       *dest = vbuf + scaleFactor * (py * bufferPitch + px);
 
    while ((ch = (byte)*string++) != 0)
    {
@@ -31,7 +31,7 @@ void VWB_DrawPropString(const char* string)
             {
                for(sy=0; sy<scaleFactor; sy++)
                   for(sx=0; sx<scaleFactor; sx++)
-                     dest[(scaleFactor*i+sy)*curPitch+sx]=fontcolor;
+                     dest[(scaleFactor*i+sy) * bufferPitch + sx]=fontcolor;
             }
          }
 

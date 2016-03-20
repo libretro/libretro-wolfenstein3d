@@ -1024,7 +1024,7 @@ void CA_CacheScreen (int chunk)
          byte col = pic[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200];
          for(i = 0; i < scaleFactor; i++)
             for(j = 0; j < scaleFactor; j++)
-               vbuf[(scy + i) * curPitch + scx + j] = col;
+               vbuf[(scy + i) * bufferPitch + scx + j] = col;
       }
    }
    VL_UnlockSurface(screenBuffer);
