@@ -189,6 +189,7 @@ void LR_FreeSurface(SDL_Surface* surface)
 
 int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SDL_Rect *dstrect)
 {
+#if 1
    //printf("src pitch %d, dst pitch %d\n", src->surf->pitch, dst->surf->pitch);
    SDL_Rect fulldst;
    int srcx, srcy, w, h;
@@ -286,6 +287,26 @@ int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SD
       return LRSDL_LowerBlit(src, &sr, dst, dstrect);
    }
    dstrect->w = dstrect->h = 0;
+#else
+   unsigned i, j;
+   if (srcrect)
+      printf("src rect w %d h %d\n", srcrect->w, srcrect->h);
+   if (dstrect)
+      printf("dst rect w %d h %d\n", dstrect->w, dstrect->h);
+   if (!src || !dst)
+      return 0;
+   for (i = 0; i < src->surf->w; i++)
+   {
+      for (j = 0; j < src->surf->h; j++)
+      {
+         SDL_Surface *src_sdl = src->surf;
+         SDL_Surface *dst_sdl = dst->surf;
+         uint16_t *src = (uint16_t*)src_sdl->pixels + j * src_sdl->pitch + i * 2;
+         uint16_t *dst = (uint16_t*)dst_sdl->pixels + j * dst_sdl->pitch + i * 2;
+         *(uint16_t*)dst = *src;
+      }
+   }
+#endif
    return 0;
 }
 
