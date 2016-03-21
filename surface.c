@@ -156,12 +156,18 @@ int LR_SetColors(SDL_Surface *surface, LR_Color *colors, int firstcolor, int nco
 
 int LR_Init(uint32_t flags)
 {
+#ifdef __LIBRETRO__
+   return 0;
+#else
    return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+#endif
 }
 
 void LR_Quit(void)
 {
+#ifdef __LIBRETRO__
    SDL_Quit();
+#endif
 }
 
 SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
@@ -286,7 +292,12 @@ int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SD
 
 int LR_Flip(LR_Surface *screen)
 {
+#ifdef __LIBRETRO__
+   /* video_cb call here */
+   return 0;
+#else
    return SDL_Flip(screen->surf);
+#endif
 }
 
 SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags)
