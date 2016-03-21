@@ -3,9 +3,7 @@
 
 #include <stdint.h>
 
-#ifndef __LIBRETRO__
-#include "SDL.h"
-#endif
+#include "LRSDL.h"
 
 extern unsigned short d_8to16table[256];
 

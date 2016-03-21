@@ -17,11 +17,20 @@
 #endif
 
 #include "surface.h"
+#include "SDL.h"
 
 typedef uint64_t retro_perf_tick_t;
 
 unsigned short d_8to16table[256];
 
+/* forward decls */
+int SDL_Flip(SDL_Surface* screen);
+SDL_Surface *SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags);
+SDL_Surface* SDL_ConvertSurface(SDL_Surface*           src,
+                                const SDL_PixelFormat* fmt,
+                                Uint32                 flags);
+int SDL_SetPalette(SDL_Surface *surface, int flags, SDL_Color *colors, int firstcolor, int ncolors);;
+int SDL_SetColors(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int ncolors);
 
 /**
  * rarch_sleep:
@@ -164,12 +173,12 @@ SDL_Surface* LR_CreateRGBSurface(uint32_t flags,
       uint32_t Bmask,
       uint32_t Amask)
 {
-   return SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
+   return LRSDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
 }
 
 void LR_FreeSurface(SDL_Surface* surface)
 {
-   SDL_FreeSurface(surface);
+   LRSDL_FreeSurface(surface);
 }
 
 int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SDL_Rect *dstrect)
@@ -182,11 +191,11 @@ int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SD
 
    /* Make sure the surfaces aren't locked */
    if (!src || !dst) {
-      SDL_SetError("SDL_UpperBlit: passed a NULL surface");
+      LRSDL_SetError("SDL_UpperBlit: passed a NULL surface");
       return (-1);
    }
    if (src->locked || dst->locked) {
-      SDL_SetError("Surfaces must not be locked during blit");
+      LRSDL_SetError("Surfaces must not be locked during blit");
       return (-1);
    }
 
@@ -268,11 +277,12 @@ int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SD
        * printf("src rmask: %d gmask: %d, bmask: %d\n", src->format->Rmask, src->format->Gmask, src->format->Bmask);
        * printf("dst rmask: %d gmask: %d, bmask: %d\n", dst->format->Rmask, dst->format->Gmask, dst->format->Bmask);
        */
-      return SDL_LowerBlit(src, &sr, dst, dstrect);
+      return LRSDL_LowerBlit(src, &sr, dst, dstrect);
    }
    dstrect->w = dstrect->h = 0;
    return 0;
 }
+
 
 int LR_Flip(LR_Surface *screen)
 {
@@ -291,5 +301,5 @@ SDL_Surface *LR_ConvertSurface(LR_Surface *src, SDL_PixelFormat *fmt, uint32_t f
 
 uint32_t LR_MapRGB(SDL_PixelFormat *fmt, uint8_t r, uint8_t g, uint8_t b)
 {
-   return SDL_MapRGB(fmt, r, g, b);
+   return LRSDL_MapRGB(fmt, r, g, b);
 }

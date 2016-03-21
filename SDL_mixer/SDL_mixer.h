@@ -26,8 +26,8 @@
 
 #ifndef __LIBRETRO__
 #include "SDL_audio.h"
-#include "SDL_rwops.h"
 #endif
+#include "LRSDL_rwops.h"
 
 /* Loads dynamic libraries and prepares them for use.  Flags should be
    one or more flags from MIX_InitFlags OR'd together.

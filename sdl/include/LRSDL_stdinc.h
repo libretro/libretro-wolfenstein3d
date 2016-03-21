@@ -24,8 +24,8 @@
  *  This is a general header that includes C language support
  */
 
-#ifndef _SDL_stdinc_h
-#define _SDL_stdinc_h
+#ifndef _LRSDL_stdinc_h
+#define _LRSDL_stdinc_h
 
 #include "LRSDL_config.h"
 
@@ -81,9 +81,9 @@
 /** @name Basic data types */
 /*@{*/
 typedef enum {
-	SDL_FALSE = 0,
-	SDL_TRUE  = 1
-} SDL_bool;
+	LRSDL_FALSE = 0,
+	LRSDL_TRUE  = 1
+} LRSDL_bool;
 
 typedef int8_t		Sint8;
 typedef uint8_t		Uint8;

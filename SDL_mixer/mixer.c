@@ -25,8 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL_timer.h"
-
 #include "SDL_mixer.h"
 #include "../surface.h"
 
@@ -162,10 +160,8 @@ static void mix_channels(void *udata, uint8_t *stream, int len)
    int i, mixable, volume = SDL_MIX_MAXVOLUME;
    uint32_t sdl_ticks;
 
-#if SDL_VERSION_ATLEAST(1, 3, 0)
    /* Need to initialize the stream in SDL 1.3+ */
    memset(stream, mixer.silence, len);
-#endif
 
    /* Mix the music (must be done before the channels are added) */
    if ( music_active || (mix_music != music_mixer) )
