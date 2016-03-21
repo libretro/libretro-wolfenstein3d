@@ -128,6 +128,12 @@ void LR_Delay(uint32_t ms)
 
 void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstcolor, int ncolors)
 {
+   unsigned i, j;
+   unsigned short *pal = &d_8to16table[0];
+
+   for(i = 0, j = 0; i < 256; i++, j += 3)
+      *pal++ = MAKECOLOR(colors->r, colors->g, colors->b);
+
    SDL_SetPalette(surface, flags, (SDL_Color*)colors, firstcolor, ncolors);
 }
 
