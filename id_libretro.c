@@ -14,7 +14,11 @@ void VL_WaitVBL(int vbls)
 void VW_UpdateScreen(void)
 {
    VL_ScreenToScreen(screenBuffer, screen);
+#ifdef __LIBRETRO__
+   LR_Flip(NULL);
+#else
    LR_Flip(screen);
+#endif
 }
 
 /*
@@ -27,6 +31,7 @@ void VW_UpdateScreen(void)
 
 void    VL_Startup (void)
 {
+#ifndef __LIBRETRO__
    screen     = (LR_Surface*)calloc(1, sizeof(*screen));
 
    screen->surf     = LR_SetVideoMode(screenWidth, screenHeight, 16, 0);
@@ -35,6 +40,7 @@ void    VL_Startup (void)
       exit(1);
 
    LR_SetColors(screen->surf, gamepal, 0, 256);
+#endif
    memcpy(curpal, gamepal, sizeof(LR_Color) * 256);
 
    screenBuffer = (LR_Surface*)calloc(1, sizeof(*screenBuffer));
@@ -68,11 +74,13 @@ void VL_Shutdown (void)
 {
    if (screenBuffer)
       free(screenBuffer);
+#ifndef __LIBRETRO__
    if (screen)
       free(screen);
 
-   screenBuffer = NULL;
    screen       = NULL;
+#endif
+   screenBuffer = NULL;
 }
 
 /*

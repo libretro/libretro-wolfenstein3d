@@ -9,8 +9,9 @@ boolean fullscreen = false;
 unsigned screenWidth = 320;
 unsigned screenHeight = 200;
 
+#ifndef __LIBRETRO__
 LR_Surface *screen = NULL;
-
+#endif
 LR_Surface *screenBuffer = NULL;
 unsigned bufferPitch;
 
