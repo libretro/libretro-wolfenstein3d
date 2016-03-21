@@ -7,6 +7,10 @@
 #include "SDL.h"
 #endif
 
+extern unsigned short d_8to16table[256];
+
+#define MAKECOLOR(r, g, b) (((r & 0xf8) << 8) | ((g & 0xfc) << 3) | ((b & 0xf8) >> 3))
+
 typedef struct LR_Surface
 {
    SDL_Surface *surf;

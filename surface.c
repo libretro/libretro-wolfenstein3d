@@ -20,6 +20,9 @@
 
 typedef uint64_t retro_perf_tick_t;
 
+unsigned short d_8to16table[256];
+
+
 /**
  * rarch_sleep:
  * @msec         : amount in milliseconds to sleep
@@ -248,6 +251,14 @@ int LR_BlitSurface(LR_Surface *lr_src, SDL_Rect *srcrect, LR_Surface *lr_dst, SD
       sr.y = srcy;
       sr.w = dstrect->w = w;
       sr.h = dstrect->h = h;
+      /*
+       * rmask 0xF800
+       * gmask 0x7E0
+       * bmask 0x1F
+       *
+       * printf("src rmask: %d gmask: %d, bmask: %d\n", src->format->Rmask, src->format->Gmask, src->format->Bmask);
+       * printf("dst rmask: %d gmask: %d, bmask: %d\n", dst->format->Rmask, dst->format->Gmask, dst->format->Bmask);
+       */
       return SDL_LowerBlit(src, &sr, dst, dstrect);
    }
    dstrect->w = dstrect->h = 0;
