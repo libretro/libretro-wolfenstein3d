@@ -31,7 +31,7 @@ CFLAGS += -O0
 CCFLAGS += $(CFLAGS)
 CCFLAGS += -Werror-implicit-function-declaration
 CCFLAGS += -Wimplicit-int
-CCFLAGS += -Wsequence-point -Iinclude -ISDL_mixer
+CCFLAGS += -Wsequence-point -Iinclude -ISDL_mixer -Isdl/include
 
 CXXFLAGS += $(CFLAGS)
 
