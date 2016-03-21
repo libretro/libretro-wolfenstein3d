@@ -26,6 +26,7 @@ CFLAGS += -Wpointer-arith
 CFLAGS += -Wreturn-type
 CFLAGS += -Wwrite-strings
 CFLAGS += -Wcast-align
+CFLAGS += -O0
 
 CCFLAGS += $(CFLAGS)
 CCFLAGS += -Werror-implicit-function-declaration
@@ -62,6 +63,17 @@ SRCS += wl_text.cpp
 SRCS += surface.cpp
 SRCS += SDL_mixer/mixer.cpp
 SRCS += SDL_mixer/music.cpp
+
+SRCS += sdl/SDL_error.cpp \
+		  sdl/file/SDL_rwops.cpp \
+		  sdl/video/SDL_blit.cpp \
+		  sdl/video/SDL_blit_0.cpp \
+		  sdl/video/SDL_blit_1.cpp \
+		  sdl/video/SDL_blit_A.cpp \
+		  sdl/video/SDL_blit_N.cpp \
+		  sdl/video/SDL_bmp.cpp \
+		  sdl/video/SDL_pixels.cpp \
+		  sdl/video/SDL_surface.cpp
 
 OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 
