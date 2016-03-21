@@ -111,7 +111,10 @@ uint32_t LR_GetTicks(void)
 void LR_FillRect(LR_Surface *surface, const void *rect_data, uint32_t color)
 {
    unsigned i, j;
-   (void)rect_data;
+   unsigned short *pal = &d_8to16table[0];
+
+   for(i = 0, j = 0; i < 256; i++, j += 3)
+      *pal++ = color;
 
    for (i = 0; i < surface->surf->w; i++)
       for (j = 0; j < surface->surf->h; j++)
