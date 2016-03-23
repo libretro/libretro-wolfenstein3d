@@ -24,7 +24,6 @@ typedef uint64_t retro_perf_tick_t;
 /* forward decls */
 int SDL_Flip(SDL_Surface* screen);
 SDL_Surface *SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags);
-int SDL_SetPalette(SDL_Surface *surface, int flags, SDL_Color *colors, int firstcolor, int ncolors);;
 
 /**
  * rarch_sleep:
@@ -130,12 +129,12 @@ void LR_Delay(uint32_t ms)
 
 void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstcolor, int ncolors)
 {
-   SDL_SetPalette(surface, flags, (SDL_Color*)colors, firstcolor, ncolors);
+   LRSDL_SetPalette(surface, flags, (SDL_Color*)colors, firstcolor, ncolors);
 }
 
 int LR_SetColors(SDL_Surface *surface, LR_Color *colors, int firstcolor, int ncolors)
 {
-   return SDL_SetPalette(surface, SDL_LOGPAL | SDL_PHYSPAL, (SDL_Color*)colors, firstcolor, ncolors);
+   return LRSDL_SetPalette(surface, SDL_LOGPAL | SDL_PHYSPAL, (SDL_Color*)colors, firstcolor, ncolors);
 }
 
 int LR_Init(uint32_t flags)
