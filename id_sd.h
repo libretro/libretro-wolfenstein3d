@@ -14,24 +14,28 @@
 
 typedef enum
 {
-    sdm_Off,
-    sdm_PC,sdm_AdLib,
+   SDM_OFF = 0,
+   SDM_PC,
+   SDM_ADLIB,
 } SDMode;
 
 typedef enum
 {
-    smm_Off,smm_AdLib
+   SMM_OFF = 0,
+   SMM_ADLIB
 } SMMode;
 
 typedef enum
 {
-    sds_Off,sds_PC,sds_SoundBlaster
+   SDS_OFF = 0,
+   SDS_PC,
+   SDS_SOUNDBLASTER
 } SDSMode;
 
 typedef struct
 {
-    longword        length;
-    word            priority;
+   longword        length;
+   word            priority;
 } SoundCommon;
 
 #define ORIG_SOUNDCOMMON_SIZE 6
@@ -45,8 +49,8 @@ typedef struct
 
 typedef struct
 {
-    SoundCommon     common;
-    byte            data[1];
+   SoundCommon     common;
+   byte            data[1];
 } PCSound;
 
 //      Register addresses
@@ -65,54 +69,56 @@ typedef struct
 
 typedef struct
 {
-    byte    mChar,cChar,
-            mScale,cScale,
-            mAttack,cAttack,
-            mSus,cSus,
-            mWave,cWave,
-            nConn,
-
-            // These are only for Muse - these bytes are really unused
-            voice,
-            mode;
-    byte    unused[3];
+   byte mChar;
+   byte cChar;
+   byte mScale;
+   byte cScale;
+   byte mAttack;
+   byte cAttack;
+   byte mSus;
+   byte cSus;
+   byte mWave;
+   byte cWave;
+   byte nConn;
+   // These are only for Muse - these bytes are really unused
+   byte voice;
+   byte mode;
+   byte    unused[3];
 } Instrument;
 
 #define ORIG_INSTRUMENT_SIZE 16
 
 typedef struct
 {
-    SoundCommon     common;
-    Instrument      inst;
-    byte            block;
-    byte            data[1];
+   SoundCommon     common;
+   Instrument      inst;
+   byte            block;
+   byte            data[1];
 } AdLibSound;
 
 #define ORIG_ADLIBSOUND_SIZE (ORIG_SOUNDCOMMON_SIZE + ORIG_INSTRUMENT_SIZE + 2)
 
-//
-//      Sequencing stuff
-//
+// Sequencing stuff
 #define sqMaxTracks     10
 
 typedef struct
 {
-    word    length;
-    word    values[1];
+   word    length;
+   word    values[1];
 } MusicGroup;
 
 typedef struct
 {
-    int valid;
-    fixed globalsoundx, globalsoundy;
+   int valid;
+   fixed globalsoundx, globalsoundy;
 } globalsoundpos;
 
 extern globalsoundpos channelSoundPos[];
 
 // Global variables
 extern  boolean         AdLibPresent,
-                        SoundBlasterPresent,
-                        SoundPositioned;
+        SoundBlasterPresent,
+        SoundPositioned;
 extern  SDMode          SoundMode;
 extern  SDSMode         DigiMode;
 extern  SMMode          MusicMode;
@@ -123,24 +129,25 @@ extern  int             DigiChannel[];
 
 static inline void Delay(int wolfticks)
 {
-    if(wolfticks>0) rarch_sleep(wolfticks * 100 / 7);
+   if(wolfticks>0)
+      rarch_sleep(wolfticks * 100 / 7);
 }
 
 // Function prototypes
 extern  void    SD_Startup(void),
-                SD_Shutdown(void);
+        SD_Shutdown(void);
 
 extern  int     SD_GetChannelForDigi(int which);
 extern  void    SD_PositionSound(int leftvol,int rightvol);
 extern  boolean SD_PlaySound(soundnames sound);
 extern  void    SD_SetPosition(int channel, int leftvol,int rightvol);
 extern  void    SD_StopSound(void),
-                SD_WaitSoundDone(void);
+        SD_WaitSoundDone(void);
 
 extern  void    SD_StartMusic(int chunk);
 extern  void    SD_ContinueMusic(int chunk, int startoffs);
 extern  void    SD_MusicOn(void),
-                SD_FadeOutMusic(void);
+        SD_FadeOutMusic(void);
 extern  int     SD_MusicOff(void);
 
 extern  boolean SD_MusicPlaying(void);

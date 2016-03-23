@@ -1142,28 +1142,28 @@ CP_Sound (int unused)
                 // SOUND EFFECTS
                 //
             case 0:
-                if (SoundMode != sdm_Off)
+                if (SoundMode != SDM_OFF)
                 {
                     SD_WaitSoundDone ();
-                    SD_SetSoundMode (sdm_Off);
+                    SD_SetSoundMode (SDM_OFF);
                     DrawSoundMenu ();
                 }
                 break;
             case 1:
-                if (SoundMode != sdm_PC)
+                if (SoundMode != SDM_PC)
                 {
                     SD_WaitSoundDone ();
-                    SD_SetSoundMode (sdm_PC);
+                    SD_SetSoundMode (SDM_PC);
                     CA_LoadAllSounds ();
                     DrawSoundMenu ();
                     ShootSnd ();
                 }
                 break;
             case 2:
-                if (SoundMode != sdm_AdLib)
+                if (SoundMode != SDM_ADLIB)
                 {
                     SD_WaitSoundDone ();
-                    SD_SetSoundMode (sdm_AdLib);
+                    SD_SetSoundMode (SDM_ADLIB);
                     CA_LoadAllSounds ();
                     DrawSoundMenu ();
                     ShootSnd ();
@@ -1174,24 +1174,24 @@ CP_Sound (int unused)
                 // DIGITIZED SOUND
                 //
             case 5:
-                if (DigiMode != sds_Off)
+                if (DigiMode != SDS_OFF)
                 {
-                    SD_SetDigiDevice (sds_Off);
+                    SD_SetDigiDevice (SDS_OFF);
                     DrawSoundMenu ();
                 }
                 break;
             case 6:
-/*                if (DigiMode != sds_SoundSource)
+/*                if (DigiMode != SDS_SOUNDSOURCE)
                 {
-                    SD_SetDigiDevice (sds_SoundSource);
+                    SD_SetDigiDevice (SDS_SOUNDSOURCE);
                     DrawSoundMenu ();
                     ShootSnd ();
                 }*/
                 break;
             case 7:
-                if (DigiMode != sds_SoundBlaster)
+                if (DigiMode != SDS_SOUNDBLASTER)
                 {
-                    SD_SetDigiDevice (sds_SoundBlaster);
+                    SD_SetDigiDevice (SDS_SOUNDBLASTER);
                     DrawSoundMenu ();
                     ShootSnd ();
                 }
@@ -1201,17 +1201,17 @@ CP_Sound (int unused)
                 // MUSIC
                 //
             case 10:
-                if (MusicMode != smm_Off)
+                if (MusicMode != SMM_OFF)
                 {
-                    SD_SetMusicMode (smm_Off);
+                    SD_SetMusicMode (SMM_OFF);
                     DrawSoundMenu ();
                     ShootSnd ();
                 }
                 break;
             case 11:
-                if (MusicMode != smm_AdLib)
+                if (MusicMode != SMM_ADLIB)
                 {
-                    SD_SetMusicMode (smm_AdLib);
+                    SD_SetMusicMode (SMM_ADLIB);
                     DrawSoundMenu ();
                     ShootSnd ();
                     StartCPMusic (MENUSONG);
@@ -1293,15 +1293,15 @@ DrawSoundMenu (void)
                     // SOUND EFFECTS
                     //
                 case 0:
-                    if (SoundMode == sdm_Off)
+                    if (SoundMode == SDM_OFF)
                         on = 1;
                     break;
                 case 1:
-                    if (SoundMode == sdm_PC)
+                    if (SoundMode == SDM_PC)
                         on = 1;
                     break;
                 case 2:
-                    if (SoundMode == sdm_AdLib)
+                    if (SoundMode == SDM_ADLIB)
                         on = 1;
                     break;
 
@@ -1309,15 +1309,15 @@ DrawSoundMenu (void)
                     // DIGITIZED SOUND
                     //
                 case 5:
-                    if (DigiMode == sds_Off)
+                    if (DigiMode == SDS_OFF)
                         on = 1;
                     break;
                 case 6:
-//                    if (DigiMode == sds_SoundSource)
+//                    if (DigiMode == SDS_SOUNDSOURCE)
 //                        on = 1;
                     break;
                 case 7:
-                    if (DigiMode == sds_SoundBlaster)
+                    if (DigiMode == SDS_SOUNDBLASTER)
                         on = 1;
                     break;
 
@@ -1325,11 +1325,11 @@ DrawSoundMenu (void)
                     // MUSIC
                     //
                 case 10:
-                    if (MusicMode == smm_Off)
+                    if (MusicMode == SMM_OFF)
                         on = 1;
                     break;
                 case 11:
-                    if (MusicMode == smm_AdLib)
+                    if (MusicMode == SMM_ADLIB)
                         on = 1;
                     break;
             }

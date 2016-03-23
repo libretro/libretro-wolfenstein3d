@@ -713,12 +713,12 @@ void CA_Shutdown (void)
 
     switch(oldsoundmode)
     {
-        case sdm_Off:
+        case SDM_OFF:
             return;
-        case sdm_PC:
+        case SDM_PC:
             start = STARTPCSOUNDS;
             break;
-        case sdm_AdLib:
+        case SDM_ADLIB:
             start = STARTADLIBSOUNDS;
             break;
     }
@@ -814,12 +814,12 @@ void CA_LoadAllSounds (void)
 
     switch (oldsoundmode)
     {
-        case sdm_Off:
+        case SDM_OFF:
             goto cachein;
-        case sdm_PC:
+        case SDM_PC:
             start = STARTPCSOUNDS;
             break;
-        case sdm_AdLib:
+        case SDM_ADLIB:
             start = STARTADLIBSOUNDS;
             break;
     }
@@ -833,13 +833,13 @@ cachein:
 
     switch (SoundMode)
     {
-        case sdm_Off:
+        case SDM_OFF:
             start = STARTADLIBSOUNDS;   /* needed for priorities... */
             break;
-        case sdm_PC:
+        case SDM_PC:
             start = STARTPCSOUNDS;
             break;
-        case sdm_AdLib:
+        case SDM_ADLIB:
             start = STARTADLIBSOUNDS;
             break;
     }

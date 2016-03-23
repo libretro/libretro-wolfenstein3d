@@ -154,15 +154,15 @@ static void ReadConfig(void)
 
         close(file);
 
-        if ((sd == sdm_AdLib || sm == smm_AdLib) && !AdLibPresent
+        if ((sd == SDM_ADLIB || sm == SMM_ADLIB) && !AdLibPresent
                 && !SoundBlasterPresent)
         {
-            sd = sdm_PC;
-            sm = smm_Off;
+            sd = SDM_PC;
+            sm = SMM_OFF;
         }
 
-        if ((sds == sds_SoundBlaster && !SoundBlasterPresent))
-            sds = sds_Off;
+        if ((sds == SDS_SOUNDBLASTER && !SoundBlasterPresent))
+            sds = SDS_OFF;
 
         /* make sure values are correct */
 
@@ -189,19 +189,19 @@ static void ReadConfig(void)
 noconfig:
         if (SoundBlasterPresent || AdLibPresent)
         {
-            sd = sdm_AdLib;
-            sm = smm_AdLib;
+            sd = SDM_ADLIB;
+            sm = SMM_ADLIB;
         }
         else
         {
-            sd = sdm_PC;
-            sm = smm_Off;
+            sd = SDM_PC;
+            sm = SMM_OFF;
         }
 
         if (SoundBlasterPresent)
-            sds = sds_SoundBlaster;
+            sds = SDS_SOUNDBLASTER;
         else
-            sds = sds_Off;
+            sds = SDS_OFF;
 
         if (MousePresent)
             mouseenabled = true;

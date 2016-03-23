@@ -125,14 +125,14 @@ void SD_StopDigitized(void)
    DigiNumber = (soundnames) 0;
    DigiPriority = 0;
    SoundPositioned = false;
-   if ((DigiMode == sds_PC) && (SoundMode == sdm_PC))
+   if ((DigiMode == SDS_PC) && (SoundMode == SDM_PC))
       SD_SoundFinished();
 
    switch (DigiMode)
    {
-      case sds_PC:
+      case SDS_PC:
          break;
-      case sds_SoundBlaster:
+      case SDS_SOUNDBLASTER:
          Mix_HaltChannel(-1);
          break;
    }
@@ -281,7 +281,7 @@ void SD_SetDigiDevice(SDSMode mode)
    devicenotpresent = false;
    switch (mode)
    {
-      case sds_SoundBlaster:
+      case SDS_SOUNDBLASTER:
          if (!SoundBlasterPresent)
             devicenotpresent = true;
          break;
@@ -480,16 +480,16 @@ static void SD_ShutDevice(void)
 {
    switch (SoundMode)
    {
-      case sdm_PC:
+      case SDM_PC:
 #if 0
          SD_ShutPC();
 #endif
          break;
-      case sdm_AdLib:
+      case SDM_ADLIB:
          SD_ShutAL();
          break;
    }
-   SoundMode = sdm_Off;
+   SoundMode = SDM_OFF;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -499,7 +499,7 @@ static void SD_ShutDevice(void)
 ///////////////////////////////////////////////////////////////////////////
 static void SD_CleanDevice(void)
 {
-   if ((SoundMode == sdm_AdLib) || (MusicMode == smm_AdLib))
+   if ((SoundMode == SDM_ADLIB) || (MusicMode == SMM_ADLIB))
       SD_CleanAL();
 }
 
@@ -512,7 +512,7 @@ static void SD_StartDevice(void)
 {
    switch (SoundMode)
    {
-      case sdm_AdLib:
+      case SDM_ADLIB:
          SD_StartAL();
          break;
    }
@@ -534,20 +534,20 @@ boolean SD_SetSoundMode(SDMode mode)
 
    SD_StopSound();
 
-   if ((mode == sdm_AdLib) && !AdLibPresent)
-      mode = sdm_PC;
+   if ((mode == SDM_ADLIB) && !AdLibPresent)
+      mode = SDM_PC;
 
    switch (mode)
    {
-      case sdm_Off:
+      case SDM_OFF:
          tableoffset = STARTADLIBSOUNDS;
          result = true;
          break;
-      case sdm_PC:
+      case SDM_PC:
          tableoffset = STARTPCSOUNDS;
          result = true;
          break;
-      case sdm_AdLib:
+      case SDM_ADLIB:
          tableoffset = STARTADLIBSOUNDS;
          if (AdLibPresent)
             result = true;
@@ -583,10 +583,10 @@ boolean SD_SetMusicMode(SMMode mode)
 
    switch (mode)
    {
-      case smm_Off:
+      case SMM_OFF:
          result = true;
          break;
-      case smm_AdLib:
+      case SMM_ADLIB:
          if (AdLibPresent)
             result = true;
          break;
@@ -718,8 +718,8 @@ void SD_Startup(void)
 
    alTimeCount = 0;
 
-   SD_SetSoundMode(sdm_Off);
-   SD_SetMusicMode(smm_Off);
+   SD_SetSoundMode(SDM_OFF);
+   SD_SetMusicMode(SMM_OFF);
 
    SD_SetupDigi();
 
@@ -782,17 +782,17 @@ boolean SD_PlaySound(soundnames sound)
    boolean ispos = nextsoundpos;
    nextsoundpos = false;
 
-   if (sound == -1 || (DigiMode == sds_Off && SoundMode == sdm_Off))
+   if (sound == -1 || (DigiMode == SDS_OFF && SoundMode == SDM_OFF))
       return 0;
 
    s = (SoundCommon *) SoundTable[sound];
 
-   if ((SoundMode != sdm_Off) && !s)
+   if ((SoundMode != SDM_OFF) && !s)
       Quit("SD_PlaySound() - Uncached sound");
 
-   if ((DigiMode != sds_Off) && (DigiMap[sound] != -1))
+   if ((DigiMode != SDS_OFF) && (DigiMap[sound] != -1))
    {
-      if ((DigiMode == sds_PC) && (SoundMode == sdm_PC))
+      if ((DigiMode == SDS_PC) && (SoundMode == SDM_PC))
       {
          return 0;
       }
@@ -809,7 +809,7 @@ boolean SD_PlaySound(soundnames sound)
       return(true);
    }
 
-   if (SoundMode == sdm_Off)
+   if (SoundMode == SDM_OFF)
       return 0;
 
    if (!s->length)
@@ -819,12 +819,12 @@ boolean SD_PlaySound(soundnames sound)
 
    switch (SoundMode)
    {
-      case sdm_PC:
+      case SDM_PC:
 #if 0
          SD_PCPlaySound((PCSound *)s);
 #endif
          break;
-      case sdm_AdLib:
+      case SDM_ADLIB:
          SD_ALPlaySound((AdLibSound *)s);
          break;
    }
@@ -847,10 +847,10 @@ word SD_SoundPlaying(void)
 
    switch (SoundMode)
    {
-      case sdm_PC:
+      case SDM_PC:
          result = pcSound? true : false;
          break;
-      case sdm_AdLib:
+      case SDM_ADLIB:
          result = alSound? true : false;
          break;
    }
@@ -873,12 +873,12 @@ SD_StopSound(void)
 
    switch (SoundMode)
    {
-      case sdm_PC:
+      case SDM_PC:
 #if 0
          SD_PCStopSound();
 #endif
          break;
-      case sdm_AdLib:
+      case SDM_ADLIB:
          SD_ALStopSound();
          break;
    }
@@ -921,12 +921,15 @@ int SD_MusicOff(void)
    word    i;
 
    sqActive = false;
+
    switch (MusicMode)
    {
-      case smm_AdLib:
+      case SMM_ADLIB:
          YM3812Write(0, alEffects, 0);
          for (i = 0;i < sqMaxTracks;i++)
             YM3812Write(0, alFreqH + i + 1, 0);
+         break;
+      default:
          break;
    }
 
@@ -942,18 +945,24 @@ void SD_StartMusic(int chunk)
 {
    SD_MusicOff();
 
-   if (MusicMode == smm_AdLib)
+   switch (MusicMode)
    {
-      int32_t chunkLen = CA_CacheAudioChunk(chunk);
-      sqHack = (word *)(void *) audiosegs[chunk];     /* alignment is correct */
-      if ( (word)Retro_SwapLES16(*sqHack) == 0)
-         sqHackLen = sqHackSeqLen = chunkLen;
-      else
-         sqHackLen = sqHackSeqLen = (word)Retro_SwapLES16(*sqHack++);
-      sqHackPtr    = sqHack;
-      sqHackTime   = 0;
-      alTimeCount  = 0;
-      SD_MusicOn();
+      case SMM_ADLIB:
+         {
+            int32_t chunkLen = CA_CacheAudioChunk(chunk);
+            sqHack = (word *)(void *) audiosegs[chunk];     /* alignment is correct */
+            if ( (word)Retro_SwapLES16(*sqHack) == 0)
+               sqHackLen = sqHackSeqLen = chunkLen;
+            else
+               sqHackLen = sqHackSeqLen = (word)Retro_SwapLES16(*sqHack++);
+            sqHackPtr    = sqHack;
+            sqHackTime   = 0;
+            alTimeCount  = 0;
+            SD_MusicOn();
+         }
+         break;
+      default:
+         break;
    }
 }
 
@@ -961,7 +970,7 @@ void SD_ContinueMusic(int chunk, int startoffs)
 {
    SD_MusicOff();
 
-   if (MusicMode == smm_AdLib)
+   if (MusicMode == SMM_ADLIB)
    {
       unsigned i;
       int32_t chunkLen = CA_CacheAudioChunk(chunk);
@@ -1008,7 +1017,7 @@ void SD_FadeOutMusic(void)
 {
    switch (MusicMode)
    {
-      case smm_AdLib:
+      case SMM_ADLIB:
          /* DEBUG - quick hack to turn the music off */
          SD_MusicOff();
          break;
@@ -1027,7 +1036,7 @@ boolean SD_MusicPlaying(void)
 
    switch (MusicMode)
    {
-      case smm_AdLib:
+      case SMM_ADLIB:
          result = sqActive;
          break;
       default:

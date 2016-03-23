@@ -1257,7 +1257,7 @@ statetype s_transshoot8         = {false,SPR_TRANS_SHOOT1,10,NULL,NULL,&s_transc
 
 void SpawnTrans (int tilex, int tiley)
 {
-   if (SoundBlasterPresent && DigiMode != sds_Off)
+   if (SoundBlasterPresent && DigiMode != SDS_OFF)
       s_transdie01.tictime = 105;
 
    SpawnNewObj (tilex,tiley,&s_transstand);
@@ -1336,7 +1336,7 @@ statetype s_ubershoot7          = {false,SPR_UBER_SHOOT1,12,NULL,NULL,&s_ubercha
 
 void SpawnUber (int tilex, int tiley)
 {
-   if (SoundBlasterPresent && DigiMode != sds_Off)
+   if (SoundBlasterPresent && DigiMode != SDS_OFF)
       s_uberdie01.tictime = 70;
 
    SpawnNewObj (tilex,tiley,&s_uberstand);
@@ -1431,7 +1431,7 @@ statetype s_willshoot6          = {false,SPR_WILL_SHOOT4,10,NULL,(statefunc)T_Sh
 
 void SpawnWill (int tilex, int tiley)
 {
-   if (SoundBlasterPresent && DigiMode != sds_Off)
+   if (SoundBlasterPresent && DigiMode != SDS_OFF)
       s_willdie2.tictime = 70;
 
    SpawnNewObj (tilex,tiley,&s_willstand);
@@ -1597,7 +1597,7 @@ statetype s_deathshoot5         = {false,SPR_DEATH_SHOOT4,10,NULL,(statefunc)T_S
 
 void SpawnDeath (int tilex, int tiley)
 {
-   if (SoundBlasterPresent && DigiMode != sds_Off)
+   if (SoundBlasterPresent && DigiMode != SDS_OFF)
       s_deathdie2.tictime = 105;
 
    SpawnNewObj (tilex,tiley,&s_deathstand);
@@ -1783,7 +1783,7 @@ void A_Breathing (objtype *)
 
 void SpawnAngel (int tilex, int tiley)
 {
-   if (SoundBlasterPresent && DigiMode != sds_Off)
+   if (SoundBlasterPresent && DigiMode != SDS_OFF)
       s_angeldie11.tictime = 105;
 
    SpawnNewObj (tilex,tiley,&s_angelstand);
@@ -2197,7 +2197,7 @@ statetype s_fatshoot6           = {false,SPR_FAT_SHOOT4,10,NULL,(statefunc)T_Sho
 
 void SpawnSchabbs (int tilex, int tiley)
 {
-   if (DigiMode != sds_Off)
+   if (DigiMode != SDS_OFF)
       s_schabbdie2.tictime = 140;
    else
       s_schabbdie2.tictime = 5;
@@ -2224,7 +2224,7 @@ void SpawnSchabbs (int tilex, int tiley)
 
 void SpawnGift (int tilex, int tiley)
 {
-   if (DigiMode != sds_Off)
+   if (DigiMode != SDS_OFF)
       s_giftdie2.tictime = 140;
    else
       s_giftdie2.tictime = 5;
@@ -2251,7 +2251,7 @@ void SpawnGift (int tilex, int tiley)
 
 void SpawnFat (int tilex, int tiley)
 {
-   if (DigiMode != sds_Off)
+   if (DigiMode != SDS_OFF)
       s_fatdie2.tictime = 140;
    else
       s_fatdie2.tictime = 5;
@@ -2783,7 +2783,7 @@ statetype s_hitlershoot6        = {false,SPR_HITLER_SHOOT2,10,NULL,(statefunc)T_
 
 void SpawnFakeHitler (int tilex, int tiley)
 {
-   if (DigiMode != sds_Off)
+   if (DigiMode != SDS_OFF)
       s_hitlerdie2.tictime = 140;
    else
       s_hitlerdie2.tictime = 5;
@@ -2809,7 +2809,7 @@ void SpawnFakeHitler (int tilex, int tiley)
 
 void SpawnHitler (int tilex, int tiley)
 {
-   if (DigiMode != sds_Off)
+   if (DigiMode != SDS_OFF)
       s_hitlerdie2.tictime = 140;
    else
       s_hitlerdie2.tictime = 5;
