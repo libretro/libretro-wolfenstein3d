@@ -94,7 +94,7 @@ void ClipMove (objtype *ob, int32_t xmove, int32_t ymove);
 ======================
 */
 
-void CheckWeaponChange (void)
+static void CheckWeaponChange (void)
 {
    int newWeapon = -1;
 
@@ -148,7 +148,7 @@ void CheckWeaponChange (void)
 =======================
 */
 
-void ControlMovement (objtype *ob)
+static void ControlMovement (objtype *ob)
 {
    int32_t oldx,oldy;
    int     angle;
