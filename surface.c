@@ -25,7 +25,6 @@ typedef uint64_t retro_perf_tick_t;
 int SDL_Flip(SDL_Surface* screen);
 SDL_Surface *SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags);
 int SDL_SetPalette(SDL_Surface *surface, int flags, SDL_Color *colors, int firstcolor, int ncolors);;
-int SDL_SetColors(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int ncolors);
 
 /**
  * rarch_sleep:
