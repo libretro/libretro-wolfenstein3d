@@ -148,7 +148,7 @@ void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstc
 
 int LR_SetColors(SDL_Surface *surface, LR_Color *colors, int firstcolor, int ncolors)
 {
-   return SDL_SetColors(surface, (SDL_Color*)colors, firstcolor, ncolors);
+   return SDL_SetPalette(surface, SDL_LOGPAL | SDL_PHYSPAL, (SDL_Color*)colors, firstcolor, ncolors);
 }
 
 int LR_Init(uint32_t flags)
