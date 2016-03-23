@@ -26,9 +26,6 @@ unsigned short d_8to16table[256];
 /* forward decls */
 int SDL_Flip(SDL_Surface* screen);
 SDL_Surface *SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags);
-SDL_Surface* SDL_ConvertSurface(SDL_Surface*           src,
-                                const SDL_PixelFormat* fmt,
-                                Uint32                 flags);
 int SDL_SetPalette(SDL_Surface *surface, int flags, SDL_Color *colors, int firstcolor, int ncolors);;
 int SDL_SetColors(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int ncolors);
 
@@ -210,7 +207,7 @@ SDL_Surface *LR_SetVideoMode(int width, int height, int bpp, uint32_t flags)
 
 SDL_Surface *LR_ConvertSurface(LR_Surface *src, SDL_PixelFormat *fmt, uint32_t flags)
 {
-   return SDL_ConvertSurface(src->surf, fmt, flags);
+   return LRSDL_ConvertSurface(src->surf, fmt, flags);
 }
 
 uint32_t LR_MapRGB(SDL_PixelFormat *fmt, uint8_t r, uint8_t g, uint8_t b)
