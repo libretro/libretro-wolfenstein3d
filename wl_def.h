@@ -565,10 +565,10 @@ enum
 */
 
 typedef enum {
-    di_north,
-    di_east,
-    di_south,
-    di_west
+    DI_NORTH,
+    DI_EAST,
+    DI_SOUTH,
+    DI_WEST
 } controldir_t;
 
 typedef enum {
@@ -803,10 +803,10 @@ typedef enum
 
 enum
 {
-    gd_baby,
-    gd_easy,
-    gd_medium,
-    gd_hard
+    GD_BABY,
+    GD_EASY,
+    GD_MEDIUM,
+    GD_HARD
 };
 
 //---------------

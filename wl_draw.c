@@ -1101,15 +1101,15 @@ static void AsmRefresh(void)
       /* Special treatment when player is in back tile of pushwall */
       if(playerInPushwallBackTile)
       {
-         if(    pwalldir == di_east && xtilestep ==  1
-               || pwalldir == di_west && xtilestep == -1)
+         if(    pwalldir == DI_EAST && xtilestep ==  1
+               || pwalldir == DI_WEST && xtilestep == -1)
          {
             int32_t yintbuf = yintercept - ((ystep * (64 - pwallpos)) >> 6);
 
             /* ray hits pushwall back? */
             if((yintbuf >> 16) == focalty)
             {
-               if(pwalldir == di_east)
+               if(pwalldir == DI_EAST)
                   xintercept = (focaltx << TILESHIFT) + (pwallpos << 10);
                else
                   xintercept = (focaltx << TILESHIFT) - TILEGLOBAL + ((64 - pwallpos) << 10);
@@ -1120,8 +1120,8 @@ static void AsmRefresh(void)
                continue;
             }
          }
-         else if(pwalldir == di_south && ytilestep ==  1
-               ||  pwalldir == di_north && ytilestep == -1)
+         else if(pwalldir == DI_SOUTH && ytilestep ==  1
+               ||  pwalldir == DI_NORTH && ytilestep == -1)
          {
             int32_t xintbuf = xintercept - ((xstep * (64 - pwallpos)) >> 6);
 
@@ -1129,7 +1129,7 @@ static void AsmRefresh(void)
             if((xintbuf >> 16) == focaltx)
             {
                xintercept = xintbuf;
-               if(pwalldir == di_south)
+               if(pwalldir == DI_SOUTH)
                   yintercept = (focalty << TILESHIFT) + (pwallpos << 10);
                else
                   yintercept = (focalty << TILESHIFT) - TILEGLOBAL + ((64 - pwallpos) << 10);
@@ -1191,20 +1191,20 @@ vertentry:
             {
                if(tilehit == 64)
                {
-                  if(pwalldir==di_west || pwalldir==di_east)
+                  if(pwalldir == DI_WEST || pwalldir == DI_EAST)
                   {
                      int32_t yintbuf;
                      int pwallposnorm = pwallpos;
                      int pwallposinv  = 64 - pwallpos;
 
-                     if(pwalldir == di_west)
+                     if(pwalldir == DI_WEST)
                      {
                         pwallposnorm = 64 - pwallpos;
                         pwallposinv = pwallpos;
                      }
 
-                     if(pwalldir == di_east && xtile==pwallx && ((uint32_t)yintercept>>16)==pwally
-                           || pwalldir == di_west && !(xtile==pwallx && ((uint32_t)yintercept>>16)==pwally))
+                     if(pwalldir == DI_EAST && xtile==pwallx && ((uint32_t)yintercept>>16)==pwally
+                           || pwalldir == DI_WEST && !(xtile==pwallx && ((uint32_t)yintercept>>16)==pwally))
                      {
                         yintbuf=yintercept+((ystep*pwallposnorm)>>6);
                         if((yintbuf>>16) != (yintercept>>16))
@@ -1230,19 +1230,19 @@ vertentry:
                   {
                      int pwallposi = pwallpos;
 
-                     if(pwalldir == di_north)
+                     if(pwalldir == DI_NORTH)
                         pwallposi = 64-pwallpos;
 
-                     if(pwalldir==di_south && (word)yintercept<(pwallposi<<10)
-                           || pwalldir==di_north && (word)yintercept>(pwallposi<<10))
+                     if(pwalldir == DI_SOUTH && (word)yintercept<(pwallposi<<10)
+                           || pwalldir == DI_NORTH && (word)yintercept>(pwallposi<<10))
                      {
                         if(((uint32_t)yintercept>>16)==pwally && xtile==pwallx)
                         {
-                           if(pwalldir==di_south && (int32_t)((word)yintercept)+ystep<(pwallposi<<10)
-                                 || pwalldir==di_north && (int32_t)((word)yintercept)+ystep>(pwallposi<<10))
+                           if(pwalldir == DI_SOUTH && (int32_t)((word)yintercept)+ystep<(pwallposi<<10)
+                                 || pwalldir == DI_NORTH && (int32_t)((word)yintercept)+ystep>(pwallposi<<10))
                               goto passvert;
 
-                           if(pwalldir==di_south)
+                           if(pwalldir == DI_SOUTH)
                               yintercept=(yintercept&0xffff0000)+(pwallposi<<10);
                            else
                               yintercept=(yintercept&0xffff0000)-TILEGLOBAL+(pwallposi<<10);
@@ -1272,11 +1272,11 @@ vertentry:
                         }
                         else
                         {
-                           if(pwalldir==di_south && (int32_t)((word)yintercept)+ystep>(pwallposi<<10)
-                                 || pwalldir==di_north && (int32_t)((word)yintercept)+ystep<(pwallposi<<10))
+                           if(pwalldir==DI_SOUTH && (int32_t)((word)yintercept)+ystep>(pwallposi<<10)
+                                 || pwalldir==DI_NORTH && (int32_t)((word)yintercept)+ystep<(pwallposi<<10))
                               goto passvert;
 
-                           if(pwalldir==di_south)
+                           if(pwalldir==DI_SOUTH)
                               yintercept = (yintercept&0xffff0000)-((64-pwallpos)<<10);
                            else
                               yintercept = (yintercept&0xffff0000)+((64-pwallpos)<<10);
@@ -1353,20 +1353,20 @@ horizentry:
             {
                if(tilehit==64)
                {
-                  if(pwalldir==di_north || pwalldir==di_south)
+                  if(pwalldir==DI_NORTH || pwalldir==DI_SOUTH)
                   {
                      int32_t xintbuf;
                      int pwallposnorm = pwallpos;
                      int pwallposinv  = 64 - pwallpos;
 
-                     if(pwalldir==di_north)
+                     if(pwalldir==DI_NORTH)
                      {
                         pwallposnorm = 64-pwallpos;
                         pwallposinv = pwallpos;
                      }
 
-                     if(pwalldir == di_south && ytile==pwally && ((uint32_t)xintercept>>16)==pwallx
-                           || pwalldir == di_north && !(ytile==pwally && ((uint32_t)xintercept>>16)==pwallx))
+                     if(pwalldir == DI_SOUTH && ytile==pwally && ((uint32_t)xintercept>>16)==pwallx
+                           || pwalldir == DI_NORTH && !(ytile==pwally && ((uint32_t)xintercept>>16)==pwallx))
                      {
                         xintbuf=xintercept+((xstep*pwallposnorm)>>6);
                         if((xintbuf>>16)!=(xintercept>>16))
@@ -1391,17 +1391,18 @@ horizentry:
                   else
                   {
                      int pwallposi = pwallpos;
-                     if(pwalldir==di_west) pwallposi = 64-pwallpos;
-                     if(pwalldir==di_east && (word)xintercept<(pwallposi<<10)
-                           || pwalldir==di_west && (word)xintercept>(pwallposi<<10))
+                     if(pwalldir == DI_WEST)
+                        pwallposi = 64-pwallpos;
+                     if(pwalldir == DI_EAST && (word)xintercept<(pwallposi<<10)
+                           || pwalldir == DI_WEST && (word)xintercept>(pwallposi<<10))
                      {
                         if(((uint32_t)xintercept>>16)==pwallx && ytile==pwally)
                         {
-                           if(pwalldir==di_east && (int32_t)((word)xintercept)+xstep<(pwallposi<<10)
-                                 || pwalldir==di_west && (int32_t)((word)xintercept)+xstep>(pwallposi<<10))
+                           if(pwalldir==DI_EAST && (int32_t)((word)xintercept)+xstep<(pwallposi<<10)
+                                 || pwalldir==DI_WEST && (int32_t)((word)xintercept)+xstep>(pwallposi<<10))
                               goto passhoriz;
 
-                           if(pwalldir==di_east)
+                           if(pwalldir==DI_EAST)
                               xintercept=(xintercept&0xffff0000)+(pwallposi<<10);
                            else
                               xintercept=(xintercept&0xffff0000)-TILEGLOBAL+(pwallposi<<10);
@@ -1431,11 +1432,11 @@ horizentry:
                         }
                         else
                         {
-                           if(pwalldir==di_east && (int32_t)((word)xintercept)+xstep>(pwallposi<<10)
-                                 || pwalldir==di_west && (int32_t)((word)xintercept)+xstep<(pwallposi<<10))
+                           if(pwalldir==DI_EAST && (int32_t)((word)xintercept)+xstep>(pwallposi<<10)
+                                 || pwalldir==DI_WEST && (int32_t)((word)xintercept)+xstep<(pwallposi<<10))
                               goto passhoriz;
 
-                           if(pwalldir==di_east)
+                           if(pwalldir==DI_EAST)
                               xintercept=(xintercept&0xffff0000)-((64-pwallpos)<<10);
                            else
                               xintercept=(xintercept&0xffff0000)+((64-pwallpos)<<10);

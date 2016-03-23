@@ -406,7 +406,7 @@ void TakeDamage (int points,objtype *attacker)
 
    if (gamestate.victoryflag)
       return;
-   if (gamestate.difficulty==gd_baby)
+   if (gamestate.difficulty == GD_BABY)
       points>>=2;
 
    if (!godmode)
@@ -846,19 +846,19 @@ boolean TryMove (objtype *ob)
             {
                switch(pwalldir)
                {
-                  case di_north:
+                  case DI_NORTH:
                      if(ob->y-PUSHWALLMINDIST<=(pwally<<TILESHIFT)+((63-pwallpos)<<10))
                         return false;
                      break;
-                  case di_west:
+                  case DI_WEST:
                      if(ob->x-PUSHWALLMINDIST<=(pwallx<<TILESHIFT)+((63-pwallpos)<<10))
                         return false;
                      break;
-                  case di_east:
+                  case DI_EAST:
                      if(ob->x+PUSHWALLMINDIST>=(pwallx<<TILESHIFT)+(pwallpos<<10))
                         return false;
                      break;
-                  case di_south:
+                  case DI_SOUTH:
                      if(ob->y+PUSHWALLMINDIST>=(pwally<<TILESHIFT)+(pwallpos<<10))
                         return false;
                      break;
@@ -1086,30 +1086,30 @@ void Cmd_Use (void)
    /* find which cardinal direction the player is facing */
    if (player->angle < ANGLES/8 || player->angle > 7*ANGLES/8)
    {
-      checkx = player->tilex + 1;
-      checky = player->tiley;
-      dir = di_east;
+      checkx     = player->tilex + 1;
+      checky     = player->tiley;
+      dir        = DI_EAST;
       elevatorok = true;
    }
    else if (player->angle < 3*ANGLES/8)
    {
       checkx = player->tilex;
       checky = player->tiley-1;
-      dir = di_north;
+      dir = DI_NORTH;
       elevatorok = false;
    }
    else if (player->angle < 5*ANGLES/8)
    {
       checkx = player->tilex - 1;
       checky = player->tiley;
-      dir = di_west;
+      dir = DI_WEST;
       elevatorok = true;
    }
    else
    {
       checkx = player->tilex;
       checky = player->tiley + 1;
-      dir = di_south;
+      dir = DI_SOUTH;
       elevatorok = false;
    }
 
