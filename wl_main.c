@@ -1335,7 +1335,7 @@ static int DemoLoop(unsigned id)
             gamestate.episode  = param_tedlevel/10;
             gamestate.mapon   %= 10;
 #endif
-            return JE_LOOP2;
+            break;
          }
 
          /* main game cycle */
@@ -1438,9 +1438,6 @@ static int DemoLoop(unsigned id)
          else
 #endif
             US_ControlPanel (0);
-
-         if (startgame || loadedgame)
-            return JE_LOOP2;
          break;
       case JE_LOOP2:
          id = GameLoop();
