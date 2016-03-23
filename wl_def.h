@@ -898,7 +898,6 @@ extern  boolean  param_ignorenumchunks;
 
 
 void            NewGame (int difficulty,int episode);
-void            CalcProjection (int32_t focal);
 void            NewViewSize (int width);
 boolean         LoadTheGame(FILE *file,int x,int y);
 boolean         SaveTheGame(FILE *file,int x,int y);
