@@ -46,7 +46,7 @@
 	              (((src)&0x000000C0)>>6)); \
 }
 
-#if 1
+#if 0
 #define sdlprintf printf
 #else
 #define sdlprintf

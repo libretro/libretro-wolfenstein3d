@@ -26,6 +26,12 @@
 #include "SDL_sysvideo.h"
 #include "LRSDL_endian.h"
 
+#if 0
+#define sdlprintf printf
+#else
+#define sdlprintf
+#endif
+
 /* Functions to blit from 8-bit surfaces to other surfaces */
 
 static void Blit1to1(SDL_BlitInfo *info)
@@ -463,11 +469,17 @@ SDL_loblit LRSDL_CalculateBlit1(SDL_Surface *surface, int blit_index)
             tables which consume space and takes time to precompute,
             so is better left to the user */
          if (which >= 2)
+         {
+            sdlprintf("Blit1toNAlpha.\n");
             return Blit1toNAlpha;
+         }
          break;
       case 3:			/* alpha + colorkey */
          if (which >= 2)
+         {
+            sdlprintf("Blit1toNAlphaKey.\n");
             return Blit1toNAlphaKey;
+         }
          break;
    }
 
