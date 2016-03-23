@@ -97,8 +97,7 @@ byte lefttable[ATABLEMAX][ATABLEMAX * 2] = {
 { 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8}
 };
 
-void
-SetSoundLoc(fixed gx,fixed gy)
+static void SetSoundLoc(fixed gx,fixed gy)
 {
    fixed   xt,yt;
    int     x,y;
