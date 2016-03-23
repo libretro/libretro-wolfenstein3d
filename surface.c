@@ -21,8 +21,6 @@
 
 typedef uint64_t retro_perf_tick_t;
 
-unsigned short d_8to16table[256];
-
 /* forward decls */
 int SDL_Flip(SDL_Surface* screen);
 SDL_Surface *SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags);
@@ -117,10 +115,6 @@ uint32_t LR_GetTicks(void)
 void LR_FillRect(LR_Surface *surface, const void *rect_data, uint32_t color)
 {
    unsigned i, j;
-   unsigned short *pal = &d_8to16table[0];
-
-   for(i = 0, j = 0; i < 256; i++, j += 3)
-      *pal++ = color;
 
    for (i = 0; i < surface->surf->w; i++)
       for (j = 0; j < surface->surf->h; j++)
@@ -137,12 +131,6 @@ void LR_Delay(uint32_t ms)
 
 void LR_SetPalette(SDL_Surface *surface, int flags, LR_Color *colors, int firstcolor, int ncolors)
 {
-   unsigned i, j;
-   unsigned short *pal = &d_8to16table[0];
-
-   for(i = 0, j = 0; i < 256; i++, j += 3)
-      *pal++ = MAKECOLOR(colors->r, colors->g, colors->b);
-
    SDL_SetPalette(surface, flags, (SDL_Color*)colors, firstcolor, ncolors);
 }
 
