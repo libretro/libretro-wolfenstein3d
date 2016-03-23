@@ -16,7 +16,7 @@ typedef enum
 {
    SDM_OFF = 0,
    SDM_PC,
-   SDM_ADLIB,
+   SDM_ADLIB
 } SDMode;
 
 typedef enum

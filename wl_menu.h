@@ -89,7 +89,7 @@
 #define CST_X           20
 #define CST_Y           48
 #define CST_START       60
-#define CST_SPC 60
+#define CST_SPC         60
 
 
 // TYPEDEFS
@@ -209,22 +209,16 @@ enum
 
 enum menuitems
 {
-   newgame = 0,
-   soundmenu,
-   control,
-   loadgame,
-   savegame,
-   changeview,
-
-#ifndef GOODTIMES
-#ifndef SPEAR
-   readthis,
-#endif
-#endif
-
-   viewscores,
-   backtodemo,
-   quit
+   NEWGAME = 0,
+   SOUNDMENU,
+   CONTROL,
+   LOADGAME,
+   SAVEGAME,
+   CHANGEVIEW,
+   READTHIS,
+   VIEWSCORES,
+   BACKTODEMO,
+   QUIT
 };
 
 // WL_INTER

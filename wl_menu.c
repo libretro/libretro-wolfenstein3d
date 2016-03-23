@@ -25,14 +25,14 @@ extern int numEpisodesMissing;
 int CP_ReadThis (int unused);
 
 #ifdef SPEAR
-#define STARTITEM       newgame
+#define STARTITEM       NEWGAME
 
 #else
 #ifdef GOODTIMES
-#define STARTITEM       newgame
+#define STARTITEM       NEWGAME
 
 #else
-#define STARTITEM       readthis
+#define STARTITEM       EEADTHIS
 #endif
 #endif
 
@@ -451,8 +451,8 @@ US_ControlPanel (ScanCode scancode)
 
         switch (which)
         {
-            case viewscores:
-                if (MainMenu[viewscores].routine == NULL)
+            case VIEWSCORES:
+                if (MainMenu[VIEWSCORES].routine == NULL)
                 {
                     if (CP_EndGame (0))
                         StartGame = 1;
@@ -464,7 +464,7 @@ US_ControlPanel (ScanCode scancode)
                 }
                 break;
 
-            case backtodemo:
+            case BACKTODEMO:
                 StartGame = 1;
                 if (!ingame)
                     StartCPMusic (INTROSONG);
@@ -472,7 +472,7 @@ US_ControlPanel (ScanCode scancode)
                 break;
 
             case -1:
-            case quit:
+            case QUIT:
                 CP_Quit (0);
                 break;
 
@@ -510,9 +510,9 @@ US_ControlPanel (ScanCode scancode)
 
 void EnableEndGameMenuItem()
 {
-    MainMenu[viewscores].routine = NULL;
+    MainMenu[VIEWSCORES].routine = NULL;
 #ifndef JAPAN
-    strcpy (MainMenu[viewscores].string, STR_EG);
+    strcpy (MainMenu[VIEWSCORES].string, STR_EG);
 #endif
 }
 
@@ -547,9 +547,9 @@ DrawMainMenu (void)
 #ifndef JAPAN
 
 #ifdef SPANISH
-        strcpy (&MainMenu[backtodemo].string, STR_GAME);
+        strcpy (&MainMenu[BACKTODEMO].string, STR_GAME);
 #else
-        strcpy (&MainMenu[backtodemo].string[8], STR_GAME);
+        strcpy (&MainMenu[BACKTODEMO].string[8], STR_GAME);
 #endif
 
 #else
@@ -560,15 +560,15 @@ DrawMainMenu (void)
         VWB_DrawPic (12 * 8, 18 * 8, C_MENDGAMEPIC);
         UNCACHEGRCHUNK (C_MENDGAMEPIC);
 #endif
-        MainMenu[backtodemo].active = 2;
+        MainMenu[BACKTODEMO].active = 2;
     }
     else
     {
 #ifndef JAPAN
 #ifdef SPANISH
-        strcpy (&MainMenu[backtodemo].string, STR_BD);
+        strcpy (&MainMenu[BACKTODEMO].string, STR_BD);
 #else
-        strcpy (&MainMenu[backtodemo].string[8], STR_DEMO);
+        strcpy (&MainMenu[BACKTODEMO].string[8], STR_DEMO);
 #endif
 #else
         CA_CacheGrChunk (C_MRETDEMOPIC);
@@ -578,7 +578,7 @@ DrawMainMenu (void)
         VWB_DrawPic (12 * 8, 18 * 8, C_MSCORESPIC);
         UNCACHEGRCHUNK (C_MSCORESPIC);
 #endif
-        MainMenu[backtodemo].active = 1;
+        MainMenu[BACKTODEMO].active = 1;
     }
 
     DrawMenu (&MainItems, &MainMenu[0]);
@@ -654,7 +654,7 @@ CP_CheckQuick (ScanCode scancode)
 
             WindowH = 200;
             fontnumber = 0;
-            MainMenu[savegame].active = 0;
+            MainMenu[SAVEGAME].active = 0;
             return 1;
 
         //
@@ -850,10 +850,10 @@ CP_EndGame (int unused)
     playstate = EX_DIED;
     killerobj = NULL;
 
-    MainMenu[savegame].active = 0;
-    MainMenu[viewscores].routine = CP_ViewScores;
+    MainMenu[SAVEGAME].active = 0;
+    MainMenu[VIEWSCORES].routine = CP_ViewScores;
 #ifndef JAPAN
-    strcpy (MainMenu[viewscores].string, STR_VS);
+    strcpy (MainMenu[VIEWSCORES].string, STR_VS);
 #endif
 
     return 1;
@@ -1007,7 +1007,7 @@ CP_NewGame (int unused)
     //
 #ifndef SPEAR
 #ifndef GOODTIMES
-    MainMenu[readthis].active = 1;
+    MainMenu[READTHIS].active = 1;
 #endif
 #endif
 
@@ -1463,7 +1463,7 @@ CP_LoadGame (int quick)
 
 #ifndef SPEAR
 #ifndef GOODTIMES
-            MainMenu[readthis].active = 1;
+            MainMenu[READTHIS].active = 1;
 #endif
 #endif
 
@@ -2948,7 +2948,7 @@ SetupControlPanel (void)
     if (!ingame)
         CA_LoadAllSounds ();
     else
-        MainMenu[savegame].active = 1;
+        MainMenu[SAVEGAME].active = 1;
 
     //
     // CENTER MOUSE

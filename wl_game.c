@@ -1170,9 +1170,9 @@ static int GamePlayStateIterate(boolean *died)
             SD_StopDigitized ();
             CheckHighScore (gamestate.score,gamestate.mapon+1);
 #ifndef JAPAN
-            strcpy(MainMenu[viewscores].string,STR_VS);
+            strcpy(MainMenu[VIEWSCORES].string,STR_VS);
 #endif
-            MainMenu[viewscores].routine = CP_ViewScores;
+            MainMenu[VIEWSCORES].routine = CP_ViewScores;
             return -1;
          }
 #endif
@@ -1187,9 +1187,9 @@ static int GamePlayStateIterate(boolean *died)
             SD_StopDigitized ();
             CheckHighScore (gamestate.score,gamestate.mapon+1);
 #ifndef JAPAN
-            strcpy(MainMenu[viewscores].string,STR_VS);
+            strcpy(MainMenu[VIEWSCORES].string,STR_VS);
 #endif
-            MainMenu[viewscores].routine = CP_ViewScores;
+            MainMenu[VIEWSCORES].routine = CP_ViewScores;
             return -1;
          }
 #endif
@@ -1250,9 +1250,9 @@ static int GamePlayStateIterate(boolean *died)
 
          CheckHighScore (gamestate.score,gamestate.mapon+1);
 #ifndef JAPAN
-         strcpy(MainMenu[viewscores].string,STR_VS);
+         strcpy(MainMenu[VIEWSCORES].string,STR_VS);
 #endif
-         MainMenu[viewscores].routine = CP_ViewScores;
+         MainMenu[VIEWSCORES].routine = CP_ViewScores;
          return -1;
 
       case EX_VICTORIOUS:
@@ -1271,9 +1271,9 @@ static int GamePlayStateIterate(boolean *died)
 
          CheckHighScore (gamestate.score,gamestate.mapon+1);
 #ifndef JAPAN
-         strcpy(MainMenu[viewscores].string,STR_VS);
+         strcpy(MainMenu[VIEWSCORES].string,STR_VS);
 #endif
-         MainMenu[viewscores].routine = CP_ViewScores;
+         MainMenu[VIEWSCORES].routine = CP_ViewScores;
          return -1;
 
       default:
