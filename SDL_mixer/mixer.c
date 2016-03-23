@@ -114,7 +114,7 @@ int Mix_Init(int flags)
 
 void Mix_Quit(void)
 {
-    initialized = 0;
+   initialized = 0;
 }
 
 static void _Mix_channel_done_playing(int channel)
@@ -338,7 +338,7 @@ int Mix_OpenAudio(int frequency, uint16_t format, int nchannels, int chunksize)
 /* Dynamically change the number of channels managed by the mixer.
    If decreasing the number of channels, the upper channels are
    stopped.
- */
+   */
 int Mix_AllocateChannels(int numchans)
 {
    if (numchans<0 || numchans==num_channels)
@@ -559,7 +559,7 @@ void Mix_FreeChunk(Mix_Chunk *chunk)
 
 /* Add your own music player or mixer function.
    If 'mix_func' is NULL, the default music player is re-enabled.
- */
+   */
 void Mix_HookMusic(void (*mix_func)(void *udata, uint8_t *stream, int len),
       void *arg)
 {
@@ -588,7 +588,7 @@ void Mix_ChannelFinished(void (*channel_finished)(int channel))
 /* Reserve the first channels (0 -> n-1) for the application, i.e. don't allocate
    them dynamically to the next sample if requested with a -1 value below.
    Returns the number of reserved channels.
- */
+   */
 int Mix_ReserveChannels(int num)
 {
    if (num > num_channels)
@@ -614,7 +614,7 @@ static int checkchunkintegral(Mix_Chunk *chunk)
    'ticks' is the number of milliseconds at most to play the sample, or -1
    if there is no limit.
    Returns which channel was used to play the sound.
-*/
+   */
 int Mix_PlayChannelTimed(int which, Mix_Chunk *chunk, int loops, int ticks)
 {
    int i;
@@ -626,7 +626,7 @@ int Mix_PlayChannelTimed(int which, Mix_Chunk *chunk, int loops, int ticks)
       return(-1);
 
    /* Lock the mixer while modifying the playing channels */
-      /* If which is -1, play on the first free channel */
+   /* If which is -1, play on the first free channel */
    if ( which == -1 )
    {
       for ( i=reserved_channels; i<num_channels; ++i )
@@ -739,7 +739,7 @@ Mix_Fading Mix_FadingChannel(int which)
 
 /* Check the status of a specific channel.
    If the specified mix_channel is -1, check all mix channels.
-*/
+   */
 int Mix_Playing(int which)
 {
    int status;
@@ -872,40 +872,40 @@ int Mix_Paused(int which)
 /* Change the group of a channel */
 int Mix_GroupChannel(int which, int tag)
 {
-    if ( which < 0 || which > num_channels )
-        return(0);
+   if ( which < 0 || which > num_channels )
+      return(0);
 
-    mix_channel[which].tag = tag;
-    return(1);
+   mix_channel[which].tag = tag;
+   return(1);
 }
 
 /* Assign several consecutive channels to a group */
 int Mix_GroupChannels(int from, int to, int tag)
 {
-    int status = 0;
-    for( ; from <= to; ++ from )
-        status += Mix_GroupChannel(from, tag);
-    return(status);
+   int status = 0;
+   for( ; from <= to; ++ from )
+      status += Mix_GroupChannel(from, tag);
+   return(status);
 }
 
 /* Finds the first available channel in a group of channels */
 int Mix_GroupAvailable(int tag)
 {
-    int i;
-    for( i=0; i < num_channels; i ++ )
-    {
-        if ( ((tag == -1) || (tag == mix_channel[i].tag)) &&
-                            (mix_channel[i].playing <= 0) )
-            return i;
-    }
-    return(-1);
+   int i;
+   for( i=0; i < num_channels; i ++ )
+   {
+      if ( ((tag == -1) || (tag == mix_channel[i].tag)) &&
+            (mix_channel[i].playing <= 0) )
+         return i;
+   }
+   return(-1);
 }
 
 /* Finds the "oldest" sample playing in a group of channels */
 int Mix_GroupOldest(int tag)
 {
    int i;
-   int chan = -1;
+   int         chan = -1;
    uint32_t mintime = LR_GetTicks();
 
    for( i=0; i < num_channels; i ++ )

@@ -35,14 +35,14 @@ static int music_volume = MIX_MAX_VOLUME;
 
 struct _Mix_Music
 {
-    Mix_MusicType type;
-    union
-    {
-    } data;
-    Mix_Fading fading;
-    int fade_step;
-    int fade_steps;
-    int error;
+   Mix_MusicType type;
+   union
+   {
+   } data;
+   Mix_Fading fading;
+   int fade_step;
+   int fade_steps;
+   int error;
 };
 
 /* Used to calculate fading steps */
@@ -50,15 +50,22 @@ static int ms_per_step;
 
 /* Semicolon-separated SoundFont paths */
 
-/* Local low-level functions prototypes */
-static void music_internal_initialize_volume(void);
-static void music_internal_volume(int volume);
-static int  music_internal_play(Mix_Music *music, double position);
-static int  music_internal_position(double position);
-
 /* Mixing function */
 void music_mixer(void *udata, uint8_t *stream, int len)
 {
+}
+
+int Mix_VolumeMusic(int volume)
+{
+   int prev_volume = music_volume;
+
+   if ( volume < 0 )
+      return prev_volume;
+   if ( volume > SDL_MIX_MAXVOLUME )
+      volume = SDL_MIX_MAXVOLUME;
+   music_volume = volume;
+
+   return prev_volume;
 }
 
 /* Initialize the music players with a certain desired audio format */
@@ -70,7 +77,7 @@ int open_music(SDL_AudioSpec *mixer)
    /* Calculate the number of ms for each callback */
    ms_per_step = (int) (((float)mixer->samples * 1000.0) / mixer->freq);
 
-   return(0);
+   return 0;
 }
 
 /* Free a music chunk previously loaded */
@@ -82,8 +89,19 @@ void Mix_FreeMusic(Mix_Music *music)
    free(music);
 }
 
+/* Set the music volume */
+static void music_internal_volume(int volume)
+{
+}
+
+/* Set the music's initial volume */
+static void music_internal_initialize_volume(void)
+{
+   music_internal_volume(music_volume);
+}
+
 /* Play a music chunk.  Returns 0, or -1 if there was an error.
- */
+*/
 static int music_internal_play(Mix_Music *music, double position)
 {
    /* Set the initial volume */
@@ -103,32 +121,9 @@ int Mix_SetMusicPosition(double position)
    return -1;
 }
 
-/* Set the music's initial volume */
-static void music_internal_initialize_volume(void)
-{
-   music_internal_volume(music_volume);
-}
-
-/* Set the music volume */
-static void music_internal_volume(int volume)
-{
-}
-
-int Mix_VolumeMusic(int volume)
-{
-   int prev_volume = music_volume;
-
-   if ( volume < 0 )
-      return prev_volume;
-   if ( volume > SDL_MIX_MAXVOLUME )
-      volume = SDL_MIX_MAXVOLUME;
-   music_volume = volume;
-   return(prev_volume);
-}
-
 int Mix_HaltMusic(void)
 {
-   return(0);
+   return 0;
 }
 
 /* Pause/Resume the music stream */
