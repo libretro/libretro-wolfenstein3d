@@ -949,21 +949,11 @@ void InitRedShifts (void)
    }
 }
 
-
-/*
-=====================
-=
-= ClearPaletteShifts
-=
-=====================
-*/
-
-void ClearPaletteShifts (void)
+static void ClearPaletteShifts (void)
 {
     bonuscount = damagecount = 0;
     palshifted = false;
 }
-
 
 /*
 =====================
@@ -992,16 +982,7 @@ void StartDamageFlash (int damage)
     damagecount += damage;
 }
 
-
-/*
-=====================
-=
-= UpdatePaletteShifts
-=
-=====================
-*/
-
-void UpdatePaletteShifts (void)
+static void UpdatePaletteShifts (void)
 {
    int red, white;
 
@@ -1067,7 +1048,6 @@ void FinishPaletteShifts (void)
    }
 }
 
-
 /*
 =============================================================================
 
@@ -1076,16 +1056,7 @@ void FinishPaletteShifts (void)
 =============================================================================
 */
 
-
-/*
-=====================
-=
-= DoActor
-=
-=====================
-*/
-
-void DoActor (objtype * ob)
+static void DoActor (objtype * ob)
 {
    void (*think) (objtype *);
 
@@ -1174,16 +1145,6 @@ think:
    actorat[ob->tilex][ob->tiley] = ob;
 }
 
-//==========================================================================
-
-
-/*
-===================
-=
-= PlayLoop
-=
-===================
-*/
 int32_t funnyticount;
 
 
