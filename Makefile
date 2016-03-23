@@ -73,7 +73,8 @@ SRCS += sdl/SDL_error.cpp \
 		  sdl/video/SDL_blit_N.cpp \
 		  sdl/video/SDL_bmp.cpp \
 		  sdl/video/SDL_pixels.cpp \
-		  sdl/video/SDL_surface.cpp
+		  sdl/video/SDL_surface.cpp \
+		  sdl/video/SDL_video.cpp
 
 OBJS = $(filter %.o, $(SRCS:.c=.o) $(SRCS:.cpp=.o))
 
