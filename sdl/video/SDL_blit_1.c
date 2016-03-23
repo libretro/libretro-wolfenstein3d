@@ -26,7 +26,7 @@
 #include "SDL_sysvideo.h"
 #include "LRSDL_endian.h"
 
-#if 0
+#ifdef SDLPRINTF
 #define sdlprintf printf
 #else
 #define sdlprintf
@@ -440,14 +440,6 @@ static void Blit1toNAlphaKey(SDL_BlitInfo *info)
    }
 }
 
-static SDL_loblit one_blit[] = {
-   NULL, Blit1to1, Blit1to2, Blit1to3, Blit1to4
-};
-
-static SDL_loblit one_blitkey[] = {
-   NULL, Blit1to1Key, Blit1to2Key, Blit1to3Key, Blit1to4Key
-};
-
 SDL_loblit LRSDL_CalculateBlit1(SDL_Surface *surface, int blit_index)
 {
    int               which = 0;
@@ -459,10 +451,43 @@ SDL_loblit LRSDL_CalculateBlit1(SDL_Surface *surface, int blit_index)
    switch(blit_index)
    {
       case 0:			/* copy */
-         return one_blit[which];
-
+         switch (which)
+         {
+            case 0:
+               break;
+            case 1:
+               sdlprintf("Blit1to1\n");
+               return Blit1to1;
+            case 2:
+               sdlprintf("Blit1to2\n");
+               return Blit1to2;
+            case 3:
+               sdlprintf("Blit1to3\n");
+               return Blit1to3;
+            case 4:
+               sdlprintf("Blit1to4\n");
+               return Blit1to4;
+         }
+         return NULL;
       case 1:			/* colorkey */
-         return one_blitkey[which];
+         switch (which)
+         {
+            case 0:
+               break;
+            case 1:
+               sdlprintf("Blit1to1Key\n");
+               return Blit1to1Key;
+            case 2:
+               sdlprintf("Blit1to2Key\n");
+               return Blit1to2Key;
+            case 3:
+               sdlprintf("Blit1to3Key\n");
+               return Blit1to3Key;
+            case 4:
+               sdlprintf("Blit1to4Key\n");
+               return Blit1to4Key;
+         }
+         return NULL;
 
       case 2:			/* alpha */
          /* Supporting 8bpp->8bpp alpha is doable but requires lots of
