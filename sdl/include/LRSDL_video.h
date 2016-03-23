@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#if 0
+#if 1
 #define SDLPRINTF
 #endif
 
