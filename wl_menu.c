@@ -2929,9 +2929,7 @@ DrawOutline (int x, int y, int w, int h, int color1, int color2)
 void
 SetupControlPanel (void)
 {
-    //
-    // CACHE GRAPHICS & SOUNDS
-    //
+    /* CACHE GRAPHICS & SOUNDS */
     CA_CacheGrChunk (STARTFONT + 1);
 #ifndef SPEAR
     CacheLump (CONTROLS_LUMP_START, CONTROLS_LUMP_END);
@@ -2962,7 +2960,7 @@ SetupControlPanel (void)
 // SEE WHICH SAVE GAME FILES ARE AVAILABLE & READ STRING IN
 //
 ////////////////////////////////////////////////////////////////////
-void SetupSaveGames()
+void SetupSaveGames(void)
 {
     char name[13];
     char savepath[300];
