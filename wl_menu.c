@@ -860,6 +860,42 @@ int CP_ViewScores (int unused)
 }
 
 
+static bool CP_NewGameLoop(int *episode)
+{
+   int which = HandleMenu (&NewEitems, &NewEmenu[0], NULL);
+
+   switch (which)
+   {
+      case -1:
+         MenuFadeOut ();
+         return 0;
+
+      default:
+         if (!EpisodeSelect[which / 2])
+         {
+            SD_PlaySound (NOWAYSND);
+            Message ("Please select \"Read This!\"\n"
+                  "from the Options menu to\n"
+                  "find out how to order this\n" "episode from Apogee.");
+            IN_ClearKeysDown ();
+            IN_Ack ();
+            DrawNewEpisode ();
+            which = 0;
+         }
+         else
+         {
+            *episode = which / 2;
+            which    = 1;
+         }
+         break;
+   }
+
+   if (which)
+      return false;
+
+   return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //
 // START A NEW GAME
@@ -879,37 +915,7 @@ CP_NewGame (int unused)
   firstpart:
 
     DrawNewEpisode ();
-    do
-    {
-        which = HandleMenu (&NewEitems, &NewEmenu[0], NULL);
-        switch (which)
-        {
-            case -1:
-                MenuFadeOut ();
-                return 0;
-
-            default:
-                if (!EpisodeSelect[which / 2])
-                {
-                    SD_PlaySound (NOWAYSND);
-                    Message ("Please select \"Read This!\"\n"
-                             "from the Options menu to\n"
-                             "find out how to order this\n" "episode from Apogee.");
-                    IN_ClearKeysDown ();
-                    IN_Ack ();
-                    DrawNewEpisode ();
-                    which = 0;
-                }
-                else
-                {
-                    episode = which / 2;
-                    which = 1;
-                }
-                break;
-        }
-
-    }
-    while (!which);
+    while (CP_NewGameLoop(&episode));
 
     ShootSnd ();
 
