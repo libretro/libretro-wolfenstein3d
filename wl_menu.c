@@ -1125,12 +1125,14 @@ static bool CP_SoundLoop (void)
          }
          break;
       case 6:
-         /*                if (DigiMode != SDS_SOUNDSOURCE)
-                           {
-                           SD_SetDigiDevice (SDS_SOUNDSOURCE);
-                           DrawSoundMenu ();
-                           ShootSnd ();
-                           }*/
+#if 0
+         if (DigiMode != SDS_SOUNDSOURCE)
+         {
+            SD_SetDigiDevice (SDS_SOUNDSOURCE);
+            DrawSoundMenu ();
+            ShootSnd ();
+         }
+#endif
          break;
       case 7:
          if (DigiMode != SDS_SOUNDBLASTER)
