@@ -321,6 +321,98 @@ static const char* const ScanNames[SDLK_LAST] =
         "?","?"                                                         // 320
     };
 
+static bool US_ControlPanelLoop(void)
+{
+   int which = HandleMenu (&MainItems, &MainMenu[0], NULL);
+
+#ifdef SPEAR
+#ifndef SPEARDEMO
+   IN_ProcessEvents();
+
+   /* EASTER EGG FOR SPEAR OF DESTINY! */
+   if (Keyboard[sc_I] && Keyboard[sc_D])
+   {
+      VW_FadeOut ();
+      StartCPMusic (XJAZNAZI_MUS);
+      UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
+      UnCacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
+      SD_StopDigitized();
+
+
+      CA_CacheGrChunk (IDGUYS1PIC);
+      VWB_DrawPic (0, 0, IDGUYS1PIC);
+      UNCACHEGRCHUNK (IDGUYS1PIC);
+
+      CA_CacheGrChunk (IDGUYS2PIC);
+      VWB_DrawPic (0, 80, IDGUYS2PIC);
+      UNCACHEGRCHUNK (IDGUYS2PIC);
+
+      VW_UpdateScreen ();
+
+      LR_Color pal[256];
+      CA_CacheGrChunk (IDGUYSPALETTE);
+      VL_ConvertPalette(grsegs[IDGUYSPALETTE], pal, 256);
+      VL_FadeIn (0, 255, pal, 30);
+      UNCACHEGRCHUNK (IDGUYSPALETTE);
+
+      while (Keyboard[sc_I] || Keyboard[sc_D])
+         IN_WaitAndProcessEvents();
+      IN_ClearKeysDown ();
+      IN_Ack ();
+
+      VW_FadeOut ();
+
+      CacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
+      CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
+      DrawMainMenu ();
+      StartCPMusic (MENUSONG);
+      MenuFadeIn ();
+   }
+#endif
+#endif
+
+   switch (which)
+   {
+      case VIEWSCORES:
+         if (MainMenu[VIEWSCORES].routine == NULL)
+         {
+            if (CP_EndGame (0))
+               StartGame = 1;
+         }
+         else
+         {
+            DrawMainMenu();
+            MenuFadeIn ();
+         }
+         break;
+
+      case BACKTODEMO:
+         StartGame = 1;
+         if (!ingame)
+            StartCPMusic (INTROSONG);
+         VL_FadeOut (0, 255, 0, 0, 0, 10);
+         break;
+
+      case -1:
+      case QUIT:
+         CP_Quit (0);
+         break;
+
+      default:
+         if (!StartGame)
+         {
+            DrawMainMenu ();
+            MenuFadeIn ();
+         }
+   }
+   
+   if (StartGame)
+      return false;
+
+   return true;
+   /* "EXIT OPTIONS" OR "NEW GAME" EXITS */
+}
+
 ////////////////////////////////////////////////////////////////////
 //
 // Wolfenstein Control Panel!  Ta Da!
@@ -329,8 +421,6 @@ static const char* const ScanNames[SDLK_LAST] =
 void
 US_ControlPanel (ScanCode scancode)
 {
-    int which;
-
     if (ingame)
     {
         if (CP_CheckQuick (scancode))
@@ -394,110 +484,13 @@ US_ControlPanel (ScanCode scancode)
     MenuFadeIn ();
     StartGame = 0;
 
-    //
-    // MAIN MENU LOOP
-    //
-    do
-    {
-        which = HandleMenu (&MainItems, &MainMenu[0], NULL);
+    /* MAIN MENU LOOP */
+    while (US_ControlPanelLoop());
 
-#ifdef SPEAR
-#ifndef SPEARDEMO
-        IN_ProcessEvents();
-
-        //
-        // EASTER EGG FOR SPEAR OF DESTINY!
-        //
-        if (Keyboard[sc_I] && Keyboard[sc_D])
-        {
-            VW_FadeOut ();
-            StartCPMusic (XJAZNAZI_MUS);
-            UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
-            UnCacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
-            SD_StopDigitized();
-
-
-            CA_CacheGrChunk (IDGUYS1PIC);
-            VWB_DrawPic (0, 0, IDGUYS1PIC);
-            UNCACHEGRCHUNK (IDGUYS1PIC);
-
-            CA_CacheGrChunk (IDGUYS2PIC);
-            VWB_DrawPic (0, 80, IDGUYS2PIC);
-            UNCACHEGRCHUNK (IDGUYS2PIC);
-
-            VW_UpdateScreen ();
-
-            LR_Color pal[256];
-            CA_CacheGrChunk (IDGUYSPALETTE);
-            VL_ConvertPalette(grsegs[IDGUYSPALETTE], pal, 256);
-            VL_FadeIn (0, 255, pal, 30);
-            UNCACHEGRCHUNK (IDGUYSPALETTE);
-
-            while (Keyboard[sc_I] || Keyboard[sc_D])
-                IN_WaitAndProcessEvents();
-            IN_ClearKeysDown ();
-            IN_Ack ();
-
-            VW_FadeOut ();
-
-            CacheLump (BACKDROP_LUMP_START, BACKDROP_LUMP_END);
-            CacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
-            DrawMainMenu ();
-            StartCPMusic (MENUSONG);
-            MenuFadeIn ();
-        }
-#endif
-#endif
-
-        switch (which)
-        {
-            case VIEWSCORES:
-                if (MainMenu[VIEWSCORES].routine == NULL)
-                {
-                    if (CP_EndGame (0))
-                        StartGame = 1;
-                }
-                else
-                {
-                    DrawMainMenu();
-                    MenuFadeIn ();
-                }
-                break;
-
-            case BACKTODEMO:
-                StartGame = 1;
-                if (!ingame)
-                    StartCPMusic (INTROSONG);
-                VL_FadeOut (0, 255, 0, 0, 0, 10);
-                break;
-
-            case -1:
-            case QUIT:
-                CP_Quit (0);
-                break;
-
-            default:
-                if (!StartGame)
-                {
-                    DrawMainMenu ();
-                    MenuFadeIn ();
-                }
-        }
-
-        //
-        // "EXIT OPTIONS" OR "NEW GAME" EXITS
-        //
-    }
-    while (!StartGame);
-
-    //
-    // DEALLOCATE EVERYTHING
-    //
+    /* DEALLOCATE EVERYTHING */
     CleanupControlPanel ();
 
-    //
-    // CHANGE MAINMENU ITEM
-    //
+    /* CHANGE MAINMENU ITEM */
     if (startgame || loadedgame)
         EnableEndGameMenuItem();
 
@@ -539,9 +532,7 @@ DrawMainMenu (void)
 #endif
 #endif
 
-    //
-    // CHANGE "GAME" AND "DEMO"
-    //
+    /* CHANGE "GAME" AND "DEMO" */
     if (ingame)
     {
 #ifndef JAPAN
