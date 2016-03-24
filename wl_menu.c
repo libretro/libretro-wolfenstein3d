@@ -1355,9 +1355,7 @@ CP_LoadGame (int quick)
 
     strcpy (name, SaveName);
 
-    //
-    // QUICKLOAD?
-    //
+    /* QUICKLOAD? */
     if (quick)
     {
         which = LSItems.curpos;
@@ -1423,9 +1421,8 @@ CP_LoadGame (int quick)
 
             StartGame = 1;
             ShootSnd ();
-            //
-            // CHANGE "READ THIS!" TO NORMAL COLOR
-            //
+
+            /* CHANGE "READ THIS!" TO NORMAL COLOR */
 
 #ifndef SPEAR
 #ifndef GOODTIMES
@@ -1668,6 +1665,40 @@ CP_SaveGame (int quick)
     return exit;
 }
 
+static bool CP_ControlLoop(void)
+{
+   int which = HandleMenu (&CtlItems, CtlMenu, NULL);
+   switch (which)
+   {
+      case CTL_MOUSEENABLE:
+         mouseenabled ^= 1;
+         if(IN_IsInputGrabbed())
+            IN_CenterMouse();
+         DrawCtlScreen ();
+         CusItems.curpos = -1;
+         ShootSnd ();
+         break;
+
+      case CTL_JOYENABLE:
+         joystickenabled ^= 1;
+         DrawCtlScreen ();
+         CusItems.curpos = -1;
+         ShootSnd ();
+         break;
+
+      case CTL_MOUSESENS:
+      case CTL_CUSTOMIZE:
+         DrawCtlScreen ();
+         MenuFadeIn ();
+         WaitKeyUp ();
+         break;
+   }
+
+   if (which < 0)
+      return false;
+   return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //
 // DEFINE CONTROLS
@@ -1676,8 +1707,6 @@ CP_SaveGame (int quick)
 int
 CP_Control (int unused)
 {
-    int which;
-
 #ifdef SPEAR
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
     CacheLump (CONTROL_LUMP_START, CONTROL_LUMP_END);
@@ -1687,36 +1716,7 @@ CP_Control (int unused)
     MenuFadeIn ();
     WaitKeyUp ();
 
-    do
-    {
-        which = HandleMenu (&CtlItems, CtlMenu, NULL);
-        switch (which)
-        {
-            case CTL_MOUSEENABLE:
-                mouseenabled ^= 1;
-                if(IN_IsInputGrabbed())
-                    IN_CenterMouse();
-                DrawCtlScreen ();
-                CusItems.curpos = -1;
-                ShootSnd ();
-                break;
-
-            case CTL_JOYENABLE:
-                joystickenabled ^= 1;
-                DrawCtlScreen ();
-                CusItems.curpos = -1;
-                ShootSnd ();
-                break;
-
-            case CTL_MOUSESENS:
-            case CTL_CUSTOMIZE:
-                DrawCtlScreen ();
-                MenuFadeIn ();
-                WaitKeyUp ();
-                break;
-        }
-    }
-    while (which >= 0);
+    while (CP_ControlLoop());
 
     MenuFadeOut ();
 
