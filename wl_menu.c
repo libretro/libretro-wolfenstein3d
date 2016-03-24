@@ -1080,6 +1080,91 @@ DrawNewGameDiff (int w)
     VWB_DrawPic (NM_X + 185, NM_Y + 7, w + C_BABYMODEPIC);
 }
 
+static bool CP_SoundLoop (void)
+{
+   int which = HandleMenu (&SndItems, &SndMenu[0], NULL);
+   /* HANDLE MENU CHOICES */
+   /* SOUND EFFECTS */
+   switch (which)
+   {
+      case 0:
+         if (SoundMode != SDM_OFF)
+         {
+            SD_WaitSoundDone ();
+            SD_SetSoundMode (SDM_OFF);
+            DrawSoundMenu ();
+         }
+         break;
+      case 1:
+         if (SoundMode != SDM_PC)
+         {
+            SD_WaitSoundDone ();
+            SD_SetSoundMode (SDM_PC);
+            CA_LoadAllSounds ();
+            DrawSoundMenu ();
+            ShootSnd ();
+         }
+         break;
+      case 2:
+         if (SoundMode != SDM_ADLIB)
+         {
+            SD_WaitSoundDone ();
+            SD_SetSoundMode (SDM_ADLIB);
+            CA_LoadAllSounds ();
+            DrawSoundMenu ();
+            ShootSnd ();
+         }
+         break;
+
+         /* DIGITIZED SOUND */
+      case 5:
+         if (DigiMode != SDS_OFF)
+         {
+            SD_SetDigiDevice (SDS_OFF);
+            DrawSoundMenu ();
+         }
+         break;
+      case 6:
+         /*                if (DigiMode != SDS_SOUNDSOURCE)
+                           {
+                           SD_SetDigiDevice (SDS_SOUNDSOURCE);
+                           DrawSoundMenu ();
+                           ShootSnd ();
+                           }*/
+         break;
+      case 7:
+         if (DigiMode != SDS_SOUNDBLASTER)
+         {
+            SD_SetDigiDevice (SDS_SOUNDBLASTER);
+            DrawSoundMenu ();
+            ShootSnd ();
+         }
+         break;
+
+         /* MUSIC */
+      case 10:
+         if (MusicMode != SMM_OFF)
+         {
+            SD_SetMusicMode (SMM_OFF);
+            DrawSoundMenu ();
+            ShootSnd ();
+         }
+         break;
+      case 11:
+         if (MusicMode != SMM_ADLIB)
+         {
+            SD_SetMusicMode (SMM_ADLIB);
+            DrawSoundMenu ();
+            ShootSnd ();
+            StartCPMusic (MENUSONG);
+         }
+         break;
+   }
+
+   if (which < 0)
+      return false;
+   return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -1089,9 +1174,6 @@ DrawNewGameDiff (int w)
 int
 CP_Sound (int unused)
 {
-    int which;
-
-
 #ifdef SPEAR
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
     CacheLump (SOUND_LUMP_START, SOUND_LUMP_END);
@@ -1101,96 +1183,7 @@ CP_Sound (int unused)
     MenuFadeIn ();
     WaitKeyUp ();
 
-    do
-    {
-        which = HandleMenu (&SndItems, &SndMenu[0], NULL);
-        //
-        // HANDLE MENU CHOICES
-        //
-        switch (which)
-        {
-                //
-                // SOUND EFFECTS
-                //
-            case 0:
-                if (SoundMode != SDM_OFF)
-                {
-                    SD_WaitSoundDone ();
-                    SD_SetSoundMode (SDM_OFF);
-                    DrawSoundMenu ();
-                }
-                break;
-            case 1:
-                if (SoundMode != SDM_PC)
-                {
-                    SD_WaitSoundDone ();
-                    SD_SetSoundMode (SDM_PC);
-                    CA_LoadAllSounds ();
-                    DrawSoundMenu ();
-                    ShootSnd ();
-                }
-                break;
-            case 2:
-                if (SoundMode != SDM_ADLIB)
-                {
-                    SD_WaitSoundDone ();
-                    SD_SetSoundMode (SDM_ADLIB);
-                    CA_LoadAllSounds ();
-                    DrawSoundMenu ();
-                    ShootSnd ();
-                }
-                break;
-
-                //
-                // DIGITIZED SOUND
-                //
-            case 5:
-                if (DigiMode != SDS_OFF)
-                {
-                    SD_SetDigiDevice (SDS_OFF);
-                    DrawSoundMenu ();
-                }
-                break;
-            case 6:
-/*                if (DigiMode != SDS_SOUNDSOURCE)
-                {
-                    SD_SetDigiDevice (SDS_SOUNDSOURCE);
-                    DrawSoundMenu ();
-                    ShootSnd ();
-                }*/
-                break;
-            case 7:
-                if (DigiMode != SDS_SOUNDBLASTER)
-                {
-                    SD_SetDigiDevice (SDS_SOUNDBLASTER);
-                    DrawSoundMenu ();
-                    ShootSnd ();
-                }
-                break;
-
-                //
-                // MUSIC
-                //
-            case 10:
-                if (MusicMode != SMM_OFF)
-                {
-                    SD_SetMusicMode (SMM_OFF);
-                    DrawSoundMenu ();
-                    ShootSnd ();
-                }
-                break;
-            case 11:
-                if (MusicMode != SMM_ADLIB)
-                {
-                    SD_SetMusicMode (SMM_ADLIB);
-                    DrawSoundMenu ();
-                    ShootSnd ();
-                    StartCPMusic (MENUSONG);
-                }
-                break;
-        }
-    }
-    while (which >= 0);
+    while (CP_SoundLoop());
 
     MenuFadeOut ();
 
