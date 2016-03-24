@@ -494,7 +494,7 @@ US_ControlPanel (ScanCode scancode)
     if (startgame || loadedgame)
         EnableEndGameMenuItem();
 
-    // RETURN/START GAME EXECUTION
+    /* RETURN/START GAME EXECUTION */
 
 #ifdef SPEAR
     UnCacheLump (OPTIONS_LUMP_START, OPTIONS_LUMP_END);
@@ -595,24 +595,10 @@ CP_ReadThis (int unused)
 #endif
 
 
-#ifdef GOODTIMES
-////////////////////////////////////////////////////////////////////
-//
-// BOSS KEY
-//
-////////////////////////////////////////////////////////////////////
 void
 BossKey (void)
 {
 }
-#else
-#ifdef SPEAR
-void
-BossKey (void)
-{
-}
-#endif
-#endif
 
 
 ////////////////////////////////////////////////////////////////////
@@ -620,14 +606,11 @@ BossKey (void)
 // CHECK QUICK-KEYS & QUIT (WHILE IN A GAME)
 //
 ////////////////////////////////////////////////////////////////////
-int
-CP_CheckQuick (ScanCode scancode)
+int CP_CheckQuick (ScanCode scancode)
 {
     switch (scancode)
     {
-        //
-        // END GAME
-        //
+        /* END GAME */
         case sc_F7:
             CA_CacheGrChunk (STARTFONT + 1);
 
@@ -648,9 +631,7 @@ CP_CheckQuick (ScanCode scancode)
             MainMenu[SAVEGAME].active = 0;
             return 1;
 
-        //
-        // QUICKSAVE
-        //
+        /* QUICKSAVE */
         case sc_F8:
             if (SaveGamesAvail[LSItems.curpos] && pickquick)
             {
@@ -711,9 +692,7 @@ CP_CheckQuick (ScanCode scancode)
             }
             return 1;
 
-        //
-        // QUICKLOAD
-        //
+        /* QUICKLOAD */
         case sc_F9:
             if (SaveGamesAvail[LSItems.curpos] && pickquick)
             {
@@ -783,9 +762,7 @@ CP_CheckQuick (ScanCode scancode)
             }
             return 1;
 
-        //
-        // QUIT
-        //
+        /* QUIT */
         case sc_F10:
             CA_CacheGrChunk (STARTFONT + 1);
 
@@ -825,29 +802,27 @@ CP_CheckQuick (ScanCode scancode)
 // END THE CURRENT GAME
 //
 ////////////////////////////////////////////////////////////////////
-int
-CP_EndGame (int unused)
+int CP_EndGame (int unused)
 {
-    int res;
 #ifdef JAPAN
-    res = GetYorN (7, 8, C_JAPQUITPIC);
+   int res = GetYorN (7, 8, C_JAPQUITPIC);
 #else
-    res = Confirm (ENDGAMESTR);
+   int res = Confirm (ENDGAMESTR);
 #endif
-    DrawMainMenu();
-    if(!res) return 0;
+   DrawMainMenu();
+   if(!res) return 0;
 
-    pickquick = gamestate.lives = 0;
-    playstate = EX_DIED;
-    killerobj = NULL;
+   pickquick = gamestate.lives = 0;
+   playstate = EX_DIED;
+   killerobj = NULL;
 
-    MainMenu[SAVEGAME].active = 0;
-    MainMenu[VIEWSCORES].routine = CP_ViewScores;
+   MainMenu[SAVEGAME].active = 0;
+   MainMenu[VIEWSCORES].routine = CP_ViewScores;
 #ifndef JAPAN
-    strcpy (MainMenu[VIEWSCORES].string, STR_VS);
+   strcpy (MainMenu[VIEWSCORES].string, STR_VS);
 #endif
 
-    return 1;
+   return 1;
 }
 
 
@@ -856,8 +831,7 @@ CP_EndGame (int unused)
 // VIEW THE HIGH SCORES
 //
 ////////////////////////////////////////////////////////////////////
-int
-CP_ViewScores (int unused)
+int CP_ViewScores (int unused)
 {
     fontnumber = 0;
 
