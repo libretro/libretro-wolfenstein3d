@@ -1897,9 +1897,7 @@ DrawCtlScreen (void)
     y = CTL_Y + 29;
     VWB_DrawPic (x, y, C_SELECTEDPIC);
 
-    //
-    // PICK FIRST AVAILABLE SPOT
-    //
+    /* PICK FIRST AVAILABLE SPOT */
     if (CtlItems.curpos < 0 || !CtlMenu[CtlItems.curpos].active)
     {
         for (i = 0; i < CtlItems.amount; i++)
@@ -2584,10 +2582,9 @@ PrintCustKeybd (int i)
 void
 DrawCustKeybd (int hilight)
 {
-    int i, color;
+    int i;
+    int color = TEXTCOLOR;
 
-
-    color = TEXTCOLOR;
     if (hilight)
         color = HIGHLIGHT;
     SETFONTCOLOR (color, BKGDCOLOR);

@@ -88,11 +88,11 @@ void SpawnNewObj (unsigned tilex, unsigned tiley, statetype *state)
     else
         newobj->ticcount = 0;
 
-    newobj->tilex = (short) tilex;
-    newobj->tiley = (short) tiley;
-    newobj->x = ((int32_t)tilex<<TILESHIFT)+TILEGLOBAL/2;
-    newobj->y = ((int32_t)tiley<<TILESHIFT)+TILEGLOBAL/2;
-    newobj->dir = nodir;
+    newobj->tilex = (int16_t) tilex;
+    newobj->tiley = (int16_t) tiley;
+    newobj->x     = ((int32_t)tilex<<TILESHIFT)+TILEGLOBAL/2;
+    newobj->y     = ((int32_t)tiley<<TILESHIFT)+TILEGLOBAL/2;
+    newobj->dir   = nodir;
 
     actorat[tilex][tiley] = newobj;
     newobj->areanumber =
