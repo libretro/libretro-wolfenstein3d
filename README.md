@@ -111,8 +111,8 @@ https://github.com/wolfysdl/SDL-Archive/raw/main/SDL2-2.24.0-win32-x86.zip and d
 SDL_mixer 2.0.4 Runtimes can be acquired at:
 https://github.com/wolfysdl/SDL_mixer-archive/raw/main/SDL2_mixer-2.6.2-win32-x86.zip and download "SDL_mixer-2.0.4-win32.zip"
 
+## deprecated links:
 
-deprecated links:
 [SDL1.2](https://www.libsdl.org/download-1.2.php) 
 [SDL_mixer](https://www.libsdl.org/projects/SDL_mixer/release-1.2.html)
 
@@ -165,7 +165,7 @@ For Spear of Destiny the following additional options are available:
 Compiling from source code:
 ---------------------------
 
-The current version of the core source code is available on [GitHubh](https://github.com/libretro/libretro-wolfenstein3d)
+The current version of the core source code is available on [GitHub](https://github.com/libretro/libretro-wolfenstein3d)
 
 The following ways of compiling the source code are supported:
  - Makefile.libretro
