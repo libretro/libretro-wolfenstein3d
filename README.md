@@ -113,15 +113,11 @@ https://github.com/wolfysdl/SDL_mixer-archive/raw/main/SDL2_mixer-2.6.2-win32-x8
 
 
 deprecated links:
-SDL1.2:
-https://www.libsdl.org/download-1.2.php 
-SDL_mixer
-https://www.libsdl.org/projects/SDL_mixer/release-1.2.html
+[SDL1.2](https://www.libsdl.org/download-1.2.php) 
+[SDL_mixer](https://www.libsdl.org/projects/SDL_mixer/release-1.2.html)
 
-SDL2
-https://www.libsdl.org/download-2.0.php 
-SDL2_mixer
-https://www.libsdl.org/projects/SDL_mixer/
+[SDL2](https://www.libsdl.org/download-2.0.php) 
+[SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/)
 
 ! ATTENTION ! Do NOT download the x64 version of SDL or SDL_mixer. x86 binairies are required.
 
@@ -183,9 +179,7 @@ Warning: pick the devel version
 Deprecated links:
  - [SDL](https://www.libsdl.org/download-1.2.php) and
  - [SDL_mixer](https://www.libsdl.org/projects/SDL_mixer/release-1.2.html)
- 
  or
- 
  - [SDL2](https://www.libsdl.org/) and
  - [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/)
 
