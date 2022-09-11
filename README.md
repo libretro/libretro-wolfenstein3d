@@ -126,7 +126,7 @@ to grab the mouse. Press it again to release the mouse.
 Paramenter usage:
 ------
 SDL4Wolf supports the following command line options:
- --help                 This help page
+``--help                 This help page
  --tedlevel <level>     Starts the game in the given level
  --baby                 Sets the difficulty to baby for tedlevel
  --easy                 Sets the difficulty to easy for tedlevel
@@ -155,12 +155,11 @@ SDL4Wolf supports the following command line options:
                         (may be useful for some broken mods)
  --configdir <dir>      Directory where config file and save games are stored
                         (Windows default: current directory,
-                        others: $HOME/.wolf4sdl)
+                        others: $HOME/.wolf4sdl) ``
 
 For Spear of Destiny the following additional options are available:
- --mission <mission>    Mission number to play (1-3)
- --goodtimes            Disable copy protection quiz
-
+ ``--mission <mission>    Mission number to play (1-3)
+ --goodtimes            Disable copy protection quiz``
 
 Compiling from source code:
 ---------------------------
