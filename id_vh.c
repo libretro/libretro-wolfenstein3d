@@ -1,255 +1,178 @@
 #include "wl_def.h"
 
-pictabletype    *pictable;
-LR_Surface latchpics[NUMLATCHPICS];
+pictabletype	*pictable;
 
-int     px,py;
-byte    fontcolor,backcolor;
-int     fontnumber;
+int	    px,py;
+byte	fontcolor,backcolor;
+int	    fontnumber;
+
+//==========================================================================
 
 void VWB_DrawPropString(const char* string)
 {
-   int         width, step;
-   byte        *source;
-   byte        ch;
-   unsigned     i, sy, sx;
-   byte       *vbuf = VL_LockSurface(screenBuffer);
-   fontstruct *font = (fontstruct *) grsegs[STARTFONT+fontnumber];
-   int       height = font->height;
-   byte       *dest = vbuf + scaleFactor * (py * bufferPitch + px);
+	fontstruct  *font;
+	int		    width, step, height;
+	byte	    *source, *dest;
+	byte	    ch;
+	int i;
+	unsigned sx, sy;
 
-   while ((ch = (byte)*string++) != 0)
-   {
-      width  = step = font->width[ch];
-      source = ((byte *)font)+font->location[ch];
+	dest = VL_LockSurface(screenBuffer);
+	if(dest == NULL) return;
 
-      while (width--)
-      {
-         for(i=0;i<height;i++)
-         {
-            if(source[i*step])
-            {
-               for(sy=0; sy<scaleFactor; sy++)
-                  for(sx=0; sx<scaleFactor; sx++)
-                     dest[(scaleFactor*i+sy) * bufferPitch + sx]=fontcolor;
-            }
-         }
+	font = (fontstruct *) grsegs[STARTFONT+fontnumber];
+	height = font->height;
+	dest += scaleFactor * (ylookup[py] + px);
 
-         source++;
-         px++;
-         dest+=scaleFactor;
-      }
-   }
+	while ((ch = (byte)*string++)!=0)
+	{
+		width = step = font->width[ch];
+		source = ((byte *)font)+font->location[ch];
+		while (width--)
+		{
+			for(i=0; i<height; i++)
+			{
+				if(source[i*step])
+				{
+					for(sy=0; sy<scaleFactor; sy++)
+						for(sx=0; sx<scaleFactor; sx++)
+							dest[ylookup[scaleFactor*i+sy]+sx]=fontcolor;
+				}
+			}
 
-   VL_UnlockSurface(screenBuffer);
+			source++;
+			px++;
+			dest+=scaleFactor;
+		}
+	}
+
+	VL_UnlockSurface(screenBuffer);
 }
 
-/*
-=================
-=
-= VL_MungePic
-=
-=================
-*/
-
-void VL_MungePic (byte *source, unsigned width, unsigned height)
-{
-   unsigned x,y,plane,pwidth;
-   byte *temp, *dest, *srcline;
-   unsigned size = width*height;
-
-   if (width&3)
-      Quit ("VL_MungePic: Not divisable by 4!");
-
-   /* copy the pic to a temp buffer */
-   temp=(byte *) malloc(size);
-   CHECKMALLOCRESULT(temp);
-   memcpy (temp,source,size);
-
-   /* munge it back into the original buffer */
-   dest = source;
-   pwidth = width/4;
-
-   for (plane=0;plane<4;plane++)
-   {
-      srcline = temp;
-      for (y=0;y<height;y++)
-      {
-         for (x=0;x<pwidth;x++)
-            *dest++ = *(srcline+x*4+plane);
-         srcline += width;
-      }
-   }
-
-   free(temp);
-}
 
 void VWL_MeasureString (const char *string, word *width, word *height, fontstruct *font)
 {
-   *height = font->height;
-   for (*width = 0;*string;string++)
-      *width += font->width[*((byte *)string)];   // proportional width
+	*height = font->height;
+	for (*width = 0;*string;string++)
+		*width += font->width[*((byte *)string)];	// proportional width
 }
 
 void VW_MeasurePropString (const char *string, word *width, word *height)
 {
-   VWL_MeasureString(string,width,height,(fontstruct *)grsegs[STARTFONT+fontnumber]);
+	VWL_MeasureString(string,width,height,(fontstruct *)grsegs[STARTFONT+fontnumber]);
 }
+
+#if SDL_MAJOR_VERSION == 2
+void VH_RenderTextures(SDL_Surface *surface)
+{
+    SDL_UpdateTexture(texture, NULL, screen->pixels, screenWidth * sizeof(Uint32));
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
+}
+#endif
 
 /*
 =============================================================================
 
-                Double buffer management routines
+				Double buffer management routines
 
 =============================================================================
 */
-
-void VWB_DrawTile8 (int x, int y, int tile)
+#ifndef __LIBRETRO__
+void VH_UpdateScreen(SDL_Surface *surface)
 {
-   LatchDrawChar(x,y,tile);
+	
+#if SDL_MAJOR_VERSION == 1
+    SDL_Flip(screen);
+#elif SDL_MAJOR_VERSION == 2
+    VH_RenderTextures(screen);
+#endif
+}
+#else
+void VH_UpdateScreen(LR_Surface *surface)
+{
+   SDL_BlitSurface (surface,NULL,screen,NULL);
+#ifdef __LIBRETRO__
+#if SDL_MAJOR_VERSION == 1
+   LR_Flip(NULL);
+#endif //TODO: add SDL2
+#else
+#if SDL_MAJOR_VERSION == 1	
+   LR_Flip(screen);
+#endif   
+#endif
 }
 
-void VWB_DrawTile8M (int x, int y, int tile)
+#endif
+void VWB_DrawTile8 (int x, int y, int tile)
 {
-   VL_MemToScreen (((byte *)grsegs[STARTTILE8M])+tile*64,8,8,x,y);
+	VL_MemToScreen (grsegs[STARTTILE8]+tile*64,8,8,x,y);
 }
 
 void VWB_DrawPic (int x, int y, int chunknum)
 {
-   int picnum      = chunknum - STARTPICS;
-   unsigned width  = pictable[picnum].width;
-   unsigned height = pictable[picnum].height;
+	int	picnum = chunknum - STARTPICS;
+	unsigned width,height;
 
-   x &= ~7;
+	x &= ~7;
 
-   VL_MemToScreen (grsegs[chunknum], width, height, x, y);
+	width = pictable[picnum].width;
+	height = pictable[picnum].height;
+
+	VL_MemToScreen (grsegs[chunknum],width,height,x,y);
 }
 
 void VWB_DrawPicScaledCoord (int scx, int scy, int chunknum)
 {
-   int picnum      = chunknum - STARTPICS;
-   unsigned width  = pictable[picnum].width;
-   unsigned height = pictable[picnum].height;
+	int	picnum = chunknum - STARTPICS;
+	unsigned width,height;
 
-   VL_MemToScreenScaledCoord (grsegs[chunknum], width, height, scx, scy);
+	width = pictable[picnum].width;
+	height = pictable[picnum].height;
+
+    VL_MemToScreenScaledCoord (grsegs[chunknum],width,height,scx,scy);
 }
 
 
 void VWB_Bar (int x, int y, int width, int height, int color)
 {
-   VW_Bar (x, y, width, height, color);
+	VW_Bar (x,y,width,height,color);
 }
 
 void VWB_Plot (int x, int y, int color)
 {
-   if(scaleFactor == 1)
-      VW_Plot(x,y,color);
-   else
-      VW_Bar(x, y, 1, 1, color);
+    if(scaleFactor == 1)
+        VW_Plot(x,y,color);
+    else
+        VW_Bar(x, y, 1, 1, color);
 }
 
 void VWB_Hlin (int x1, int x2, int y, int color)
 {
-   if(scaleFactor == 1)
-      VW_Hlin(x1,x2,y,color);
-   else
-      VW_Bar(x1, y, x2-x1+1, 1, color);
+    if(scaleFactor == 1)
+    	VW_Hlin(x1,x2,y,color);
+    else
+        VW_Bar(x1, y, x2-x1+1, 1, color);
 }
 
 void VWB_Vlin (int y1, int y2, int x, int color)
 {
-   if(scaleFactor == 1)
-      VW_Vlin(y1,y2,x,color);
-   else
-      VW_Bar(x, y1, 1, y2-y1+1, color);
+    if(scaleFactor == 1)
+		VW_Vlin(y1,y2,x,color);
+    else
+        VW_Bar(x, y1, 1, y2-y1+1, color);
 }
 
 
 /*
 =============================================================================
 
-                        WOLFENSTEIN STUFF
+						WOLFENSTEIN STUFF
 
 =============================================================================
 */
 
-/*
-=====================
-=
-= LatchDrawPic
-=
-=====================
-*/
-
-void LatchDrawPic (unsigned x, unsigned y, unsigned picnum)
-{
-   VL_LatchToScreenScaledCoord2(&latchpics[2+picnum-LATCHPICS_LUMP_START], scaleFactor * (x * 8), scaleFactor * y);
-}
-
-void LatchDrawPicScaledCoord (unsigned scx, unsigned scy, unsigned picnum)
-{
-   VL_LatchToScreenScaledCoord2(&latchpics[2+picnum-LATCHPICS_LUMP_START], scx*8, scy);
-}
-
-
-//==========================================================================
-
-/*
-===================
-=
-= LoadLatchMem
-=
-===================
-*/
-
-void LoadLatchMem (void)
-{
-   LR_Surface surface;
-   int i,width,height,start,end;
-   byte *src;
-
-   /* tile 8s */
-   surface.surf = LR_CreateRGBSurface(SDL_SWSURFACE, 8*8,
-         ((NUMTILE8 + 7) / 8) * 8, 8, 0, 0, 0, 0);
-
-   if(!surface.surf)
-      Quit("Unable to create surface for tiles!");
-
-   LR_SetColors(surface.surf, gamepal, 0, 256);
-
-   latchpics[0].surf = surface.surf;
-   CA_CacheGrChunk (STARTTILE8);
-   src = grsegs[STARTTILE8];
-
-   for (i=0;i<NUMTILE8;i++)
-   {
-      VL_MemToLatch (src, 8, 8, &surface, (i & 7) * 8, (i >> 3) * 8);
-      src += 64;
-   }
-   UNCACHEGRCHUNK (STARTTILE8);
-
-   /* pics */
-   start = LATCHPICS_LUMP_START;
-   end   = LATCHPICS_LUMP_END;
-
-   for (i = start; i <= end; i++)
-   {
-      width  = pictable[i-STARTPICS].width;
-      height = pictable[i-STARTPICS].height;
-      surface.surf   = LR_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
-
-      if(!surface.surf)
-         Quit("Unable to create surface for picture!");
-      LR_SetColors(surface.surf, gamepal, 0, 256);
-
-      latchpics[2+i-start].surf = surface.surf;
-      CA_CacheGrChunk (i);
-      VL_MemToLatch (grsegs[i], width, height, &surface, 0, 0);
-      UNCACHEGRCHUNK(i);
-   }
-}
-
-//==========================================================================
 
 /*
 ===================
@@ -266,7 +189,7 @@ void LoadLatchMem (void)
 ===================
 */
 
-/* XOR masks for the pseudo-random number sequence starting with n=17 bits */
+// XOR masks for the pseudo-random number sequence starting with n=17 bits
 static const uint32_t rndmasks[] = {
                     // n    XNOR from (starting at 1, not 0 as usual)
     0x00012000,     // 17   17,14
@@ -283,128 +206,146 @@ static const uint32_t rndmasks[] = {
 static unsigned int rndbits_y;
 static unsigned int rndmask;
 
-extern LR_Color curpal[256];
+extern SDL_Color curpal[256];
 
-/* Returns the number of bits needed to represent the given value */
+// Returns the number of bits needed to represent the given value
 static int log2_ceil(uint32_t x)
 {
-   int n      = 0;
-   uint32_t v = 1;
-
-   while(v < x)
-   {
-      n++;
-      v <<= 1;
-   }
-   return n;
+    int n = 0;
+    uint32_t v = 1;
+    while(v < x)
+    {
+        n++;
+        v <<= 1;
+    }
+    return n;
 }
 
-void VH_Startup(void)
+void VH_Startup()
 {
-   int rndbits;
-   int rndbits_x = log2_ceil(screenWidth);
+    int rndbits_x = log2_ceil(screenWidth);
+    rndbits_y = log2_ceil(screenHeight);
 
-   rndbits_y     = log2_ceil(screenHeight);
-   rndbits       = rndbits_x + rndbits_y;
+    int rndbits = rndbits_x + rndbits_y;
+    if(rndbits < 17)
+        rndbits = 17;       // no problem, just a bit slower
+    else if(rndbits > 25)
+        rndbits = 25;       // fizzle fade will not fill whole screen
 
-   if(rndbits < 17)
-      rndbits = 17;       // no problem, just a bit slower
-   else if(rndbits > 25)
-      rndbits = 25;       // fizzle fade will not fill whole screen
-
-   rndmask = rndmasks[rndbits - 17];
+    rndmask = rndmasks[rndbits - 17];
 }
 
-static boolean FizzleFadeFinish(LR_Surface *source_copy, LR_Surface *screen_copy)
-{
-   VL_UnlockSurface(source_copy);
-   VL_UnlockSurface(screen_copy);
-   VL_ScreenToScreen(screen_copy, screenBuffer);
-   VW_UpdateScreen();
-   LR_FreeSurface(source_copy->surf);
-   LR_FreeSurface(screen_copy->surf);
-   return false;
-}
-
-boolean FizzleFade (LR_Surface *source, int x1, int y1,
+boolean FizzleFade (SDL_Surface *source, int x1, int y1,
     unsigned width, unsigned height, unsigned frames, boolean abortable)
 {
-   unsigned x, y, frame;
-   int32_t  rndval;
-   unsigned i, p;
-   LR_Surface source_copy, screen_copy;
-   byte *srcptr;
-   int32_t lastrndval = 0;
-   unsigned pixperframe = width * height / frames;
+    unsigned x, y, p, frame, pixperframe;
+    int32_t  rndval, lastrndval;
+    int      i,first = 1;
 
-   IN_StartAck ();
+    lastrndval = 0;
+    pixperframe = width * height / frames;
 
-   frame       = GetTimeCount();
+    IN_StartAck ();
 
-   /* can't rely on screen as dest b/c crt.cpp writes over it with screenBuffer
-    * can't rely on screenBuffer as source for same reason: every flip it has to be updated
-    */
-   source_copy.surf = LR_ConvertSurface(source, source->surf->format, source->surf->flags);
-   screen_copy.surf = LR_ConvertSurface(screen, screen->surf->format, screen->surf->flags);
-   srcptr      = VL_LockSurface(&source_copy);
+    frame = GetTimeCount();
+    byte *srcptr = VL_LockSurface(source);
+    if(srcptr == NULL) return false;
 
-   do
-   {
-      byte *destptr;
+    do
+    {
+        IN_ProcessEvents();
 
-      if(abortable && IN_CheckAck ())
-      {
-         VL_UnlockSurface(&source_copy);
-         VL_ScreenToScreen(&screen_copy, screenBuffer);
-         VW_UpdateScreen();
+        if(abortable && IN_CheckAck ())
+        {
+            VL_UnlockSurface(source);
+            VH_UpdateScreen (source);
+            return true;
+        }
 
-         LR_FreeSurface(source_copy.surf);
-         LR_FreeSurface(screen_copy.surf);
-         return true;
-      }
+        byte *destptr = VL_LockSurface(screen);
 
-      destptr = VL_LockSurface(&screen_copy);
-      rndval  = lastrndval;
+        if(destptr != NULL)
+        {
+            rndval = lastrndval;
 
-      for(p = 0; p < pixperframe; p++)
-      {
-         byte col;
-         uint32_t fullcol;
+            // When using double buffering, we have to copy the pixels of the last AND the current frame.
+            // Only for the first frame, there is no "last frame"
+            for(i = first; i < 2; i++)
+            {
+                for(p = 0; p < pixperframe; p++)
+                {
+                    //
+                    // seperate random value into x/y pair
+                    //
 
-         /* seperate random value into x/y pair */
-         x = rndval >> rndbits_y;
-         y = rndval & ((1 << rndbits_y) - 1);
+                    x = rndval >> rndbits_y;
+                    y = rndval & ((1 << rndbits_y) - 1);
 
-         /* advance to next random element */
-         rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
+                    //
+                    // advance to next random element
+                    //
 
-         if(x >= width || y >= height)
-         {
-            if(rndval == 0)     /* entire sequence has been completed */
-               return FizzleFadeFinish(&source_copy, &screen_copy);
-            p--;
-            continue;
-         }
+                    rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
 
-         /* copy one pixel */
-         col     = *(srcptr + (y1 + y) * source->surf->pitch + x1 + x);
-         fullcol = LR_MapRGB(screen->surf->format, curpal[col].r, curpal[col].g, curpal[col].b);
-         memcpy(destptr + (y1 + y) * screen->surf->pitch + (x1 + x) * screen->surf->format->BytesPerPixel,
-               &fullcol, screen->surf->format->BytesPerPixel);
+                    if(x >= width || y >= height)
+                    {
+                        if(rndval == 0)     // entire sequence has been completed
+                            goto finished;
+                        p--;
+                        continue;
+                    }
 
-         if(rndval == 0)     /* entire sequence has been completed */
-            return FizzleFadeFinish(&source_copy, &screen_copy);
-      }
+                    //
+                    // copy one pixel
+                    //
 
-      lastrndval = rndval;
+                    if(screenBits == 8)
+                    {
+                        *(destptr + (y1 + y) * screen->pitch + x1 + x)
+                            = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+                    }
+                    else
+                    {
+                        byte col = *(srcptr + (y1 + y) * source->pitch + x1 + x);
+                        uint32_t fullcol = SDL_MapRGB(screen->format, curpal[col].r, curpal[col].g, curpal[col].b);
+                        memcpy(destptr + (y1 + y) * screen->pitch + (x1 + x) * screen->format->BytesPerPixel,
+                            &fullcol, screen->format->BytesPerPixel);
+                    }
 
-      VL_UnlockSurface(&screen_copy);
-      VL_ScreenToScreen(&screen_copy, screenBuffer);
-      VW_UpdateScreen();
+                    if(rndval == 0)		// entire sequence has been completed
+                        goto finished;
+                }
 
-      frame++;
-      Delay(frame - GetTimeCount()); /* don't go too fast */
-   } while (1);
+                if(!i || first) lastrndval = rndval;
+            }
 
-   return FizzleFadeFinish(&source_copy, &screen_copy);
+            // If there is no double buffering, we always use the "first frame" case
+            if(usedoublebuffering) first = 0;
+
+            VL_UnlockSurface(screen);
+            VH_UpdateScreen(screen);
+        }
+        else
+        {
+            // No surface, so only enhance rndval
+            for(i = first; i < 2; i++)
+            {
+                for(p = 0; p < pixperframe; p++)
+                {
+                    rndval = (rndval >> 1) ^ (rndval & 1 ? 0 : rndmask);
+                    if(rndval == 0)
+                        goto finished;
+                }
+            }
+        }
+
+        frame++;
+        Delay(frame - GetTimeCount());        // don't go too fast
+    } while (1);
+
+finished:
+    VL_UnlockSurface(source);
+    VL_UnlockSurface(screen);
+    VH_UpdateScreen(source);
+    return false;
 }

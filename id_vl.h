@@ -1,107 +1,88 @@
 // ID_VL.H
 
+#ifndef __ID_VL_H_
+#define __ID_VL_H_
+
 // wolf compatability
-
-// Win32
-//#ifndef ID_VL.H 
-//#define ID_VL.H
-#ifndef ID_VL_H 
-#define ID_VL_H
-
 #include "wl_def.h"
-
-#include "boolean.h"
-
 void Quit (const char *error,...);
 
 //===========================================================================
 
-#define CHARWIDTH       2
-#define TILEWIDTH       4
+#define CHARWIDTH		2
+#define TILEWIDTH		4
 
 //===========================================================================
 
-#ifndef __LIBRETRO__
-extern LR_Surface *screen;
+extern SDL_Surface *screen, *screenBuffer;
+#if SDL_MAJOR_VERSION == 2
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+extern SDL_Texture *texture;
 #endif
-extern LR_Surface *screenBuffer;
+extern  boolean  fullscreen, usedoublebuffering;
+#if N3DS
+extern  int screenWidth, screenHeight, screenBits, screenPitch, bufferPitch;
+#else
+extern  unsigned screenWidth, screenHeight, screenBits, screenPitch, bufferPitch;   
+#endif
+extern  int      scaleFactor;
 
-extern  boolean  fullscreen;
-extern  unsigned screenWidth, screenHeight, screenBits, bufferPitch;
-extern  unsigned scaleFactor;
+extern	boolean  screenfaded;
+extern	unsigned bordercolor;
 
-extern  boolean  screenfaded;
-extern  unsigned bordercolor;
+extern  uint32_t *ylookup;
 
-extern LR_Color gamepal[256];
+extern SDL_Color gamepal[256];
 
 //===========================================================================
 
 //
 // VGA hardware routines
 //
+#ifndef __LIBRETRO___
+#define VL_WaitVBL(a)        SDL_Delay((a)*8)
+#else
+extern void VL_WaitVBL(int vbls);	
+#endif
+#define VL_ClearScreen(c)    SDL_FillRect(screenBuffer,NULL,(c))
 
-void VL_WaitVBL(int vbls);
+#ifdef CRT
+#if SDL_MAJOR_VERSION == 2
+#define SDL_Flip(x) CRT_Init(x)
+#endif
+#endif
 
+void VL_DePlaneVGA (byte *source, int width, int height);
+void VL_SetVGAPlaneMode (void);
 void VL_SetTextMode (void);
-void VL_Startup (void);
 void VL_Shutdown (void);
 
+void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors);
 void VL_FillPalette (int red, int green, int blue);
-void VL_SetPalette  (LR_Color *palette, bool forceupdate);
-void VL_GetPalette  (LR_Color *palette);
+void VL_SetColor    (int color, int red, int green, int blue);
+void VL_GetColor    (int color, int *red, int *green, int *blue);
+void VL_SetPalette  (SDL_Color *palette, boolean forceupdate);
+void VL_GetPalette  (SDL_Color *palette);
 void VL_FadeOut     (int start, int end, int red, int green, int blue, int steps);
-void VL_FadeIn      (int start, int end, LR_Color *palette, int steps);
+void VL_FadeIn      (int start, int end, SDL_Color *palette, int steps);
 
-byte *VL_LockSurface(LR_Surface *surface);
-void VL_UnlockSurface(LR_Surface *surface);
+byte *VL_LockSurface(SDL_Surface *surface);
+void VL_UnlockSurface(SDL_Surface *surface);
 
 byte VL_GetPixel        (int x, int y);
 void VL_Plot            (int x, int y, int color);
 void VL_Hlin            (unsigned x, unsigned y, unsigned width, int color);
 void VL_Vlin            (int x, int y, int height, int color);
 void VL_BarScaledCoord  (int scx, int scy, int scwidth, int scheight, int color);
+void VL_Bar             (int x, int y, int width, int height, int color);
 
-static inline void VL_Bar      (int x, int y, int width, int height, int color)
-{
-   VL_BarScaledCoord(scaleFactor*x, scaleFactor*y,
-         scaleFactor*width, scaleFactor*height, color);
-}
-
-static inline void VL_ClearScreen(int color)
-{
-   LR_FillRect(screenBuffer, NULL, color);
-}
-
-void VL_MungePic                (byte *source, unsigned width, unsigned height);
 void VL_DrawPicBare             (int x, int y, byte *pic, int width, int height);
-void VL_MemToLatch              (byte *source, int width, int height,
-                                    LR_Surface *destSurface, int x, int y);
-void VL_ScreenToScreen          (LR_Surface *source, LR_Surface *dest);
+void VL_ScreenToScreen          (SDL_Surface *source, SDL_Surface *dest);
 void VL_MemToScreenScaledCoord  (byte *source, int width, int height, int scx, int scy);
 void VL_MemToScreenScaledCoord2  (byte *source, int origwidth, int origheight, int srcx, int srcy,
                                     int destx, int desty, int width, int height);
 
-static inline void VL_MemToScreen (byte *source, int width, int height, int x, int y)
-{
-    VL_MemToScreenScaledCoord(source, width, height, scaleFactor*x, scaleFactor*y);
-}
-
-void VL_MaskedToScreen (byte *source, int width, int height, int x, int y);
-
-void VL_LatchToScreenScaledCoord (LR_Surface *source, int xsrc, int ysrc,
-    int width, int height, int scxdest, int scydest);
-
-static inline void VL_LatchToScreen (LR_Surface *source, int xsrc, int ysrc,
-    int width, int height, int xdest, int ydest)
-{
-    VL_LatchToScreenScaledCoord(source, xsrc, ysrc, width, height,
-        scaleFactor*xdest,scaleFactor*ydest);
-}
-
-static inline void VL_LatchToScreenScaledCoord2(LR_Surface *source, int scx, int scy)
-{
-    VL_LatchToScreenScaledCoord(source, 0, 0, source->surf->w, source->surf->h, scx,  scy);
-}
+void VL_MemToScreen (byte *source, int width, int height, int x, int y);
 
 #endif

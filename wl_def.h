@@ -1,5 +1,5 @@
-#ifndef WL_DEF_H
-#define WL_DEF_H
+#ifndef __WL_DEF_H_
+#define __WL_DEF_H_
 
 // Defines which version shall be built and configures supported extra features
 #include "version.h"
@@ -10,26 +10,39 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#if !defined(_WIN32)
-#   include <stdint.h>
-#   include <string.h>
-#   include <stdarg.h>
-#include <SDL/SDL.h>
 
+#ifdef OLD_BOOL
+
+#else
+#include <stdbool.h>
 #endif
 
-#include "retro_miscellaneous.h"
 
-
-#if !defined O_BINARY
-#   define O_BINARY 0
+#include <SDL.h>
+#if N3DS
+#include <3ds.h>
+#endif
+#if defined(_arch_dreamcast)
+#	include <string.h>
+#	include "dc/dc_main.h"
+#elif !defined(_WIN32)
+#	include <stdint.h>
+#	include <string.h>
+#	include <stdarg.h>
 #endif
 
 #pragma pack(1)
 
-
+#if defined(_arch_dreamcast)
+#define YESBUTTONNAME "A"
+#define NOBUTTONNAME  "B"
+#elif defined(GP2X)
+#define YESBUTTONNAME "Y"
+#define NOBUTTONNAME  "B"
+#else
 #define YESBUTTONNAME "Y"
 #define NOBUTTONNAME  "N"
+#endif
 
 #include "foreign.h"
 
@@ -38,10 +51,14 @@
     #ifdef UPLOAD
         #include "gfxv_apo.h"
     #else
-        #ifdef GOODTIMES
-            #include "gfxv_wl6.h"
-        #else
-            #include "gfxv_apo.h"
+		#ifdef JAPAN
+			#include "gfxv_jap.h"
+		#else
+			#ifdef GOODTIMES
+	            #include "gfxv_wl6.h"
+		    #else
+			    #include "gfxv_apo.h"
+			#endif
         #endif
     #endif
 #else
@@ -50,44 +67,92 @@
     #include "f_spear.h"
 #endif
 
-typedef uint8_t byte;
-typedef uint16_t word;
-typedef int32_t fixed;
-typedef uint32_t longword;
-// Win32
-#ifndef _WIN32
-typedef int8_t boolean;
+#if !defined O_BINARY
+#define O_BINARY 0
 #endif
-typedef void * memptr;
+
+#ifdef PS2
+//include dir for the types definitions
+#include <tamtypes.h>
+typedef u8 byte;
+typedef u16 word;
+typedef s32 fixed;
+typedef u32 longword;
+#else
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+
+typedef u8 byte;
+typedef u16 word;
+typedef s32 fixed;
+typedef u32 longword;
+#endif
+
+#ifdef OLD_BOOL
+typedef enum
+{
+    false,
+    true
+} boolean;
+#else
+typedef bool boolean;
+#endif
 
 typedef struct
 {
     int x,y;
 } Point;
+
 typedef struct
 {
     Point ul,lr;
 } Rect;
 
-void Quit(const char *errorStr, ...);
+void Quit (const char *errorStr, ...);
 
 #include "id_pm.h"
+#ifdef VIEASM
+#include "id_vieasm.h"
+#else
 #include "id_sd.h"
+#endif
 #include "id_in.h"
 #include "id_vl.h"
 #include "id_vh.h"
+#ifdef CRT
+#include "id_crt.h"
+#endif
 #include "id_us.h"
 #include "id_ca.h"
-
 #include "wl_menu.h"
+#include "wl_utils.h"
 
-#define MAPSPOT(x,y,plane) (mapsegs[plane][((y)<<mapshift)+(x)])
 
-#define SIGN(x)         ((x)>0?1:-1)
-#define ABS(x)          ((int)(x)>0?(x):-(x))
-#define LABS(x)         ((int32_t)(x)>0?(x):-(x))
+/*
+=============================================================================
 
-#define abs(x) ABS(x)
+							MACROS
+
+=============================================================================
+*/
+
+#define MAPSPOT(x,y,plane) (mapsegs[(plane)][((y) << MAPSHIFT) + (x)])
+
+#define SIGN(x)         ((x) > 0 ? 1 : -1)
+#define ABS(x)          ((int)(x) > 0 ? (x) : -(x))
+#define LABS(x)         ((int32_t)(x) > 0 ? (x) : -(x))
+
+#define abs(x)          ABS((x))
+
+#define lengthof(x)     (sizeof((x)) / sizeof(*(x)))
+#define endof(x)        ((x) + lengthof((x)))
 
 /*
 =============================================================================
@@ -97,12 +162,28 @@ void Quit(const char *errorStr, ...);
 =============================================================================
 */
 
+#define MAXTICS 10
 #define DEMOTICS        4
+
+#define WALLSHIFT       6
+
+#define BIT_WALL        (1 << WALLSHIFT)
+#define BIT_DOOR        (1 << (WALLSHIFT + 1))
+#define BIT_ALLTILES    (1 << (WALLSHIFT + 2))
+
+// the door is the last picture before the sprites
+#define DOORWALL        (PMSpriteStart - 8)
 
 #define MAXACTORS       150         // max number of nazis, etc / map
 #define MAXSTATS        400         // max number of lamps, bonus, etc
 #define MAXDOORS        64          // max number of sliding doors
 #define MAXWALLTILES    64          // max number of wall tiles
+
+#if WALLSHIFT >= 7
+typedef u16 tiletype;
+#else
+typedef u8 tiletype;
+#endif
 
 //
 // tile constants
@@ -124,18 +205,9 @@ void Quit(const char *errorStr, ...);
 
 #define EXTRAPOINTS     40000
 
-#define PLAYERSPEED     3000
 #define RUNSPEED        6000
 
-#define SCREENSEG       0xa000
-
-#define SCREENBWIDE     80
-
-#define HEIGHTRATIO     0.50            // also defined in id_mm.c
-
-#define BORDERCOLOR     3
-#define FLASHCOLOR      5
-#define FLASHTICS       4
+#define HEIGHTRATIO     0.50
 
 #ifndef SPEAR
     #define LRpack      8       // # of levels to store in endgame
@@ -147,15 +219,12 @@ void Quit(const char *errorStr, ...);
 #define MINACTORDIST    0x10000l        // minimum dist from player center
                                         // to any actor center
 
-#define NUMLATCHPICS    100
-
-#ifndef M_PI
-#define M_PI              3.141592657
-#endif
+#undef M_PI
+#define PI              3.141592657
+#define M_PI PI
 
 #define GLOBAL1         (1l<<16)
 #define TILEGLOBAL      GLOBAL1
-#define PIXGLOBAL       (GLOBAL1/64)
 #define TILESHIFT       16l
 #define UNSIGNEDSHIFT   8
 
@@ -171,25 +240,30 @@ void Quit(const char *errorStr, ...);
 #define VANG270         (VANG90*3)
 #define VANG360         (VANG90*4)
 
-#define MINDIST         (0x5800l)
+#define MINDIST         0x5800l
 
-#define mapshift        6
-#define MAPSIZE         (1<<mapshift)
-#define maparea         MAPSIZE*MAPSIZE
-
-#define mapheight       MAPSIZE
-#define mapwidth        MAPSIZE
-
-
+#define MAPSHIFT        6
+#define MAPSIZE         (1 << MAPSHIFT)
+#define MAPAREA         (MAPSIZE * MAPSIZE)
 
 #define TEXTURESHIFT    6
-#define TEXTURESIZE     (1<<TEXTURESHIFT)
-#define TEXTUREFROMFIXEDSHIFT 4
-#define TEXTUREMASK     (TEXTURESIZE*(TEXTURESIZE-1))
 
-#define SPRITESCALEFACTOR 2
+#if TEXTURESHIFT == 8
 
+#define FIXED2TEXSHIFT  0
 
+#elif TEXTURESHIFT == 7
+
+#define FIXED2TEXSHIFT  2
+
+#else
+
+#define FIXED2TEXSHIFT  4
+
+#endif
+
+#define TEXTURESIZE     (1 << TEXTURESHIFT)
+#define TEXTUREMASK     (TEXTURESIZE * (TEXTURESIZE - 1))
 
 #define NORTH   0
 #define EAST    1
@@ -198,15 +272,6 @@ void Quit(const char *errorStr, ...);
 
 
 #define STATUSLINES     40
-
-#define SCREENSIZE      (SCREENBWIDE*208)
-#define PAGE1START      0
-#define PAGE2START      (SCREENSIZE)
-#define PAGE3START      (SCREENSIZE*2u)
-#define FREESTART       (SCREENSIZE*3u)
-
-
-#define PIXRADIUS       512
 
 #define STARTAMMO       8
 
@@ -224,7 +289,26 @@ typedef enum
     FL_AMBUSH           = 0x00000040,
     FL_NONMARK          = 0x00000080,
     FL_FULLBRIGHT       = 0x00000100,
+#ifdef USE_DIR3DSPR
+    // you can choose one of the following values in wl_act1.cpp
+    // to make a static sprite a directional 3d sprite
+    // (see example at the end of the statinfo array)
+    FL_DIR_HORIZ_MID    = 0x00000200,
+    FL_DIR_HORIZ_FW     = 0x00000400,
+    FL_DIR_HORIZ_BW     = 0x00000600,
+    FL_DIR_VERT_MID     = 0x00000a00,
+    FL_DIR_VERT_FW      = 0x00000c00,
+    FL_DIR_VERT_BW      = 0x00000e00,
 
+    // these values are just used to improve readability of code
+    FL_DIR_NONE         = 0x00000000,
+    FL_DIR_POS_MID      = 0x00000200,
+    FL_DIR_POS_FW       = 0x00000400,
+    FL_DIR_POS_BW       = 0x00000600,
+    FL_DIR_POS_MASK     = 0x00000600,
+    FL_DIR_VERT_FLAG    = 0x00000800,
+    FL_DIR_MASK         = 0x00000e00,
+#endif
     // next free bit is   0x00001000
 } objflag_t;
 
@@ -564,14 +648,16 @@ enum
 =============================================================================
 */
 
-typedef enum {
-    DI_NORTH,
-    DI_EAST,
-    DI_SOUTH,
-    DI_WEST
+typedef enum 
+{
+    di_north,
+    di_east,
+    di_south,
+    di_west
 } controldir_t;
 
-typedef enum {
+typedef enum 
+{
     dr_normal,
     dr_lock1,
     dr_lock2,
@@ -580,14 +666,16 @@ typedef enum {
     dr_elevator
 } door_t;
 
-typedef enum {
+typedef enum 
+{
     ac_badobject = -1,
     ac_no,
     ac_yes,
     ac_allways
 } activetype;
 
-typedef enum {
+typedef enum 
+{
     nothing,
     playerobj,
     inertobj,
@@ -620,7 +708,8 @@ typedef enum {
     sparkobj
 } classtype;
 
-typedef enum {
+typedef enum 
+{
     none,
     block,
     bo_gibs,
@@ -644,7 +733,8 @@ typedef enum {
     bo_spear
 } wl_stat_t;
 
-typedef enum {
+typedef enum 
+{
     east,
     northeast,
     north,
@@ -657,8 +747,8 @@ typedef enum {
 } dirtype;
 
 
-#define NUMENEMIES  22
-typedef enum {
+typedef enum 
+{
     en_guard,
     en_officer,
     en_ss,
@@ -680,7 +770,9 @@ typedef enum {
     en_trans,
     en_uber,
     en_will,
-    en_death
+    en_death,
+
+    NUMENEMIES
 } enemy_t;
 
 typedef void (* statefunc) (void *);
@@ -706,7 +798,7 @@ typedef struct statstruct
     byte      tilex,tiley;
     short     shapenum;           // if shapenum == -1 the obj has been removed
     byte      *visspot;
-    uint32_t  flags;
+    u32 flags;
     byte      itemnumber;
 } statobj_t;
 
@@ -719,7 +811,10 @@ typedef struct statstruct
 
 typedef enum
 {
-    dr_open,dr_closed,dr_opening,dr_closing
+    dr_open,
+    dr_closed,
+    dr_opening,
+    dr_closing
 } doortype;
 
 typedef struct doorstruct
@@ -745,9 +840,9 @@ typedef struct objstruct
     classtype   obclass;
     statetype   *state;
 
-    uint32_t    flags;              // FL_SHOOTABLE, etc
+    u32    flags;              // FL_SHOOTABLE, etc
 
-    int32_t     distance;           // if negative, wait for that door to open
+    s32     distance;           // if negative, wait for that door to open
     dirtype     dir;
 
     fixed       x,y;
@@ -760,7 +855,7 @@ typedef struct objstruct
 
     short       angle;
     short       hitpoints;
-    int32_t     speed;
+    s32     speed;
 
     short       temp1,temp2,hidden;
     struct objstruct *next,*prev;
@@ -768,8 +863,8 @@ typedef struct objstruct
 
 enum
 {
-    bt_nobutton=-1,
-    bt_attack=0,
+    bt_nobutton = -1,
+    bt_attack = 0,
     bt_strafe,
     bt_run,
     bt_use,
@@ -787,26 +882,27 @@ enum
     bt_movebackward,
     bt_turnleft,
     bt_turnright,
+
     NUMBUTTONS
 };
 
-
-#define NUMWEAPONS      4
 typedef enum
 {
+    wp_none = -1,
     wp_knife,
     wp_pistol,
     wp_machinegun,
-    wp_chaingun
+    wp_chaingun,
+    NUMWEAPONS
 } weapontype;
 
 
 enum
 {
-    GD_BABY,
-    GD_EASY,
-    GD_MEDIUM,
-    GD_HARD
+    gd_baby,
+    gd_easy,
+    gd_medium,
+    gd_hard
 };
 
 //---------------
@@ -819,7 +915,7 @@ typedef struct
 {
     short       difficulty;
     short       mapon;
-    int32_t     oldscore,score,nextextra;
+    s32     oldscore,score,nextextra;
     short       lives;
     short       health;
     short       ammo;
@@ -831,29 +927,26 @@ typedef struct
 
     short       episode,secretcount,treasurecount,killcount,
                 secrettotal,treasuretotal,killtotal;
-    int32_t     TimeCount;
-    int32_t     killx,killy;
+    s32     TimeCount;
+    s32     killx,killy;
     boolean     victoryflag;            // set during victory animations
 } gametype;
 
 
 typedef enum
 {
-    EX_STILLPLAYING = 0,
-    EX_COMPLETED,
-    EX_DIED,
-    EX_WARPED,
-    EX_RESETGAME,
-    EX_LOADEDGAME,
-    EX_VICTORIOUS,
-    EX_ABORT,
-    EX_DEMODONE,
-    EX_SECRETLEVEL
+    ex_stillplaying,
+    ex_completed,
+    ex_died,
+    ex_warped,
+    ex_resetgame,
+    ex_loadedgame,
+    ex_victorious,
+    ex_abort,
+    ex_demodone,
+    ex_secretlevel
 } exit_t;
 
-
-extern word *mapsegs[MAPPLANES];
-extern int mapon;
 
 /*
 =============================================================================
@@ -863,28 +956,36 @@ extern int mapon;
 =============================================================================
 */
 
-extern  boolean  loadedgame;
-extern  fixed    focallength;
-extern  int      viewscreenx, viewscreeny;
-extern  int      viewwidth;
-extern  int      viewheight;
-extern  short    centerx;
-extern  int32_t  heightnumerator;
-extern  fixed    scale;
-
-extern  int      dirangle[9];
-
-extern  int      mouseadjustment;
-extern  int      shootdelta;
-extern  unsigned screenofs;
-
-extern  boolean  startgame;
 extern  char     str[80];
 extern  char     configdir[256];
 extern  char     configname[13];
 
+extern  fixed    focallength;
+extern  u32 screenofs;
+extern  int      viewscreenx,viewscreeny;
+extern  int      viewwidth;
+extern  int      viewheight;
+extern  short    centerx,centery;
+extern  int      shootdelta;
+
+extern  int      dirangle[9];
+
+extern  boolean  startgame,loadedgame;
+#ifdef  VIEASM
+extern byte soundvol, musicvol;
+extern boolean reversestereo;
+
+extern boolean allowwindow;
+#endif
+extern  int      mouseadjustment;
 //
-// Command line parameter variables
+// derived constants
+//
+extern  s32  heightnumerator;
+extern  fixed    scale;
+
+//
+// command line parameter variables
 //
 extern  boolean  param_debugmode;
 extern  boolean  param_nowait;
@@ -892,15 +993,19 @@ extern  int      param_difficulty;
 extern  int      param_tedlevel;
 extern  int      param_joystickindex;
 extern  int      param_joystickhat;
+extern  longword param_samplerate;
+extern  int      param_audiobuffer;
 extern  int      param_mission;
 extern  boolean  param_goodtimes;
 extern  boolean  param_ignorenumchunks;
 
 
-void            NewGame (int difficulty,int episode);
+void            NewGame (int difficulty, int episode);
+void            CalcProjection (int32_t focal);
 void            NewViewSize (int width);
-boolean         LoadTheGame(FILE *file,int x,int y);
-boolean         SaveTheGame(FILE *file,int x,int y);
+boolean         SetViewSize (unsigned width, unsigned height);
+boolean         LoadTheGame (FILE *file, int x, int y);
+boolean         SaveTheGame (FILE *file, int x, int y);
 void            ShowViewSize (int width);
 void            ShutdownId (void);
 
@@ -913,34 +1018,37 @@ void            ShutdownId (void);
 =============================================================================
 */
 
-extern  gametype        gamestate;
-extern  byte            bordercol;
-extern  LR_Surface     latchpics[NUMLATCHPICS];
-extern  char            demoname[13];
+extern  gametype    gamestate;
+extern  byte        bordercol;
+
+extern  char        demoname[13];
+
+#ifdef SPEAR
+extern  s32     spearx,speary;
+extern  u32    spearangle;
+extern  boolean     spearflag;
+#endif
+
 
 void    SetupGameLevel (void);
-int    GameLoop (void);
+void    GameLoop (void);
 void    DrawPlayBorder (void);
 void    DrawStatusBorder (byte color);
 void    DrawPlayScreen (void);
 void    DrawPlayBorderSides (void);
-void    ShowActStatus();
+void    ShowActStatus (void);
 
 void    PlayDemo (int demonumber);
 void    RecordDemo (void);
 
+#define ClearMemory SD_StopDigitized
 
-#ifdef SPEAR
-extern  int32_t            spearx,speary;
-extern  unsigned        spearangle;
-extern  boolean         spearflag;
-#endif
 
 // JAB
-#define PlaySoundLocTile(s,tx,ty)       PlaySoundLocGlobal(s,(((int32_t)(tx) << TILESHIFT) + (1L << (TILESHIFT - 1))),(((int32_t)ty << TILESHIFT) + (1L << (TILESHIFT - 1))))
-#define PlaySoundLocActor(s,ob)         PlaySoundLocGlobal(s,(ob)->x,(ob)->y)
-void    PlaySoundLocGlobal(word s,fixed gx,fixed gy);
-void UpdateSoundLoc(void);
+#define PlaySoundLocTile(s,tx,ty) PlaySoundLocGlobal(s,(((fixed)(tx) << TILESHIFT) + (TILEGLOBAL/2)),(((fixed)ty << TILESHIFT) + (TILEGLOBAL/2)))
+#define PlaySoundLocActor(s,ob)   PlaySoundLocGlobal(s,(ob)->x,(ob)->y)
+void    PlaySoundLocGlobal (word s, fixed gx, fixed gy);
+void    UpdateSoundLoc (void);
 
 
 /*
@@ -951,43 +1059,43 @@ void UpdateSoundLoc(void);
 =============================================================================
 */
 
-#define BASEMOVE                35
-#define RUNMOVE                 70
-#define BASETURN                35
-#define RUNTURN                 70
+#define BASEMOVE    35
+#define RUNMOVE     70
+#define BASETURN    35
+#define RUNTURN     70
 
-#define JOYSCALE                2
+#define JOYSCALE    2
 
-extern  byte            tilemap[MAPSIZE][MAPSIZE];      // wall values only
-extern  byte            spotvis[MAPSIZE][MAPSIZE];
-extern  objtype         *actorat[MAPSIZE][MAPSIZE];
+#ifdef SPEAR
+extern  s32     funnyticount;           // FOR FUNNY BJ FACE
+#endif
 
-extern  objtype         *player;
-
-extern  unsigned        tics;
-extern  int             viewsize;
-
-extern  int             lastgamemusicoffset;
-
-//
-// current user input
-//
-extern  int         controlx,controly;              // range from -100 to 100
-extern  boolean     buttonstate[NUMBUTTONS];
-extern  objtype     objlist[MAXACTORS];
-extern  boolean     buttonheld[NUMBUTTONS];
 extern  exit_t      playstate;
-extern  boolean     madenoise;
-extern  statobj_t   statobjlist[MAXSTATS];
-extern  statobj_t   *laststatobj;
-extern  objtype     *newobj,*killerobj;
-extern  doorobj_t   doorobjlist[MAXDOORS];
-extern  doorobj_t   *lastdoorobj;
-extern  int         godmode;
 
-extern  boolean     demorecord,demoplayback;
-extern  int8_t      *demoptr, *lastdemoptr;
-extern  memptr      demobuffer;
+extern  int         DebugOk;
+
+extern  boolean     madenoise;
+
+extern  objtype     objlist[MAXACTORS];
+extern  objtype     *newobj,*player,*objfreelist,*killerobj;
+
+extern  tiletype    tilemap[MAPSIZE][MAPSIZE];      // wall values only
+extern  boolean        spotvis[MAPSIZE][MAPSIZE];
+extern  objtype     *actorat[MAPSIZE][MAPSIZE];
+#ifdef REVEALMAP
+extern  boolean        mapseen[MAPSIZE][MAPSIZE];
+#endif
+extern  boolean     singlestep,godmode,noclip,ammocheat,mapreveal;
+extern  int         extravbls;
+
+extern  word        mapwidth,mapheight;
+extern  u32    tics;
+extern  int         lastgamemusicoffset;
+
+
+#if SDL_MAJOR_VERSION == 2
+extern int gamecontrolstrafe;
+#endif
 
 //
 // control info
@@ -997,31 +1105,36 @@ extern  int         dirscan[4];
 extern  int         buttonscan[NUMBUTTONS];
 extern  int         buttonmouse[4];
 extern  int         buttonjoy[32];
+extern  boolean     buttonheld[NUMBUTTONS];
+
+extern  int         viewsize;
+
+//
+// current user input
+//
+extern  int         controlx,controly;              // range from -100 to 100
+extern  boolean     buttonstate[NUMBUTTONS];
+
+extern  boolean     demorecord,demoplayback;
+extern  s8 *demoptr, *lastdemoptr;
+extern  void        *demobuffer;
+
+
 
 void    InitActorList (void);
 void    GetNewActor (void);
 void    PlayLoop (void);
-
-void    CenterWindow(word w,word h);
-
+void    CenterWindow (word w, word h);
 void    InitRedShifts (void);
 void    FinishPaletteShifts (void);
-
 void    RemoveObj (objtype *gone);
 void    PollControls (void);
-int     StopMusic(void);
-void    StartMusic(void);
-void    ContinueMusic(int offs);
+int     StopMusic (void);
+void    StartMusic (void);
+void    ContinueMusic (int offs);
 void    StartDamageFlash (int damage);
 void    StartBonusFlash (void);
 
-#ifdef SPEAR
-extern  int32_t     funnyticount;           // FOR FUNNY BJ FACE
-#endif
-
-extern  objtype     *objfreelist;     // *obj,*player,*lastobj,
-
-extern  boolean     noclip,ammocheat;
 
 /*
 =============================================================================
@@ -1032,14 +1145,14 @@ extern  boolean     noclip,ammocheat;
 */
 
 void IntroScreen (void);
-void PG13(void);
-void DrawHighScores(void);
-void CheckHighScore (int32_t score,word other);
+void PG13 (void);
+void DrawHighScores (void);
+void CheckHighScore (s32 score, word other);
 void Victory (void);
 void LevelCompleted (void);
 void ClearSplitVWB (void);
 
-void PreloadGraphics(void);
+void PreloadGraphics (void);
 
 
 /*
@@ -1051,6 +1164,8 @@ void PreloadGraphics(void);
 */
 
 int DebugKeys (void);
+void ViewMap (void);
+
 
 /*
 =============================================================================
@@ -1060,34 +1175,65 @@ int DebugKeys (void);
 =============================================================================
 */
 
+extern  byte    *vbuf;
+
+extern  s32 lasttimecount;
+extern  s32 frameon;
+extern  boolean fizzlein,fpscounter;
+
+#if defined(USE_FLOORCEILINGTEX) || defined(USE_CLOUDSKY)
+extern  s16 *spanstart;
+#endif
+extern  s16 *wallheight;
+
 //
 // math tables
 //
-extern  short *pixelangle;
-extern  int32_t finetangent[FINEANGLES/4];
-extern  fixed sintable[];
-extern  fixed *costable;
-extern  int *wallheight;
-extern  word horizwall[],vertwall[];
-extern  int32_t    lasttimecount;
-extern  int32_t    frameon;
+extern  short   *pixelangle;
+extern  s32 finetangent[FINEANGLES/4];
+extern  fixed   sintable[ANGLES+ANGLES/4];
+extern  fixed   *costable;
 
-extern  unsigned screenloc[3];
-
-extern  boolean fizzlein, fpscounter;
-
+//
+// refresh variables
+//
 extern  fixed   viewx,viewy;                    // the focal point
 extern  fixed   viewsin,viewcos;
 
+extern  int     postx;
+extern  byte    *postsource;
+
+extern  short   midangle;
+
+extern  word    horizwall[MAXWALLTILES],vertwall[MAXWALLTILES];
+
+
+void    ScalePost (void);
 void    ThreeDRefresh (void);
 void    CalcTics (void);
+
+
+/*
+=============================================================================
+
+                             WL_SCALE DEFINITIONS
+
+=============================================================================
+*/
 
 typedef struct
 {
     word leftpix,rightpix;
     word dataofs[64];
 // table data after dataofs[rightpix-leftpix+1]
-} t_compshape;
+} compshape_t;
+
+
+void ScaleShape (int xcenter, int shapenum, int height, uint32_t flags);
+void SimpleScaleShape (int xcenter, int shapenum, int height);
+#ifdef USE_DIR3DSPR
+void Transform3DShape (statobj_t *statptr);
+#endif
 
 /*
 =============================================================================
@@ -1101,7 +1247,6 @@ typedef struct
 #define SPDDOG          1500
 
 
-void    InitHitRect (objtype *ob, unsigned radius);
 void    SpawnNewObj (unsigned tilex, unsigned tiley, statetype *state);
 void    NewState (objtype *ob, statetype *state);
 
@@ -1126,26 +1271,26 @@ boolean CheckSight (objtype *ob);
 =============================================================================
 */
 
-extern  short    anglefrac;
-extern  int      facecount, facetimes;
+//
+// player state info
+//
+extern  s32  thrustspeed;
 extern  word     plux,pluy;         // player coordinates scaled to unsigned
-extern  int32_t  thrustspeed;
 extern  objtype  *LastAttacker;
+
+extern  short    anglefrac;
+extern  int      facecount,facetimes;
 
 void    Thrust (int angle, int32_t speed);
 void    SpawnPlayer (int tilex, int tiley, int dir);
-void    TakeDamage (int points,objtype *attacker);
+void    TakeDamage (int points, objtype *attacker);
+void    GivePoints(int32_t points);
 void    GivePoints (int32_t points);
 void    GetBonus (statobj_t *check);
 void    GiveWeapon (int weapon);
 void    GiveAmmo (int ammo);
 void    GiveKey (int key);
-
-//
-// player state info
-//
-
-void    StatusDrawFace(unsigned picnum);
+void    StatusDrawFace (u32 picnum);
 void    DrawFace (void);
 void    DrawHealth (void);
 void    HealSelf (int points);
@@ -1166,9 +1311,12 @@ void    DrawAmmo (void);
 =============================================================================
 */
 
-extern  doorobj_t doorobjlist[MAXDOORS];
-extern  doorobj_t *lastdoorobj;
-extern  short     doornum;
+extern  statobj_t   statobjlist[MAXSTATS];
+extern  statobj_t   *laststatobj;
+
+extern  doorobj_t   doorobjlist[MAXDOORS];
+extern  doorobj_t   *lastdoorobj;
+extern  short       doornum;
 
 extern  word      doorposition[MAXDOORS];
 
@@ -1179,8 +1327,8 @@ extern  boolean   areabyplayer[NUMAREAS];
 extern word     pwallstate;
 extern word     pwallpos;        // amount a pushable wall has been moved (0-63)
 extern word     pwallx,pwally;
-extern byte     pwalldir,pwalltile;
-
+extern byte     pwalldir;
+extern tiletype pwalltile;
 
 void InitDoorList (void);
 void InitStaticList (void);
@@ -1267,7 +1415,6 @@ extern  statetype s_fatdeathcam2;
 
 void SpawnStand (enemy_t which, int tilex, int tiley, int dir);
 void SpawnPatrol (enemy_t which, int tilex, int tiley, int dir);
-void KillActor (objtype *ob);
 
 void SpawnDeadGuard (int tilex, int tiley);
 void SpawnBoss (int tilex, int tiley);
@@ -1298,9 +1445,28 @@ void SpawnBJVictory (void);
 
 extern  char    helpfilename[],endfilename[];
 
-extern  void    HelpScreens(void);
-extern  void    EndText(void);
+extern  void    HelpScreens (void);
+extern  void    EndText (void);
 
+
+/*
+=============================================================================
+
+                               GP2X DEFINITIONS
+
+=============================================================================
+*/
+
+#if defined(GP2X)
+
+#if defined(GP2X_940)
+void GP2X_MemoryInit (void);
+void GP2X_Shutdown (void);
+#endif
+void GP2X_ButtonDown (int button);
+void GP2X_ButtonUp (int button);
+
+#endif
 
 
 /*
@@ -1310,11 +1476,6 @@ extern  void    EndText(void);
 
 =============================================================================
 */
-
-static inline fixed FixedMul(fixed a, fixed b)
-{
-    return (fixed)(((int64_t)a * b + 0x8000) >> 16);
-}
 
 #ifdef PLAYDEMOLIKEORIGINAL
     #define DEMOCHOOSE_ORIG_SDL(orig, sdl) ((demorecord || demoplayback) ? (orig) : (sdl))
@@ -1327,48 +1488,81 @@ static inline fixed FixedMul(fixed a, fixed b)
 #endif
 #define DEMOCOND_SDL                   (!DEMOCOND_ORIG)
 
-#define GetTicks() ((LR_GetTicks()*7)/100)
+#define GetTicks() ((SDL_GetTicks()*7)/100)
 
 #define ISPOINTER(x) ((((uintptr_t)(x)) & ~0xffff) != 0)
 
-#define CHECKMALLOCRESULT(x) if(!(x)) Quit("Out of memory at %s:%i", __FILE__, __LINE__)
-
-// Mingw32 includes these definitions in string.h
-#ifndef __MINGW32__
-#ifdef _WIN32
+#if _WIN32
     #define strcasecmp stricmp
     #define strncasecmp strnicmp
     #define snprintf _snprintf
-#else
-    static inline char* itoa(int value, char* string, int radix)
-    {
-        sprintf(string, "%d", value);
-        return string;
-    }
-
+#elif defined (SWITCH) //|| defined (N3DS)
     static inline char* ltoa(long value, char* string, int radix)
     {
         sprintf(string, "%ld", value);
         return string;
     }
+#else	
+    static inline char* ltoa(long value, char* string, int radix)
+    {
+	    sprintf(string, "%ld", value);
+	    return string;
+    }
+    static inline char* itoa(int value, char* string, int radix)
+    {
+	    sprintf(string, "%d", value);
+	    return string;
+    }
+#endif
+
+/*
+=============================================================================
+
+                           FEATURE DEFINITIONS
+
+=============================================================================
+*/
+
+#ifdef USE_FEATUREFLAGS
+    // The currently available feature flags
+    #define FF_STARSKY      0x0001
+    #define FF_PARALLAXSKY  0x0002
+    #define FF_CLOUDSKY     0x0004
+    #define FF_RAIN         0x0010
+    #define FF_SNOW         0x0020
+
+    // The ffData... variables contain the 16-bit values of the according corners of the current level.
+    // The corners are overwritten with adjacent tiles after initialization in SetupGameLevel
+    // to avoid interpretation as e.g. doors.
+    extern int ffDataTopLeft, ffDataTopRight, ffDataBottomLeft, ffDataBottomRight;
+
+    /*************************************************************
+     * Current usage of ffData... variables:
+     * ffDataTopLeft:     lower 8-bit: ShadeDefID
+     * ffDataTopRight:    FeatureFlags
+     * ffDataBottomLeft:  CloudSkyDefID or ParallaxStartTexture
+     * ffDataBottomRight: high byte: ceiling texture - low byte: floor texture
+     *************************************************************/
+
+    // The feature flags are stored as a wall in the upper right corner of each level
+    static inline word GetFeatureFlags (void)
+    {
+        return ffDataTopRight;
+    }
+
+#endif
+
+#ifdef USE_FLOORCEILINGTEX
+    extern byte    *ceilingsource,*floorsource;
+
+    void DrawPlanes (void);
+#ifndef USE_MULTIFLATS
+    void GetFlatTextures (void);
 #endif
 #endif
 
-#define lengthof(x) (sizeof(x) / sizeof(*(x)))
-#define endof(x)    ((x) + lengthof(x))
-
-static inline word READWORD(byte **ptr)
-{
-    word val = (*ptr)[0] | (*ptr)[1] << 8;
-    (*ptr) += 2;
-    return val;
-}
-
-static inline longword READLONGWORD(byte **ptr)
-{
-    longword val = (*ptr)[0] | (*ptr)[1] << 8 | (*ptr)[2] << 16 | (*ptr)[3] << 24;
-    (*ptr) += 4;
-    return val;
-}
+#ifdef USE_PARALLAX
+    void DrawParallax (void);
+#endif
 
 #endif

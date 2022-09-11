@@ -5,6 +5,9 @@
 //
 //////////////////////////////////////
 
+#ifndef __GFXV_WL6_H_
+#define __GFXV_WL6_H_
+
 typedef enum {
     // Lump Start
     H_BJPIC=3,
@@ -164,17 +167,17 @@ typedef enum {
 //
 // Data LUMPs
 //
-#define README_LUMP_START       3
-#define README_LUMP_END         9
+#define README_LUMP_START		3
+#define README_LUMP_END			9
 
-#define CONTROLS_LUMP_START     10
-#define CONTROLS_LUMP_END       42
+#define CONTROLS_LUMP_START		10
+#define CONTROLS_LUMP_END		42
 
-#define LEVELEND_LUMP_START     43
-#define LEVELEND_LUMP_END       85
+#define LEVELEND_LUMP_START		43
+#define LEVELEND_LUMP_END		85
 
-#define LATCHPICS_LUMP_START    91
-#define LATCHPICS_LUMP_END      134
+#define LATCHPICS_LUMP_START	91
+#define LATCHPICS_LUMP_END		134
 
 
 //
@@ -186,7 +189,7 @@ typedef enum {
 #define NUMPICS      132
 #define NUMPICM      0
 #define NUMSPRITES   0
-#define NUMTILE8     72
+#define NUMTILE8     35
 #define NUMTILE8M    0
 #define NUMTILE16    0
 #define NUMTILE16M   0
@@ -214,3 +217,5 @@ typedef enum {
 //
 // Thank you for using IGRAB!
 //
+
+#endif

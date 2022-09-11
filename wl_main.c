@@ -7,6 +7,11 @@
 #endif
 
 #include "wl_def.h"
+#include "wl_atmos.h"
+#ifndef __APPLE__
+#include <SDL_syswm.h>
+#endif
+
 
 /*
 =============================================================================
@@ -37,15 +42,6 @@ extern byte signon[];
 #define VIEWWIDTH       256                     // size of view window
 #define VIEWHEIGHT      144
 
-enum 
-{
-   JE_NONE = 0,
-   JE_LOOP,
-   JE_LOOP2,
-   JE_RETURN,
-   JE_QUIT
-};
-
 /*
 =============================================================================
 
@@ -66,7 +62,7 @@ unsigned screenofs;
 int      viewscreenx, viewscreeny;
 int      viewwidth;
 int      viewheight;
-short    centerx;
+short    centerx,centery;
 int      shootdelta;           // pixels away from centerx a target can be
 fixed    scale;
 int32_t  heightnumerator;
@@ -77,8 +73,18 @@ void    Quit (const char *error,...);
 boolean startgame;
 boolean loadedgame;
 int     mouseadjustment;
-
+boolean     mousemoveenabled;
+#ifdef VIEASM
+byte    soundvol, musicvol;
+boolean reversestereo;
+#endif
+#if SWITCH
+char configdir[256] = "/switch/wolf4sdl/";
+#elif N3DS
+char configdir[256] = "/3ds/wolf4sdl/wolf3d";
+#else
 char    configdir[256] = "";
+#endif
 char    configname[13] = "config.";
 
 //
@@ -90,8 +96,27 @@ int     param_difficulty = 1;           // default is "normal"
 int     param_tedlevel = -1;            // default is not to start a level
 int     param_joystickindex = 0;
 
-
+#if defined(_arch_dreamcast)
+int     param_joystickhat = 0;
+longword     param_samplerate = 11025;       // higher samplerates result in "out of memory"
+int     param_audiobuffer = 1024;
+#elif defined(GP2X_940)
 int     param_joystickhat = -1;
+longword     param_samplerate = 11025;       // higher samplerates result in "out of memory"
+int     param_audiobuffer = 128;
+#elif defined(SWITCH)
+int     param_joystickhat = -1;
+longword     param_samplerate = 44100;
+int     param_audiobuffer = 2048 / 44100 / param_samplerate;
+#elif defined (N3DS)
+int     param_joystickhat = -1;
+longword     param_samplerate = 44100;
+int     param_audiobuffer = 0 / (44100 / param_samplerate);
+#else
+int     param_joystickhat = -1;
+longword     param_samplerate = 48000;
+int     param_audiobuffer = 2048;
+#endif
 
 int     param_mission = 0;
 boolean param_goodtimes = false;
@@ -105,13 +130,26 @@ boolean param_ignorenumchunks = false;
 =============================================================================
 */
 
-static void ReadConfig(void)
+
+/*
+====================
+=
+= ReadConfig
+=
+====================
+*/
+
+void ReadConfig(void)
 {
     SDMode  sd;
     SMMode  sm;
     SDSMode sds;
 
     char configpath[300];
+
+#ifdef _arch_dreamcast
+    DC_LoadFromVMU(configname);
+#endif
 
     if(configdir[0])
         snprintf(configpath, sizeof(configpath), "%s/%s", configdir, configname);
@@ -121,7 +159,9 @@ static void ReadConfig(void)
     const int file = open(configpath, O_RDONLY | O_BINARY);
     if (file != -1)
     {
-        /* valid config file */
+        //
+        // valid config file
+        //
         word tmp;
         read(file,&tmp,sizeof(tmp));
         if(tmp!=0xfefa)
@@ -151,26 +191,43 @@ static void ReadConfig(void)
 
         read(file,&viewsize,sizeof(viewsize));
         read(file,&mouseadjustment,sizeof(mouseadjustment));
+        read(file, &mousemoveenabled, sizeof(mousemoveenabled));
+        boolean dummyMouseMoveEnabled;
+        read(file, &dummyMouseMoveEnabled, sizeof(dummyMouseMoveEnabled));
+#ifdef VIEASM
+        read(file, &soundvol, sizeof(soundvol));
+        read(file, &musicvol, sizeof(musicvol));
+        read(file, &reversestereo, sizeof(reversestereo));
+#endif
 
         close(file);
 
-        if ((sd == SDM_ADLIB || sm == SMM_ADLIB) && !AdLibPresent
+        if ((sd == sdm_AdLib || sm == smm_AdLib) && !AdLibPresent
                 && !SoundBlasterPresent)
         {
-            sd = SDM_PC;
-            sm = SMM_OFF;
+            sd = sdm_PC;
+            sm = smm_Off;
         }
 
-        if ((sds == SDS_SOUNDBLASTER && !SoundBlasterPresent))
-            sds = SDS_OFF;
+        if ((sds == sds_SoundBlaster && !SoundBlasterPresent))
+            sds = sds_Off;
 
-        /* make sure values are correct */
+        // make sure values are correct
 
-        if(mouseenabled) mouseenabled=true;
-        if(joystickenabled) joystickenabled=true;
+        if(mouseenabled)
+        {
+            mouseenabled = true;
+        }
+
+        if(joystickenabled)
+        {
+            joystickenabled = true;
+        }
 
         if (!MousePresent)
+        {
             mouseenabled = false;
+        }
         if (!IN_JoyPresent())
             joystickenabled = false;
 
@@ -179,88 +236,125 @@ static void ReadConfig(void)
 
         if(viewsize<4) viewsize=4;
         else if(viewsize>21) viewsize=21;
-
+#ifdef VIEASM
+        if (soundvol > 100) soundvol = 100;
+        if (musicvol > 100) musicvol = 100;
+#endif
         MainMenu[6].active=1;
         MainItems.curpos=0;
     }
     else
     {
-        /* no config file, so select by hardware */
+        //
+        // no config file, so select by hardware
+        //
 noconfig:
         if (SoundBlasterPresent || AdLibPresent)
         {
-            sd = SDM_ADLIB;
-            sm = SMM_ADLIB;
+            sd = sdm_AdLib;
+            sm = smm_AdLib;
         }
         else
         {
-            sd = SDM_PC;
-            sm = SMM_OFF;
+            sd = sdm_PC;
+            sm = smm_Off;
         }
 
         if (SoundBlasterPresent)
-            sds = SDS_SOUNDBLASTER;
+            sds = sds_SoundBlaster;
         else
-            sds = SDS_OFF;
+            sds = sds_Off;
 
         if (MousePresent)
+        {
             mouseenabled = true;
 
+        }
         if (IN_JoyPresent())
             joystickenabled = true;
 
-        viewsize = 19;                          /* start with a good size */
+        viewsize = 19;                          // start with a good size
         mouseadjustment=5;
+#ifdef VIEASM
+        soundvol = 100;
+        musicvol = 100;
+        reversestereo = false;
+#endif
     }
 
     SD_SetMusicMode (sm);
     SD_SetSoundMode (sd);
     SD_SetDigiDevice (sds);
+#ifdef VIEASM
+    SD_ChangeVolume((byte)(soundvol * 1.28), (byte)(musicvol * 1.28));
+    SD_Reverse(reversestereo);
+#endif
 }
 
-static void WriteConfig(void)
+/*
+====================
+=
+= WriteConfig
+=
+====================
+*/
+
+void WriteConfig(void)
 {
-   int file;
-   char configpath[300];
-   int dummyJoystickPort = 0;
-   word tmp = 0xfefa;
+    char configpath[300];
 
-   if(configdir[0])
-      snprintf(configpath, sizeof(configpath), "%s/%s", configdir, configname);
-   else
-      strcpy(configpath, configname);
+#ifdef _arch_dreamcast
+    fs_unlink(configname);
+#endif
 
-   file = open(configpath, O_CREAT | O_WRONLY | O_BINARY, 0644);
+    if(configdir[0])
+        snprintf(configpath, sizeof(configpath), "%s/%s", configdir, configname);
+    else
+        strcpy(configpath, configname);
 
-   if (file == -1)
-      return;
+    const int file = open(configpath, O_CREAT | O_WRONLY | O_BINARY, 0644);
+    if (file != -1)
+    {
+        word tmp=0xfefa;
+        write(file,&tmp,sizeof(tmp));
+        write(file,Scores,sizeof(HighScore) * MaxScores);
 
-   write(file,&tmp,sizeof(tmp));
-   write(file,Scores,sizeof(HighScore) * MaxScores);
+        write(file,&SoundMode,sizeof(SoundMode));
+        write(file,&MusicMode,sizeof(MusicMode));
+        write(file,&DigiMode,sizeof(DigiMode));
 
-   write(file,&SoundMode,sizeof(SoundMode));
-   write(file,&MusicMode,sizeof(MusicMode));
-   write(file,&DigiMode,sizeof(DigiMode));
+        write(file,&mouseenabled,sizeof(mouseenabled));
+        write(file,&joystickenabled,sizeof(joystickenabled));
+        boolean dummyJoypadEnabled = false;
+        write(file,&dummyJoypadEnabled,sizeof(dummyJoypadEnabled));
+        boolean dummyJoystickProgressive = false;
+        write(file,&dummyJoystickProgressive,sizeof(dummyJoystickProgressive));
+        int dummyJoystickPort = 0;
+        write(file,&dummyJoystickPort,sizeof(dummyJoystickPort));
 
-   write(file,&mouseenabled,sizeof(mouseenabled));
-   write(file,&joystickenabled,sizeof(joystickenabled));
-   boolean dummyJoypadEnabled = false;
-   write(file,&dummyJoypadEnabled,sizeof(dummyJoypadEnabled));
-   boolean dummyJoystickProgressive = false;
-   write(file,&dummyJoystickProgressive,sizeof(dummyJoystickProgressive));
-   write(file,&dummyJoystickPort,sizeof(dummyJoystickPort));
+        write(file,dirscan,sizeof(dirscan));
+        write(file,buttonscan,sizeof(buttonscan));
+        write(file,buttonmouse,sizeof(buttonmouse));
+        write(file,buttonjoy,sizeof(buttonjoy));
 
-   write(file,dirscan,sizeof(dirscan));
-   write(file,buttonscan,sizeof(buttonscan));
-   write(file,buttonmouse,sizeof(buttonmouse));
-   write(file,buttonjoy,sizeof(buttonjoy));
+        write(file,&viewsize,sizeof(viewsize));
+        write(file,&mouseadjustment,sizeof(mouseadjustment));
 
-   write(file,&viewsize,sizeof(viewsize));
-   write(file,&mouseadjustment,sizeof(mouseadjustment));
+#ifdef VIEASM
+        write(file, &soundvol, sizeof(soundvol));
+        write(file, &musicvol, sizeof(musicvol));
+        write(file, &reversestereo, sizeof(reversestereo));
+#endif
 
-   close(file);
+        close(file);
+    }
+#ifdef _arch_dreamcast
+    DC_SaveToVMU(configname, NULL);
+#endif
 }
 
+
+//===========================================================================
 
 /*
 =====================
@@ -272,7 +366,7 @@ static void WriteConfig(void)
 =====================
 */
 
-void NewGame (int difficulty, int episode)
+void NewGame (int difficulty,int episode)
 {
     memset (&gamestate,0,sizeof(gamestate));
     gamestate.difficulty = difficulty;
@@ -289,25 +383,25 @@ void NewGame (int difficulty, int episode)
 
 //===========================================================================
 
-static void DiskFlopAnim(int x,int y)
+void DiskFlopAnim(int x,int y)
 {
-   static int8_t which=0;
-   if (!x && !y)
-      return;
-   VWB_DrawPic(x,y,C_DISKLOADING1PIC+which);
-   VW_UpdateScreen();
-   which^=1;
+    static int8_t which=0;
+    if (!x && !y)
+        return;
+    VWB_DrawPic(x,y,C_DISKLOADING1PIC+which);
+    if (!usedoublebuffering) VW_UpdateScreen();    // ADDEDFIX 4 - Chris
+    which^=1;
 }
 
 
-static int32_t DoChecksum(byte *source,unsigned size,int32_t checksum)
+int32_t DoChecksum(byte *source,unsigned size,int32_t checksum)
 {
-   unsigned i;
+    unsigned i;
 
-   for (i = 0;i < size - 1; i++)
-      checksum += source[i] ^ source[i+1];
+    for (i=0;i<size-1;i++)
+    checksum += source[i]^source[i+1];
 
-   return checksum;
+    return checksum;
 }
 
 
@@ -324,106 +418,113 @@ extern statetype s_player;
 
 boolean SaveTheGame(FILE *file,int x,int y)
 {
-   objtype *ob;
-   objtype nullobj;
-   statobj_t nullstat;
-   unsigned i, j;
-   int checksum = 0;
+    int i,j;
+    int checksum;
+    word actnum,laststatobjnum;
+    objtype *ob;
+    objtype nullobj;
+    statobj_t nullstat;
 
-   DiskFlopAnim(x,y);
-   fwrite(&gamestate,sizeof(gamestate),1,file);
-   checksum = DoChecksum((byte *)&gamestate,sizeof(gamestate),checksum);
+    checksum = 0;
 
-   DiskFlopAnim(x,y);
-   fwrite(&LevelRatios[0],sizeof(LRstruct)*LRpack,1,file);
-   checksum = DoChecksum((byte *)&LevelRatios[0],sizeof(LRstruct)*LRpack,checksum);
+    DiskFlopAnim(x,y);
+    fwrite(&gamestate,sizeof(gamestate),1,file);
+    checksum = DoChecksum((byte *)&gamestate,sizeof(gamestate),checksum);
 
-   DiskFlopAnim(x,y);
-   fwrite(tilemap,sizeof(tilemap),1,file);
-   checksum = DoChecksum((byte *)tilemap,sizeof(tilemap),checksum);
-   DiskFlopAnim(x,y);
+    DiskFlopAnim(x,y);
+    fwrite(&LevelRatios[0],sizeof(LRstruct)*LRpack,1,file);
+    checksum = DoChecksum((byte *)&LevelRatios[0],sizeof(LRstruct)*LRpack,checksum);
 
-   for(i = 0; i < MAPSIZE; i++)
-   {
-      for(j = 0; j < MAPSIZE; j++)
-      {
-         word actnum;
-         objtype *objptr=actorat[i][j];
-         if(ISPOINTER(objptr))
-            actnum=0x8000 | (word)(objptr-objlist);
-         else
-            actnum=(word)(uintptr_t)objptr;
-         fwrite(&actnum,sizeof(actnum),1,file);
-         checksum = DoChecksum((byte *)&actnum,sizeof(actnum),checksum);
-      }
-   }
+    DiskFlopAnim(x,y);
+    fwrite(tilemap,sizeof(tilemap),1,file);
+    checksum = DoChecksum((byte *)tilemap,sizeof(tilemap),checksum);
+#ifdef REVEALMAP
+    DiskFlopAnim(x,y);
+    fwrite(mapseen,sizeof(mapseen),1,file);
+    checksum = DoChecksum((byte *)mapseen,sizeof(mapseen),checksum);
+#endif
+    DiskFlopAnim(x,y);
 
-   fwrite (areaconnect,sizeof(areaconnect),1,file);
-   fwrite (areabyplayer,sizeof(areabyplayer),1,file);
+    for(i=0;i<mapwidth;i++)
+    {
+        for(j=0;j<mapheight;j++)
+        {
+            ob=actorat[i][j];
+            if(ISPOINTER(ob))
+                actnum=0x8000 | (word)(ob-objlist);
+            else
+                actnum=(word)(uintptr_t)ob;
+            fwrite(&actnum,sizeof(actnum),1,file);
+            checksum = DoChecksum((byte *)&actnum,sizeof(actnum),checksum);
+        }
+    }
 
-   // player object needs special treatment as it's in WL_AGENT.CPP and not in
-   // WL_ACT2.CPP which could cause problems for the relative addressing
+    fwrite (areaconnect,sizeof(areaconnect),1,file);
+    fwrite (areabyplayer,sizeof(areabyplayer),1,file);
 
-   ob = player;
-   DiskFlopAnim(x,y);
-   memcpy(&nullobj,ob,sizeof(nullobj));
-   nullobj.state=(statetype *) ((uintptr_t)nullobj.state-(uintptr_t)&s_player);
-   fwrite(&nullobj,sizeof(nullobj),1,file);
-   ob = ob->next;
+    // player object needs special treatment as it's in WL_AGENT.CPP and not in
+    // WL_ACT2.CPP which could cause problems for the relative addressing
 
-   DiskFlopAnim(x,y);
-   for (; ob ; ob=ob->next)
-   {
-      memcpy(&nullobj,ob,sizeof(nullobj));
-      nullobj.state=(statetype *) ((uintptr_t)nullobj.state-(uintptr_t)&s_grdstand);
-      fwrite(&nullobj,sizeof(nullobj),1,file);
-   }
-   nullobj.active = ac_badobject;          // end of file marker
-   DiskFlopAnim(x,y);
-   fwrite(&nullobj,sizeof(nullobj),1,file);
+    ob = player;
+    DiskFlopAnim(x,y);
+    memcpy(&nullobj,ob,sizeof(nullobj));
+    nullobj.state=(statetype *) ((uintptr_t)nullobj.state-(uintptr_t)&s_player);
+    fwrite(&nullobj,sizeof(nullobj),1,file);
 
-   DiskFlopAnim(x,y);
-   word laststatobjnum=(word) (laststatobj-statobjlist);
-   fwrite(&laststatobjnum,sizeof(laststatobjnum),1,file);
-   checksum = DoChecksum((byte *)&laststatobjnum,sizeof(laststatobjnum),checksum);
+    DiskFlopAnim(x,y);
+    for (ob = ob->next; ob; ob=ob->next)
+    {
+        memcpy(&nullobj,ob,sizeof(nullobj));
+        nullobj.state=(statetype *) ((uintptr_t)nullobj.state-(uintptr_t)&s_grdstand);
+        fwrite(&nullobj,sizeof(nullobj),1,file);
+    }
+    nullobj.active = ac_badobject;          // end of file marker
+    DiskFlopAnim(x,y);
+    fwrite(&nullobj,sizeof(nullobj),1,file);
 
-   DiskFlopAnim(x,y);
+    DiskFlopAnim(x,y);
+    laststatobjnum=(word) (laststatobj-statobjlist);
+    fwrite(&laststatobjnum,sizeof(laststatobjnum),1,file);
+    checksum = DoChecksum((byte *)&laststatobjnum,sizeof(laststatobjnum),checksum);
 
-   for(i = 0; i < MAXSTATS; i++)
-   {
-      memcpy(&nullstat,statobjlist+i,sizeof(nullstat));
-      nullstat.visspot=(byte *) ((uintptr_t) nullstat.visspot-(uintptr_t)spotvis);
-      fwrite(&nullstat,sizeof(nullstat),1,file);
-      checksum = DoChecksum((byte *)&nullstat,sizeof(nullstat),checksum);
-   }
+    DiskFlopAnim(x,y);
+    for(i=0;i<MAXSTATS;i++)
+    {
+        memcpy(&nullstat,statobjlist+i,sizeof(nullstat));
+        nullstat.visspot=(byte *) ((uintptr_t) nullstat.visspot-(uintptr_t)spotvis);
+        fwrite(&nullstat,sizeof(nullstat),1,file);
+        checksum = DoChecksum((byte *)&nullstat,sizeof(nullstat),checksum);
+    }
 
-   DiskFlopAnim(x,y);
-   fwrite (doorposition,sizeof(doorposition),1,file);
-   checksum = DoChecksum((byte *)doorposition,sizeof(doorposition),checksum);
-   DiskFlopAnim(x,y);
-   fwrite (doorobjlist,sizeof(doorobjlist),1,file);
-   checksum = DoChecksum((byte *)doorobjlist,sizeof(doorobjlist),checksum);
+    DiskFlopAnim(x,y);
+    fwrite (doorposition,sizeof(doorposition),1,file);
+    checksum = DoChecksum((byte *)doorposition,sizeof(doorposition),checksum);
+    DiskFlopAnim(x,y);
+    fwrite (doorobjlist,sizeof(doorobjlist),1,file);
+    checksum = DoChecksum((byte *)doorobjlist,sizeof(doorobjlist),checksum);
 
-   DiskFlopAnim(x,y);
-   fwrite (&pwallstate,sizeof(pwallstate),1,file);
-   checksum = DoChecksum((byte *)&pwallstate,sizeof(pwallstate),checksum);
-   fwrite (&pwalltile,sizeof(pwalltile),1,file);
-   checksum = DoChecksum((byte *)&pwalltile,sizeof(pwalltile),checksum);
-   fwrite (&pwallx,sizeof(pwallx),1,file);
-   checksum = DoChecksum((byte *)&pwallx,sizeof(pwallx),checksum);
-   fwrite (&pwally,sizeof(pwally),1,file);
-   checksum = DoChecksum((byte *)&pwally,sizeof(pwally),checksum);
-   fwrite (&pwalldir,sizeof(pwalldir),1,file);
-   checksum = DoChecksum((byte *)&pwalldir,sizeof(pwalldir),checksum);
-   fwrite (&pwallpos,sizeof(pwallpos),1,file);
-   checksum = DoChecksum((byte *)&pwallpos,sizeof(pwallpos),checksum);
+    DiskFlopAnim(x,y);
+    fwrite (&pwallstate,sizeof(pwallstate),1,file);
+    checksum = DoChecksum((byte *)&pwallstate,sizeof(pwallstate),checksum);
+    fwrite (&pwalltile,sizeof(pwalltile),1,file);
+    checksum = DoChecksum((byte *)&pwalltile,sizeof(pwalltile),checksum);
+    fwrite (&pwallx,sizeof(pwallx),1,file);
+    checksum = DoChecksum((byte *)&pwallx,sizeof(pwallx),checksum);
+    fwrite (&pwally,sizeof(pwally),1,file);
+    checksum = DoChecksum((byte *)&pwally,sizeof(pwally),checksum);
+    fwrite (&pwalldir,sizeof(pwalldir),1,file);
+    checksum = DoChecksum((byte *)&pwalldir,sizeof(pwalldir),checksum);
+    fwrite (&pwallpos,sizeof(pwallpos),1,file);
+    checksum = DoChecksum((byte *)&pwallpos,sizeof(pwallpos),checksum);
 
-   /* WRITE OUT CHECKSUM */
-   fwrite (&checksum,sizeof(checksum),1,file);
+    //
+    // WRITE OUT CHECKSUM
+    //
+    fwrite (&checksum,sizeof(checksum),1,file);
 
-   fwrite (&lastgamemusicoffset,sizeof(lastgamemusicoffset),1,file);
+    fwrite (&lastgamemusicoffset,sizeof(lastgamemusicoffset),1,file);
 
-   return(true);
+    return(true);
 }
 
 //===========================================================================
@@ -438,155 +539,159 @@ boolean SaveTheGame(FILE *file,int x,int y)
 
 boolean LoadTheGame(FILE *file,int x,int y)
 {
-   int32_t oldchecksum;
-   objtype nullobj;
-   statobj_t nullstat;
-   int actnum=0, i, j;
-   int32_t checksum = 0;
+    int i,j;
+    int actnum = 0;
+    word laststatobjnum;
+    int32_t checksum,oldchecksum;
+    objtype nullobj;
+    statobj_t nullstat;
 
-   DiskFlopAnim(x,y);
-   fread (&gamestate,sizeof(gamestate),1,file);
-   checksum = DoChecksum((byte *)&gamestate,sizeof(gamestate),checksum);
+    checksum = 0;
 
-   DiskFlopAnim(x,y);
-   fread (&LevelRatios[0],sizeof(LRstruct)*LRpack,1,file);
-   checksum = DoChecksum((byte *)&LevelRatios[0],sizeof(LRstruct)*LRpack,checksum);
+    DiskFlopAnim(x,y);
+    fread (&gamestate,sizeof(gamestate),1,file);
+    checksum = DoChecksum((byte *)&gamestate,sizeof(gamestate),checksum);
 
-   DiskFlopAnim(x,y);
-   SetupGameLevel ();
+    DiskFlopAnim(x,y);
+    fread (&LevelRatios[0],sizeof(LRstruct)*LRpack,1,file);
+    checksum = DoChecksum((byte *)&LevelRatios[0],sizeof(LRstruct)*LRpack,checksum);
 
-   DiskFlopAnim(x,y);
-   fread (tilemap,sizeof(tilemap),1,file);
-   checksum = DoChecksum((byte *)tilemap,sizeof(tilemap),checksum);
+    DiskFlopAnim(x,y);
+    SetupGameLevel ();
 
-   DiskFlopAnim(x,y);
+    DiskFlopAnim(x,y);
+    fread (tilemap,sizeof(tilemap),1,file);
+    checksum = DoChecksum((byte *)tilemap,sizeof(tilemap),checksum);
+#ifdef REVEALMAP
+    DiskFlopAnim(x,y);
+    fread (mapseen,sizeof(mapseen),1,file);
+    checksum = DoChecksum((byte *)mapseen,sizeof(mapseen),checksum);
+#endif
+    DiskFlopAnim(x,y);
 
-   for(i=0;i<MAPSIZE;i++)
-   {
-      for(j=0;j<MAPSIZE;j++)
-      {
-         fread (&actnum,sizeof(word),1,file);
-         checksum = DoChecksum((byte *) &actnum,sizeof(word),checksum);
-         if(actnum&0x8000)
-            actorat[i][j]=objlist+(actnum&0x7fff);
-         else
-            actorat[i][j]=(objtype *)(uintptr_t) actnum;
-      }
-   }
+    for(i=0;i<mapwidth;i++)
+    {
+        for(j=0;j<mapheight;j++)
+        {
+            fread (&actnum,sizeof(word),1,file);
+            checksum = DoChecksum((byte *) &actnum,sizeof(word),checksum);
+            if(actnum&0x8000)
+                actorat[i][j]=objlist+(actnum&0x7fff);
+            else
+                actorat[i][j]=(objtype *)(uintptr_t) actnum;
+        }
+    }
 
-   fread (areaconnect,sizeof(areaconnect),1,file);
-   fread (areabyplayer,sizeof(areabyplayer),1,file);
+    fread (areaconnect,sizeof(areaconnect),1,file);
+    fread (areabyplayer,sizeof(areabyplayer),1,file);
 
-   InitActorList ();
-   DiskFlopAnim(x,y);
-   fread (player,sizeof(*player),1,file);
-   player->state=(statetype *) ((uintptr_t)player->state+(uintptr_t)&s_player);
+    InitActorList ();
+    DiskFlopAnim(x,y);
+    fread (player,sizeof(*player),1,file);
+    player->state=(statetype *) ((uintptr_t)player->state+(uintptr_t)&s_player);
 
-   /* Load all actors ? */
-   while (1)
-   {
-      DiskFlopAnim(x,y);
-      fread (&nullobj,sizeof(nullobj),1,file);
-      if (nullobj.active == ac_badobject)
-         break;
-      GetNewActor ();
-      nullobj.state=(statetype *) ((uintptr_t)nullobj.state+(uintptr_t)&s_grdstand);
+    while (1)
+    {
+        DiskFlopAnim(x,y);
+        fread (&nullobj,sizeof(nullobj),1,file);
+        if (nullobj.active == ac_badobject)
+            break;
+        GetNewActor ();
+        nullobj.state=(statetype *) ((uintptr_t)nullobj.state+(uintptr_t)&s_grdstand);
+        // don't copy over the links
+        memcpy (newobj,&nullobj,sizeof(nullobj)-8);
+    }
 
-      /* don't copy over the links */
-      memcpy (newobj,&nullobj,sizeof(nullobj)-8);
-   }
+    DiskFlopAnim(x,y);
+    fread (&laststatobjnum,sizeof(laststatobjnum),1,file);
+    laststatobj=statobjlist+laststatobjnum;
+    checksum = DoChecksum((byte *)&laststatobjnum,sizeof(laststatobjnum),checksum);
 
-   DiskFlopAnim(x,y);
-   word laststatobjnum;
-   fread (&laststatobjnum,sizeof(laststatobjnum),1,file);
-   laststatobj=statobjlist+laststatobjnum;
-   checksum = DoChecksum((byte *)&laststatobjnum,sizeof(laststatobjnum),checksum);
+    DiskFlopAnim(x,y);
+    for(i=0;i<MAXSTATS;i++)
+    {
+        fread(&nullstat,sizeof(nullstat),1,file);
+        checksum = DoChecksum((byte *)&nullstat,sizeof(nullstat),checksum);
+        nullstat.visspot=(byte *) ((uintptr_t)nullstat.visspot+(uintptr_t)spotvis);
+        memcpy(statobjlist+i,&nullstat,sizeof(nullstat));
+    }
 
-   DiskFlopAnim(x,y);
-   for(i=0;i<MAXSTATS;i++)
-   {
-      fread(&nullstat,sizeof(nullstat),1,file);
-      checksum = DoChecksum((byte *)&nullstat,sizeof(nullstat),checksum);
-      nullstat.visspot=(byte *) ((uintptr_t)nullstat.visspot+(uintptr_t)spotvis);
-      memcpy(statobjlist+i,&nullstat,sizeof(nullstat));
-   }
+    DiskFlopAnim(x,y);
+    fread (doorposition,sizeof(doorposition),1,file);
+    checksum = DoChecksum((byte *)doorposition,sizeof(doorposition),checksum);
+    DiskFlopAnim(x,y);
+    fread (doorobjlist,sizeof(doorobjlist),1,file);
+    checksum = DoChecksum((byte *)doorobjlist,sizeof(doorobjlist),checksum);
 
-   DiskFlopAnim(x,y);
-   fread (doorposition,sizeof(doorposition),1,file);
-   checksum = DoChecksum((byte *)doorposition,sizeof(doorposition),checksum);
-   DiskFlopAnim(x,y);
-   fread (doorobjlist,sizeof(doorobjlist),1,file);
-   checksum = DoChecksum((byte *)doorobjlist,sizeof(doorobjlist),checksum);
+    DiskFlopAnim(x,y);
+    fread (&pwallstate,sizeof(pwallstate),1,file);
+    checksum = DoChecksum((byte *)&pwallstate,sizeof(pwallstate),checksum);
+    fread (&pwalltile,sizeof(pwalltile),1,file);
+    checksum = DoChecksum((byte *)&pwalltile,sizeof(pwalltile),checksum);
+    fread (&pwallx,sizeof(pwallx),1,file);
+    checksum = DoChecksum((byte *)&pwallx,sizeof(pwallx),checksum);
+    fread (&pwally,sizeof(pwally),1,file);
+    checksum = DoChecksum((byte *)&pwally,sizeof(pwally),checksum);
+    fread (&pwalldir,sizeof(pwalldir),1,file);
+    checksum = DoChecksum((byte *)&pwalldir,sizeof(pwalldir),checksum);
+    fread (&pwallpos,sizeof(pwallpos),1,file);
+    checksum = DoChecksum((byte *)&pwallpos,sizeof(pwallpos),checksum);
 
-   DiskFlopAnim(x,y);
-   fread (&pwallstate,sizeof(pwallstate),1,file);
-   checksum = DoChecksum((byte *)&pwallstate,sizeof(pwallstate),checksum);
-   fread (&pwalltile,sizeof(pwalltile),1,file);
-   checksum = DoChecksum((byte *)&pwalltile,sizeof(pwalltile),checksum);
-   fread (&pwallx,sizeof(pwallx),1,file);
-   checksum = DoChecksum((byte *)&pwallx,sizeof(pwallx),checksum);
-   fread (&pwally,sizeof(pwally),1,file);
-   checksum = DoChecksum((byte *)&pwally,sizeof(pwally),checksum);
-   fread (&pwalldir,sizeof(pwalldir),1,file);
-   checksum = DoChecksum((byte *)&pwalldir,sizeof(pwalldir),checksum);
-   fread (&pwallpos,sizeof(pwallpos),1,file);
-   checksum = DoChecksum((byte *)&pwallpos,sizeof(pwallpos),checksum);
-
-   /* assign valid floorcodes under moved pushwalls */
-   if (gamestate.secretcount)
-   {
-      word *map, *obj; word tile, sprite;
-      map = mapsegs[0]; obj = mapsegs[1];
-      for (y=0;y<mapheight;y++)
-         for (x=0;x<mapwidth;x++)
-         {
-            tile = *map++; sprite = *obj++;
-            if (sprite == PUSHABLETILE && !tilemap[x][y]
-                  && (tile < AREATILE || tile >= (AREATILE+NUMMAPS)))
+    if (gamestate.secretcount)      // assign valid floorcodes under moved pushwalls
+    {
+        word *map, *obj; word tile, sprite;
+        map = mapsegs[0]; obj = mapsegs[1];
+        for (y=0;y<mapheight;y++)
+            for (x=0;x<mapwidth;x++)
             {
-               if (*map >= AREATILE)
-                  tile = *map;
-               if (*(map-1-mapwidth) >= AREATILE)
-                  tile = *(map-1-mapwidth);
-               if (*(map-1+mapwidth) >= AREATILE)
-                  tile = *(map-1+mapwidth);
-               if ( *(map-2) >= AREATILE)
-                  tile = *(map-2);
+                tile = *map++; sprite = *obj++;
+                if (sprite == PUSHABLETILE && !tilemap[x][y]
+                    && (tile < AREATILE || tile >= (AREATILE+NUMAREAS)))
+                {
+                    if (*map >= AREATILE)
+                        tile = *map;
+                    if (*(map-1-mapwidth) >= AREATILE)
+                        tile = *(map-1-mapwidth);
+                    if (*(map-1+mapwidth) >= AREATILE)
+                        tile = *(map-1+mapwidth);
+                    if ( *(map-2) >= AREATILE)
+                        tile = *(map-2);
 
-               *(map-1) = tile; *(obj-1) = 0;
+                    *(map-1) = tile; *(obj-1) = 0;
+                }
             }
-         }
-   }
+    }
 
-   /* set player->areanumber to the floortile you're standing on */
-   Thrust(0,0);
+    Thrust(0,0);    // set player->areanumber to the floortile you're standing on
 
-   fread (&oldchecksum,sizeof(oldchecksum),1,file);
+    fread (&oldchecksum,sizeof(oldchecksum),1,file);
 
-   fread (&lastgamemusicoffset,sizeof(lastgamemusicoffset),1,file);
-   if(lastgamemusicoffset<0)
-      lastgamemusicoffset=0;
+    fread (&lastgamemusicoffset,sizeof(lastgamemusicoffset),1,file);
+    if(lastgamemusicoffset<0) lastgamemusicoffset=0;
 
-   if (oldchecksum != checksum)
-   {
-      Message(STR_SAVECHT1"\n"
-            STR_SAVECHT2"\n"
-            STR_SAVECHT3"\n"
-            STR_SAVECHT4);
 
-      IN_ClearKeysDown();
-      IN_Ack();
+    if (oldchecksum != checksum)
+    {
+        Message(STR_SAVECHT1"\n"
+                STR_SAVECHT2"\n"
+                STR_SAVECHT3"\n"
+                STR_SAVECHT4);
 
-      gamestate.oldscore = gamestate.score = 0;
-      gamestate.lives = 1;
-      gamestate.weapon =
-         gamestate.chosenweapon =
-         gamestate.bestweapon = wp_pistol;
-      gamestate.ammo = 8;
-   }
+        IN_ClearKeysDown();
+        IN_Ack();
 
-   return true;
+        gamestate.oldscore = gamestate.score = 0;
+        gamestate.lives = 1;
+        gamestate.weapon =
+            gamestate.chosenweapon =
+            gamestate.bestweapon = wp_pistol;
+        gamestate.ammo = 8;
+    }
+
+    return true;
 }
+
+//===========================================================================
 
 /*
 ==========================
@@ -600,14 +705,19 @@ boolean LoadTheGame(FILE *file,int x,int y)
 
 void ShutdownId (void)
 {
-    US_Shutdown ();
+    US_Shutdown ();         // This line is completely useless...
     SD_Shutdown ();
     PM_Shutdown ();
     IN_Shutdown ();
     VW_Shutdown ();
     CA_Shutdown ();
+#if defined(GP2X_940)
+    GP2X_Shutdown();
+#endif
 }
 
+
+//===========================================================================
 
 /*
 ==================
@@ -622,41 +732,58 @@ void ShutdownId (void)
 ==================
 */
 
-const float radtoint = (float)(FINEANGLES / 2 / M_PI);
+const float radtoint = (float)(FINEANGLES/2/PI);
 
-static void BuildTables (void)
+void BuildTables (void)
 {
-   int i;
-   float anglestep;
-   float angle=0;
+    //
+    // calculate fine tangents
+    //
 
-   /* calculate fine tangents */
-   for(i = 0; i < FINEANGLES / 8; i++)
-   {
-      double    tang                = tan((i+0.5)/radtoint);
-      finetangent[i]                = (int32_t)(tang*GLOBAL1);
-      finetangent[FINEANGLES/4-1-i] = (int32_t)((1/tang)*GLOBAL1);
-   }
+    int i;
+    for(i=0;i<FINEANGLES/8;i++)
+    {
+        double tang=tan((i+0.5)/radtoint);
+        finetangent[i]=(int32_t)(tang*GLOBAL1);
+        finetangent[FINEANGLES/4-1-i]=(int32_t)((1/tang)*GLOBAL1);
+    }
 
-   /* costable overlays sintable with a quarter phase shift
-    * ANGLES is assumed to be divisable by four. */
-   anglestep = (float)(M_PI / 2 / ANGLEQUAD);
+    //
+    // costable overlays sintable with a quarter phase shift
+    // ANGLES is assumed to be divisable by four
+    //
 
-   for(i = 0; i < ANGLEQUAD; i++)
-   {
-      fixed value         = (int32_t)(GLOBAL1*sin(angle));
-      sintable[i]         = sintable[i+ANGLES]=sintable[ANGLES/2-i]=value;
-      sintable[ANGLES-i]  = sintable[ANGLES/2+i]=-value;
-      angle              += anglestep;
-   }
+    float angle=0;
+    float anglestep=(float)(PI/2/ANGLEQUAD);
+    for(i=0; i<ANGLEQUAD; i++)
+    {
+        fixed value=(int32_t)(GLOBAL1*sin(angle));
+        sintable[i]=sintable[i+ANGLES]=sintable[ANGLES/2-i]=value;
+        sintable[ANGLES-i]=sintable[ANGLES/2+i]=-value;
+        angle+=anglestep;
+    }
+    sintable[ANGLEQUAD] = 65536;
+    sintable[3*ANGLEQUAD] = -65536;
 
-   sintable[ANGLEQUAD]     =  65536;
-   sintable[3 * ANGLEQUAD] = -65536;
+#if defined(USE_STARSKY) || defined(USE_RAIN) || defined(USE_SNOW)
+    Init3DPoints();
+#endif
 }
 
-/* Uses focallength */
+//===========================================================================
 
-static void CalcProjection (int32_t focal)
+
+/*
+====================
+=
+= CalcProjection
+=
+= Uses focallength
+=
+====================
+*/
+
+void CalcProjection (int32_t focal)
 {
     int     i;
     int    intang;
@@ -666,100 +793,139 @@ static void CalcProjection (int32_t focal)
     double  facedist;
 
     focallength = focal;
-    facedist    = focal + MINDIST;
-    halfview    = viewwidth/2; /* half view in pixels */
+    facedist = focal+MINDIST;
+    halfview = viewwidth/2;                                 // half view in pixels
 
-    /* calculate scale value for vertical 
-     * height calculations
-     * and sprite x calculations. */
-    scale       = (fixed) (halfview*facedist/(VIEWGLOBAL/2));
+    //
+    // calculate scale value for vertical height calculations
+    // and sprite x calculations
+    //
+    scale = (fixed) (halfview*facedist/(VIEWGLOBAL/2));
 
+    //
     // divide heightnumerator by a posts distance to get the posts height for
     // the heightbuffer.  The pixel height is height>>2
+    //
     heightnumerator = (TILEGLOBAL*scale)>>6;
 
-    /* calculate the angle offset from view angle of each pixel's ray */
-    for (i = 0; i < halfview; i++)
+    //
+    // calculate the angle offset from view angle of each pixel's ray
+    //
+
+    for (i=0;i<halfview;i++)
     {
-        /* start 1/2 pixel over, so viewangle bisects two middle pixels */
-        tang   = (int32_t)i*VIEWGLOBAL/viewwidth/facedist;
-        angle  = (float)atan(tang);
-        intang = (int)(angle * radtoint);
+        // start 1/2 pixel over, so viewangle bisects two middle pixels
+        tang = (int32_t)i*VIEWGLOBAL/viewwidth/facedist;
+        angle = (float) atan(tang);
+        intang = (int) (angle*radtoint);
         pixelangle[halfview-1-i] = intang;
-        pixelangle[halfview+i]   = -intang;
+        pixelangle[halfview+i] = -intang;
     }
 }
 
-/* Map tile values to scaled pics */
 
-static void SetupWalls (void)
+
+//===========================================================================
+
+/*
+===================
+=
+= SetupWalls
+=
+= Map tile values to scaled pics
+=
+===================
+*/
+
+void SetupWalls (void)
 {
-   int     i;
+    int     i;
 
-   horizwall[0]    = 0;
-   vertwall[0]     = 0;
+    horizwall[0]=0;
+    vertwall[0]=0;
 
-   for (i = 1; i < MAXWALLTILES; i++)
-   {
-      horizwall[i] = (i-1)*2;
-      vertwall[i]  = (i-1)*2+1;
-   }
+    for (i=1;i<MAXWALLTILES;i++)
+    {
+        horizwall[i]=(i-1)*2;
+        vertwall[i]=(i-1)*2+1;
+    }
 }
 
-static void SignonScreen (void)
+//===========================================================================
+
+/*
+==========================
+=
+= SignonScreen
+=
+==========================
+*/
+
+void SignonScreen (void)                        // VGA version
 {
-   VL_Startup();
-   VL_MungePic(signon,320,200);
-   VL_MemToScreen(signon,320,200,0,0);
+    VL_SetVGAPlaneMode ();
+
+    VL_MemToScreen (signon,320,200,0,0);
 }
 
-static void FinishSignon (void)
+
+/*
+==========================
+=
+= FinishSignon
+=
+==========================
+*/
+
+void FinishSignon (void)
 {
 #ifndef SPEAR
-   VW_Bar (0,189,300,11,VL_GetPixel(0,0));
-   WindowX = 0;
-   WindowW = 320;
-   PrintY = 190;
+    VW_Bar (0,189,300,11,VL_GetPixel(0,0));
+    WindowX = 0;
+    WindowW = 320;
+    PrintY = 190;
 
-#ifndef JAPAN
-   SETFONTCOLOR(14,4);
+    #ifndef JAPAN
+    SETFONTCOLOR(14,4);
 
-#ifdef SPANISH
-   US_CPrint ("Oprima una tecla");
+    #ifdef SPANISH
+    US_CPrint ("Oprima una tecla");
+    #else
+    US_CPrint ("Press a key");
+    #endif
+
+    #endif
+
+    VW_UpdateScreen();
+
+    if (!param_nowait)
+        IN_Ack ();
+
+    #ifndef JAPAN
+    VW_Bar (0,189,300,11,VL_GetPixel(0,0));
+
+    PrintY = 190;
+    SETFONTCOLOR(10,4);
+
+    #ifdef SPANISH
+    US_CPrint ("pensando...");
+    #else
+    US_CPrint ("Working...");
+    #endif
+
+    VW_UpdateScreen();
+    #endif
+
+    SETFONTCOLOR(0,15);
 #else
-   US_CPrint ("Press a key");
-#endif
+    VW_UpdateScreen();
 
-#endif
-
-   VW_UpdateScreen();
-
-   if (!param_nowait)
-      IN_Ack ();
-
-#ifndef JAPAN
-   VW_Bar (0,189,300,11,VL_GetPixel(0,0));
-
-   PrintY = 190;
-   SETFONTCOLOR(10,4);
-
-#ifdef SPANISH
-   US_CPrint ("pensando...");
-#else
-   US_CPrint ("Working...");
-#endif
-
-   VW_UpdateScreen();
-#endif
-
-   SETFONTCOLOR(0,15);
-#else
-   VW_UpdateScreen();
-
-   if (!param_nowait)
-      VW_WaitVBL(3*70);
+    if (!param_nowait)
+        VW_WaitVBL(3*70);
 #endif
 }
+
+//===========================================================================
 
 /*
 =====================
@@ -769,132 +935,136 @@ static void FinishSignon (void)
 =====================
 */
 
-/* channel mapping:
- * -1: any non reserved channel
- *  0: player weapons
- *  1: boss weapons
- */
+// channel mapping:
+//  -1: any non reserved channel
+//   0: player weapons
+//   1: boss weapons
 
 static int wolfdigimap[] =
-{
-   /* These first sounds are in the upload version */
+    {
+        // These first sounds are in the upload version
 #ifndef SPEAR
-   HALTSND,                0,  -1,
-   DOGBARKSND,             1,  -1,
-   CLOSEDOORSND,           2,  -1,
-   OPENDOORSND,            3,  -1,
-   ATKMACHINEGUNSND,       4,   0,
-   ATKPISTOLSND,           5,   0,
-   ATKGATLINGSND,          6,   0,
-   SCHUTZADSND,            7,  -1,
-   GUTENTAGSND,            8,  -1,
-   MUTTISND,               9,  -1,
-   BOSSFIRESND,            10,  1,
-   SSFIRESND,              11, -1,
-   DEATHSCREAM1SND,        12, -1,
-   DEATHSCREAM2SND,        13, -1,
-   DEATHSCREAM3SND,        13, -1,
-   TAKEDAMAGESND,          14, -1,
-   PUSHWALLSND,            15, -1,
+        HALTSND,                0,  -1,
+        DOGBARKSND,             1,  -1,
+        CLOSEDOORSND,           2,  -1,
+        OPENDOORSND,            3,  -1,
+        ATKMACHINEGUNSND,       4,   0,
+        ATKPISTOLSND,           5,   0,
+        ATKGATLINGSND,          6,   0,
+        SCHUTZADSND,            7,  -1,
+        GUTENTAGSND,            8,  -1,
+        MUTTISND,               9,  -1,
+        BOSSFIRESND,            10,  1,
+        SSFIRESND,              11, -1,
+        DEATHSCREAM1SND,        12, -1,
+        DEATHSCREAM2SND,        13, -1,
+        DEATHSCREAM3SND,        13, -1,
+        TAKEDAMAGESND,          14, -1,
+        PUSHWALLSND,            15, -1,
 
-   LEBENSND,               20, -1,
-   NAZIFIRESND,            21, -1,
-   SLURPIESND,             22, -1,
+        LEBENSND,               20, -1,
+        NAZIFIRESND,            21, -1,
+        SLURPIESND,             22, -1,
 
-   YEAHSND,                32, -1,
+        YEAHSND,                32, -1,
 
 #ifndef UPLOAD
-   // These are in all other episodes
-   DOGDEATHSND,            16, -1,
-   AHHHGSND,               17, -1,
-   DIESND,                 18, -1,
-   EVASND,                 19, -1,
+        // These are in all other episodes
+        DOGDEATHSND,            16, -1,
+        AHHHGSND,               17, -1,
+        DIESND,                 18, -1,
+        EVASND,                 19, -1,
 
-   TOT_HUNDSND,            23, -1,
-   MEINGOTTSND,            24, -1,
-   SCHABBSHASND,           25, -1,
-   HITLERHASND,            26, -1,
-   SPIONSND,               27, -1,
-   NEINSOVASSND,           28, -1,
-   DOGATTACKSND,           29, -1,
-   LEVELDONESND,           30, -1,
-   MECHSTEPSND,            31, -1,
+        TOT_HUNDSND,            23, -1,
+        MEINGOTTSND,            24, -1,
+        SCHABBSHASND,           25, -1,
+        HITLERHASND,            26, -1,
+        SPIONSND,               27, -1,
+        NEINSOVASSND,           28, -1,
+        DOGATTACKSND,           29, -1,
+        LEVELDONESND,           30, -1,
+        MECHSTEPSND,            31, -1,
 
-   SCHEISTSND,             33, -1,
-   DEATHSCREAM4SND,        34, -1,         // AIIEEE
-   DEATHSCREAM5SND,        35, -1,         // DEE-DEE
-   DONNERSND,              36, -1,         // EPISODE 4 BOSS DIE
-   EINESND,                37, -1,         // EPISODE 4 BOSS SIGHTING
-   ERLAUBENSND,            38, -1,         // EPISODE 6 BOSS SIGHTING
-   DEATHSCREAM6SND,        39, -1,         // FART
-   DEATHSCREAM7SND,        40, -1,         // GASP
-   DEATHSCREAM8SND,        41, -1,         // GUH-BOY!
-   DEATHSCREAM9SND,        42, -1,         // AH GEEZ!
-   KEINSND,                43, -1,         // EPISODE 5 BOSS SIGHTING
-   MEINSND,                44, -1,         // EPISODE 6 BOSS DIE
-   ROSESND,                45, -1,         // EPISODE 5 BOSS DIE
+        SCHEISTSND,             33, -1,
+        DEATHSCREAM4SND,        34, -1,         // AIIEEE
+        DEATHSCREAM5SND,        35, -1,         // DEE-DEE
+        DONNERSND,              36, -1,         // EPISODE 4 BOSS DIE
+        EINESND,                37, -1,         // EPISODE 4 BOSS SIGHTING
+        ERLAUBENSND,            38, -1,         // EPISODE 6 BOSS SIGHTING
+        DEATHSCREAM6SND,        39, -1,         // FART
+        DEATHSCREAM7SND,        40, -1,         // GASP
+        DEATHSCREAM8SND,        41, -1,         // GUH-BOY!
+        DEATHSCREAM9SND,        42, -1,         // AH GEEZ!
+        KEINSND,                43, -1,         // EPISODE 5 BOSS SIGHTING
+        MEINSND,                44, -1,         // EPISODE 6 BOSS DIE
+        ROSESND,                45, -1,         // EPISODE 5 BOSS DIE
 
 #endif
 #else
-   //
-   // SPEAR OF DESTINY DIGISOUNDS
-   //
-   HALTSND,                0,  -1,
-   CLOSEDOORSND,           2,  -1,
-   OPENDOORSND,            3,  -1,
-   ATKMACHINEGUNSND,       4,   0,
-   ATKPISTOLSND,           5,   0,
-   ATKGATLINGSND,          6,   0,
-   SCHUTZADSND,            7,  -1,
-   BOSSFIRESND,            8,   1,
-   SSFIRESND,              9,  -1,
-   DEATHSCREAM1SND,        10, -1,
-   DEATHSCREAM2SND,        11, -1,
-   TAKEDAMAGESND,          12, -1,
-   PUSHWALLSND,            13, -1,
-   AHHHGSND,               15, -1,
-   LEBENSND,               16, -1,
-   NAZIFIRESND,            17, -1,
-   SLURPIESND,             18, -1,
-   LEVELDONESND,           22, -1,
-   DEATHSCREAM4SND,        23, -1,         // AIIEEE
-   DEATHSCREAM3SND,        23, -1,         // DOUBLY-MAPPED!!!
-   DEATHSCREAM5SND,        24, -1,         // DEE-DEE
-   DEATHSCREAM6SND,        25, -1,         // FART
-   DEATHSCREAM7SND,        26, -1,         // GASP
-   DEATHSCREAM8SND,        27, -1,         // GUH-BOY!
-   DEATHSCREAM9SND,        28, -1,         // AH GEEZ!
-   GETGATLINGSND,          38, -1,         // Got Gat replacement
+//
+// SPEAR OF DESTINY DIGISOUNDS
+//
+        HALTSND,                0,  -1,
+        CLOSEDOORSND,           2,  -1,
+        OPENDOORSND,            3,  -1,
+        ATKMACHINEGUNSND,       4,   0,
+        ATKPISTOLSND,           5,   0,
+        ATKGATLINGSND,          6,   0,
+        SCHUTZADSND,            7,  -1,
+        BOSSFIRESND,            8,   1,
+        SSFIRESND,              9,  -1,
+        DEATHSCREAM1SND,        10, -1,
+        DEATHSCREAM2SND,        11, -1,
+        TAKEDAMAGESND,          12, -1,
+        PUSHWALLSND,            13, -1,
+        AHHHGSND,               15, -1,
+        LEBENSND,               16, -1,
+        NAZIFIRESND,            17, -1,
+        SLURPIESND,             18, -1,
+        LEVELDONESND,           22, -1,
+        DEATHSCREAM4SND,        23, -1,         // AIIEEE
+        DEATHSCREAM3SND,        23, -1,         // DOUBLY-MAPPED!!!
+        DEATHSCREAM5SND,        24, -1,         // DEE-DEE
+        DEATHSCREAM6SND,        25, -1,         // FART
+        DEATHSCREAM7SND,        26, -1,         // GASP
+        DEATHSCREAM8SND,        27, -1,         // GUH-BOY!
+        DEATHSCREAM9SND,        28, -1,         // AH GEEZ!
+        GETGATLINGSND,          38, -1,         // Got Gat replacement
 
 #ifndef SPEARDEMO
-   DOGBARKSND,             1,  -1,
-   DOGDEATHSND,            14, -1,
-   SPIONSND,               19, -1,
-   NEINSOVASSND,           20, -1,
-   DOGATTACKSND,           21, -1,
-   TRANSSIGHTSND,          29, -1,         // Trans Sight
-   TRANSDEATHSND,          30, -1,         // Trans Death
-   WILHELMSIGHTSND,        31, -1,         // Wilhelm Sight
-   WILHELMDEATHSND,        32, -1,         // Wilhelm Death
-   UBERDEATHSND,           33, -1,         // Uber Death
-   KNIGHTSIGHTSND,         34, -1,         // Death Knight Sight
-   KNIGHTDEATHSND,         35, -1,         // Death Knight Death
-   ANGELSIGHTSND,          36, -1,         // Angel Sight
-   ANGELDEATHSND,          37, -1,         // Angel Death
-   GETSPEARSND,            39, -1,         // Got Spear replacement
+        DOGBARKSND,             1,  -1,
+        DOGDEATHSND,            14, -1,
+        SPIONSND,               19, -1,
+        NEINSOVASSND,           20, -1,
+        DOGATTACKSND,           21, -1,
+        TRANSSIGHTSND,          29, -1,         // Trans Sight
+        TRANSDEATHSND,          30, -1,         // Trans Death
+        WILHELMSIGHTSND,        31, -1,         // Wilhelm Sight
+        WILHELMDEATHSND,        32, -1,         // Wilhelm Death
+        UBERDEATHSND,           33, -1,         // Uber Death
+        KNIGHTSIGHTSND,         34, -1,         // Death Knight Sight
+        KNIGHTDEATHSND,         35, -1,         // Death Knight Death
+        ANGELSIGHTSND,          36, -1,         // Angel Sight
+        ANGELDEATHSND,          37, -1,         // Angel Death
+        GETSPEARSND,            39, -1,         // Got Spear replacement
 #endif
 #endif
-   LASTSOUND
-};
+        LASTSOUND
+    };
 
-static void InitDigiMap (void)
+
+void InitDigiMap (void)
 {
     int *map;
 
     for (map = wolfdigimap; *map != LASTSOUND; map += 3)
     {
+#ifdef VIEASM
+
+#else
         DigiMap[map[0]] = map[1];
         DigiChannel[map[1]] = map[2];
+#endif
         SD_PrepareSound(map[1]);
     }
 }
@@ -989,7 +1159,7 @@ void DoJukebox(void)
 
 #ifndef SPEAR
 #ifndef UPLOAD
-    start = ((LR_GetTicks()/10)%3)*6;
+    start = ((SDL_GetTicks()/10)%3)*6;
 #else
     start = 0;
 #endif
@@ -997,12 +1167,6 @@ void DoJukebox(void)
     start = 0;
 #endif
 
-    CA_CacheGrChunk (STARTFONT+1);
-#ifdef SPEAR
-    CacheLump (BACKDROP_LUMP_START,BACKDROP_LUMP_END);
-#else
-    CacheLump (CONTROLS_LUMP_START,CONTROLS_LUMP_END);
-#endif
     CA_LoadAllSounds ();
 
     fontnumber=1;
@@ -1020,7 +1184,7 @@ void DoJukebox(void)
     DrawMenu (&MusicItems,&MusicMenu[start]);
 
     SETFONTCOLOR (READHCOLOR,BKGDCOLOR);
-    PrintY  = 15;
+    PrintY=15;
     WindowX = 0;
     WindowY = 320;
     US_CPrint ("Robert's Jukebox");
@@ -1031,27 +1195,22 @@ void DoJukebox(void)
 
     do
     {
-       which = HandleMenu(&MusicItems,&MusicMenu[start],NULL);
-       if (which >= 0)
-       {
-          if (lastsong >= 0)
-             MusicMenu[start+lastsong].active = 1;
+        which = HandleMenu(&MusicItems,&MusicMenu[start],NULL);
+        if (which>=0)
+        {
+            if (lastsong >= 0)
+                MusicMenu[start+lastsong].active = 1;
 
-          StartCPMusic(songs[start + which]);
-          MusicMenu[start+which].active = 2;
-          DrawMenu (&MusicItems,&MusicMenu[start]);
-          VW_UpdateScreen();
-          lastsong = which;
-       }
-    }while(which >= 0);
+            StartCPMusic(songs[start + which]);
+            MusicMenu[start+which].active = 2;
+            DrawMenu (&MusicItems,&MusicMenu[start]);
+            VW_UpdateScreen();
+            lastsong = which;
+        }
+    } while(which>=0);
 
     MenuFadeOut();
     IN_ClearKeysDown();
-#ifdef SPEAR
-    UnCacheLump (BACKDROP_LUMP_START,BACKDROP_LUMP_END);
-#else
-    UnCacheLump (CONTROLS_LUMP_START,CONTROLS_LUMP_END);
-#endif
 }
 #endif
 
@@ -1065,63 +1224,150 @@ void DoJukebox(void)
 ==========================
 */
 
-static void InitGame(void)
+static void InitGame()
 {
 #ifndef SPEARDEMO
-   boolean didjukebox=false;
+    boolean didjukebox=false;
+#endif
+#if defined (SWITCH) || defined (N3DS)  
+    printf("GAME START");
+#endif    
+    // initialize SDL
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK 
+#if SDL_MAJOR_VERSION == 1    
+    ) < 0 )
+#elif SDL_MAJOR_VERSION == 2
+    | SDL_INIT_GAMECONTROLLER) < 0)
+#endif    
+    {
+        printf("Unable to init SDL: %s\n", SDL_GetError());
+        exit(1);
+    }
+    atexit(SDL_Quit);
+
+#if defined (SWITCH) && defined (N3DS)
+#if SDL_MAJOR_VERSION == 1
+    printf("SDL1.2 Initialized");   
+#elif SDL_MAJOR_VERSION == 2
+    printf("SDL2 Initialized");
+#endif
 #endif
 
-   /* initialize SDL */
-   if(LR_Init(0) < 0)
-      exit(1);
-   atexit(LR_Quit);
 
-   SignonScreen ();
+    int numJoysticks = SDL_NumJoysticks();
+    if(param_joystickindex && (param_joystickindex < -1 || param_joystickindex >= numJoysticks))
+    {
+        if(!numJoysticks)
+            printf("No joysticks are available to SDL!\n");
+        else
+            printf("The joystick index must be between -1 and %i!\n", numJoysticks - 1);
+        exit(1);
+    }
 
-   VH_Startup ();
-   IN_Startup ();
-   PM_Startup ();
-   SD_Startup ();
-   CA_Startup ();
-   US_Startup ();
+#if defined(GP2X_940)
+    GP2X_MemoryInit();
+#endif
 
-   /* TODO: Will any memory checking be needed someday?? */
+    SignonScreen ();
 
-   /* build some tables */
-   InitDigiMap ();
+	VW_UpdateScreen();
 
-   ReadConfig ();
+    VH_Startup ();
+#if defined(SWITCH) || defined (N3DS)
+    printf("VH Started");
+#endif
+    IN_Startup ();
+#if defined(SWITCH) || defined (N3DS)
+    printf("IN Started");
+#endif
+    PM_Startup ();
+#if defined(SWITCH) || defined (N3DS)
+    printf("PM Started");
+#endif
+    SD_Startup ();
+#if defined(SWITCH) || defined (N3DS)
+    printf("SD Started");
+#endif
+    CA_Startup ();
+#if defined(SWITCH) || defined (N3DS)
+    printf("CA Started");
+#endif
+    US_Startup ();
+#if defined(SWITCH) || defined (N3DS)
+    printf("US Started");
+#endif
+    // TODO: Will any memory checking be needed someday??
+#ifdef NOTYET
+#ifndef SPEAR
+    if (mminfo.mainmem < 235000L)
+#else
+    if (mminfo.mainmem < 257000L && !MS_CheckParm("debugmode"))
+#endif
+    {
+        byte *screen;
 
-   SetupSaveGames();
+        screen = grsegs[ERRORSCREEN];
+        ShutdownId();
+/*        memcpy((byte *)0xb8000,screen+7+7*160,17*160);
+        gotoxy (1,23);*/
+        exit(1);
+    }
+#endif
 
-   /* HOLDING DOWN 'M' KEY? */
+
+//
+// build some tables
+//
+    InitDigiMap ();
+
+    ReadConfig ();
+
+    SetupSaveGames();
+
+//
+// HOLDING DOWN 'M' KEY?
+//
+	IN_ProcessEvents();
+
 #ifndef SPEARDEMO
-   if (Keyboard[sc_M])
-   {
-      DoJukebox();
-      didjukebox=true;
-   }
-   else
+    if (Keyboard(sc_M))
+    {
+        DoJukebox();
+        didjukebox=true;
+    }
+    else
 #endif
-      /* draw intro screen stuff */
-      IntroScreen ();
 
-   /* load in and lock down some basic chunks */
-   CA_CacheGrChunk(STARTFONT);
-   CA_CacheGrChunk(STATUSBARPIC);
+//
+// draw intro screen stuff
+//
+    IntroScreen ();
 
-   LoadLatchMem ();
-   BuildTables ();          /* trig tables */
-   SetupWalls ();
+#ifdef _arch_dreamcast
+    //TODO: VMU Selection Screen
+#endif
 
-   NewViewSize (viewsize);
+//
+// load in and lock down some basic chunks
+//
+    BuildTables ();          // trig tables
+    SetupWalls ();
 
-   /* initialize variables */
-   InitRedShifts ();
+    NewViewSize (viewsize);
+
+//
+// initialize variables
+//
+    InitRedShifts ();
 #ifndef SPEARDEMO
-   if(!didjukebox)
+    if(!didjukebox)
 #endif
-      FinishSignon();
+        FinishSignon();
+
+#ifdef NOTYET
+    vdisp = (byte *) (0xa0000+PAGE1START);
+    vbuf = (byte *) (0xa0000+PAGE2START);
+#endif
 }
 
 //===========================================================================
@@ -1134,74 +1380,76 @@ static void InitGame(void)
 ==========================
 */
 
-static boolean SetViewSize (unsigned width, unsigned height)
+boolean SetViewSize (unsigned width, unsigned height)
 {
-   viewwidth   = width         & ~15;   /* must be divisable by 16 */
-   viewheight  = height        & ~1;    /* must be even */
-   centerx     = viewwidth     / 2-1;
-   shootdelta  = viewwidth     / 10;
-   viewscreenx = viewscreeny = screenofs = 0;
+    viewwidth = width&~15;                  // must be divisable by 16
+    viewheight = height&~1;                 // must be even
+    centerx = viewwidth/2-1;
+    centery = viewheight / 2;
+    shootdelta = viewwidth/10;
+    if((unsigned) viewheight == screenHeight)
+        viewscreenx = viewscreeny = screenofs = 0;
+    else
+    {
+        viewscreenx = (screenWidth-viewwidth) / 2;
+        viewscreeny = (screenHeight-scaleFactor*STATUSLINES-viewheight)/2;
+        screenofs = viewscreeny*screenWidth+viewscreenx;
+    }
 
-   if((unsigned) viewheight != screenHeight)
-   {
-      viewscreenx = (screenWidth - viewwidth) / 2;
-      viewscreeny = (screenHeight - scaleFactor * STATUSLINES - viewheight)/2;
-      screenofs   = viewscreeny * screenWidth + viewscreenx;
-   }
+//
+// calculate trace angles and projection constants
+//
+    CalcProjection (FOCALLENGTH);
 
-   /* calculate trace angles and projection constants */
-   CalcProjection (FOCALLENGTH);
-
-   return true;
+    return true;
 }
 
 
 void ShowViewSize (int width)
 {
-   int oldwidth  = viewwidth;
-   int oldheight = viewheight;
+    int oldwidth,oldheight;
 
-   if(width == 21)
-   {
-      viewwidth  = screenWidth;
-      viewheight = screenHeight;
-      VWB_BarScaledCoord(0, 0, screenWidth, screenHeight, 0);
-   }
-   else if(width == 20)
-   {
-      viewwidth  = screenWidth;
-      viewheight = screenHeight - scaleFactor*STATUSLINES;
-      DrawPlayBorder();
-   }
-   else
-   {
-      viewwidth  = width*16*screenWidth/320;
-      viewheight = (int)(width*16*HEIGHTRATIO*screenHeight/200);
-      DrawPlayBorder();
-   }
+    oldwidth = viewwidth;
+    oldheight = viewheight;
 
-   viewwidth     = oldwidth;
-   viewheight    = oldheight;
+    if(width == 21)
+    {
+        viewwidth = screenWidth;
+        viewheight = screenHeight;
+        VWB_BarScaledCoord (0, 0, screenWidth, screenHeight, 0);
+    }
+    else if(width == 20)
+    {
+        viewwidth = screenWidth;
+        viewheight = screenHeight - scaleFactor*STATUSLINES;
+        DrawPlayBorder ();
+    }
+    else
+    {
+        viewwidth = width*16*screenWidth/320;
+        viewheight = (int) (width*16*HEIGHTRATIO*screenHeight/200);
+        DrawPlayBorder ();
+    }
+
+    viewwidth = oldwidth;
+    viewheight = oldheight;
 }
 
 
 void NewViewSize (int width)
 {
-   unsigned viewwidth    = screenWidth;
-   unsigned viewheight   = screenHeight;
-
-   viewsize = width;
-
-   if(viewsize == 20)
-      viewheight = screenHeight - scaleFactor * STATUSLINES;
-   else if (viewsize != 21)
-   {
-      viewwidth  = width * 16 * screenWidth / 320;
-      viewheight = (unsigned)(width * 16 * HEIGHTRATIO * screenHeight / 200);
-   }
-
-   SetViewSize(viewwidth, viewheight);
+    viewsize = width;
+    if(viewsize == 21)
+        SetViewSize(screenWidth, screenHeight);
+    else if(viewsize == 20)
+        SetViewSize(screenWidth, screenHeight - scaleFactor * STATUSLINES);
+    else
+        SetViewSize(width*16*screenWidth/320, (unsigned) (width*16*HEIGHTRATIO*screenHeight/200));
 }
+
+
+
+//===========================================================================
 
 /*
 ==========================
@@ -1213,6 +1461,9 @@ void NewViewSize (int width)
 
 void Quit (const char *errorStr, ...)
 {
+#ifdef NOTYET
+    byte *screen;
+#endif
     char error[256];
     if(errorStr != NULL)
     {
@@ -1221,35 +1472,69 @@ void Quit (const char *errorStr, ...)
         vsprintf(error, errorStr, vlist);
         va_end(vlist);
     }
-    else
-       error[0] = 0;
+    else error[0] = 0;
 
-    /* don't try to display the red box before it's loaded */
-    if (!pictable)  
+    if (!pictable)  // don't try to display the red box before it's loaded
     {
         ShutdownId();
-        if (error && *error)
+        if (*error)
         {
+#ifdef NOTYET
+            SetTextCursor(0,0);
+#endif
             puts(error);
-            VW_WaitVBL(100);
+#ifdef NOTYET
+            SetTextCursor(0,2);
+#endif
         }
         exit(1);
     }
 
     if (!error || !*error)
+    {
+#ifdef NOTYET
+        #ifndef JAPAN
+        screen = grsegs[ORDERSCREEN];
+        #endif
+#endif
         WriteConfig ();
+    }
+#ifdef NOTYET
+    else
+        screen = grsegs[ERRORSCREEN];
+#endif
 
     ShutdownId ();
 
-    if (error && *error)
+    if (*error)
     {
+#ifdef NOTYET
+        memcpy((byte *)0xb8000,screen+7,7*160);
+        SetTextCursor(9,3);
+#endif
         puts(error);
-        VW_WaitVBL(200);
+#ifdef NOTYET
+        SetTextCursor(0,7);
+#endif
         exit(1);
+    }
+    else
+    if (!*error)
+    {
+#ifdef NOTYET
+        #ifndef JAPAN
+        memcpy((byte *)0xb8000,screen+7,24*160); // 24 for SPEAR/UPLOAD compatibility
+        #endif
+        SetTextCursor(0,23);
+#endif
     }
 
     exit(0);
 }
+
+//===========================================================================
+
+
 
 /*
 =====================
@@ -1260,176 +1545,183 @@ void Quit (const char *errorStr, ...)
 */
 
 
-static int DemoLoop(unsigned id)
+static void DemoLoop()
 {
-   static int LastDemo = 0;
+    int LastDemo = 0;
 
-   switch (id)
-   {
-      case JE_NONE:
-         /* check for launch from ted */
-         if (param_tedlevel != -1)
-         {
-            param_nowait = true;
-            EnableEndGameMenuItem();
-            NewGame(param_difficulty,0);
+//
+// check for launch from ted
+//
+    if (param_tedlevel != -1)
+    {
+        param_nowait = true;
+        EnableEndGameMenuItem();
+        NewGame(param_difficulty,0);
 
-            gamestate.episode  = 0;
-            gamestate.mapon    = param_tedlevel;
 #ifndef SPEAR
-            gamestate.episode  = param_tedlevel/10;
-            gamestate.mapon   %= 10;
+        gamestate.episode = param_tedlevel/10;
+        gamestate.mapon = param_tedlevel%10;
+#else
+        gamestate.episode = 0;
+        gamestate.mapon = param_tedlevel;
 #endif
-            return JE_LOOP2;
-         }
+        GameLoop();
+        Quit (NULL);
+    }
 
-         /* main game cycle */
+
+//
+// main game cycle
+//
+
 #ifndef DEMOTEST
 
-#ifndef UPLOAD
+    #ifndef UPLOAD
 
-#ifndef GOODTIMES
-#ifndef SPEAR
-#ifndef JAPAN
-         if (!param_nowait)
+        #ifndef GOODTIMES
+        #ifndef SPEAR
+        #ifndef JAPAN
+        if (!param_nowait)
             NonShareware();
-#endif
-#else
-#ifndef GOODTIMES
-#ifndef SPEARDEMO
-         extern void CopyProtection(void);
-         if(!param_goodtimes)
-            CopyProtection();
-#endif
-#endif
-#endif
-#endif
-#endif
+        #endif
+        #else
+            #ifndef GOODTIMES
+            #ifndef SPEARDEMO
+            extern void CopyProtection(void);
+            if(!param_goodtimes)
+                CopyProtection();
+            #endif
+            #endif
+        #endif
+        #endif
+    #endif
 
-         StartCPMusic(INTROSONG);
+    StartCPMusic(INTROSONG);
 
 #ifndef JAPAN
-         if (!param_nowait)
-            PG13 ();
+    if (!param_nowait)
+        PG13 ();
 #endif
 
 #endif
-         return JE_LOOP;
-      case JE_LOOP:
-         while (!param_nowait)
-         {
+
+    while (1)
+    {
+        while (!param_nowait)
+        {
+//
+// title page
+//
 #ifndef DEMOTEST
 
 #ifdef SPEAR
-            LR_Color pal[256];
-            /* title page */
-            CA_CacheGrChunk (TITLEPALETTE);
+            SDL_Color pal[256];
             VL_ConvertPalette(grsegs[TITLEPALETTE], pal, 256);
 
-            CA_CacheGrChunk (TITLE1PIC);
             VWB_DrawPic (0,0,TITLE1PIC);
-            UNCACHEGRCHUNK (TITLE1PIC);
-
-            CA_CacheGrChunk (TITLE2PIC);
             VWB_DrawPic (0,80,TITLE2PIC);
-            UNCACHEGRCHUNK (TITLE2PIC);
+
             VW_UpdateScreen ();
             VL_FadeIn(0,255,pal,30);
-
-            UNCACHEGRCHUNK (TITLEPALETTE);
 #else
-            CA_CacheScreen (TITLEPIC);
+            VWB_DrawPic (0,0,TITLEPIC);
             VW_UpdateScreen ();
             VW_FadeIn();
 #endif
             if (IN_UserInput(TickBase*15))
-               break;
+                break;
             VW_FadeOut();
-            /* credits page */
-            CA_CacheScreen (CREDITSPIC);
+//
+// credits page
+//
+            VWB_DrawPic (0,0,CREDITSPIC);
             VW_UpdateScreen();
             VW_FadeIn ();
             if (IN_UserInput(TickBase*10))
-               break;
+                break;
             VW_FadeOut ();
+//
+// high scores
+//
             DrawHighScores ();
             VW_UpdateScreen ();
             VW_FadeIn ();
 
             if (IN_UserInput(TickBase*10))
-               break;
+                break;
 #endif
-            /* demo */
+//
+// demo
+//
 
-#ifndef SPEARDEMO
+            #ifndef SPEARDEMO
             PlayDemo (LastDemo++%4);
-#else
+            #else
             PlayDemo (0);
-#endif
+            #endif
 
-            if (playstate == EX_ABORT)
-               return JE_QUIT;
+            if (playstate == ex_abort)
+                break;
             VW_FadeOut();
             if(screenHeight % 200 != 0)
-               VL_ClearScreen(0);
+                VL_ClearScreen(0);
             StartCPMusic(INTROSONG);
-         }
+        }
 
-         VW_FadeOut ();
+        VW_FadeOut ();
 
 #ifdef DEBUGKEYS
-         if (Keyboard[sc_Tab] && param_debugmode)
+        if (Keyboard(sc_Tab) && param_debugmode)
             RecordDemo ();
-         else
-#endif
+        else
             US_ControlPanel (0);
+#else
+        US_ControlPanel (0);
+#endif
 
-         if (startgame || loadedgame)
-            return JE_LOOP2;
-         break;
-      case JE_LOOP2:
-         id = GameLoop();
-         if (param_tedlevel == -1 && id == -1)
-         {
+        if (startgame || loadedgame)
+        {
+            GameLoop ();
             if(!param_nowait)
             {
-               VW_FadeOut();
-               StartCPMusic(INTROSONG);
+                VW_FadeOut();
+                StartCPMusic(INTROSONG);
             }
-         }
-         break;
-   }
-
-   return JE_LOOP2;
+        }
+    }
 }
 
-static void CheckParameters(int argc, char *argv[])
+
+//===========================================================================
+
+#define IFARG(str) if(!strcmp(arg, (str)))
+
+void CheckParameters(int argc, char *argv[])
 {
-    bool hasError = false, showHelp = false;
-    bool sampleRateGiven = false, audioBufferGiven = false;
-    int defaultSampleRate = 44100;
-    unsigned i;
+    boolean hasError = false, showHelp = false;
+    boolean sampleRateGiven = false, audioBufferGiven = false;
+    int i,defaultSampleRate = param_samplerate;
 
     for(i = 1; i < argc; i++)
     {
         char *arg = argv[i];
 #ifndef SPEAR
-        if(!strcmp(arg, ("--goobers")))
+        IFARG("--goobers")
 #else
-        if(!strcmp(arg, ("--debugmode")))
+        IFARG("--debugmode")
 #endif
             param_debugmode = true;
-        else if(!strcmp(arg, ("--baby")))
+        else IFARG("--baby")
             param_difficulty = 0;
-        else if(!strcmp(arg, ("--easy")))
+        else IFARG("--easy")
             param_difficulty = 1;
-        else if(!strcmp(arg, ("--normal")))
+        else IFARG("--normal")
             param_difficulty = 2;
-        else if(!strcmp(arg, ("--hard")))
+        else IFARG("--hard")
             param_difficulty = 3;
-        else if(!strcmp(arg, ("--nowait")))
+        else IFARG("--nowait")
             param_nowait = true;
-        else if(!strcmp(arg, ("--tedlevel")))
+        else IFARG("--tedlevel")
         {
             if(++i >= argc)
             {
@@ -1438,14 +1730,14 @@ static void CheckParameters(int argc, char *argv[])
             }
             else param_tedlevel = atoi(argv[i]);
         }
-        else if(!strcmp(arg, ("--windowed")))
+        else IFARG("--windowed")
             fullscreen = false;
-        else if(!strcmp(arg, ("--windowed-mouse")))
+        else IFARG("--windowed-mouse")
         {
             fullscreen = false;
             forcegrabmouse = true;
         }
-        else if(!strcmp(arg, ("--res")))
+        else IFARG("--res")
         {
             if(i + 2 >= argc)
             {
@@ -1461,7 +1753,68 @@ static void CheckParameters(int argc, char *argv[])
                     printf("Screen size must be a multiple of 320x200 or 320x240!\n"), hasError = true;
             }
         }
-        else if(!strcmp(arg, ("--joystick")))
+        else IFARG("--resf")
+        {
+            if(i + 2 >= argc)
+            {
+                printf("The resf option needs the width and/or the height argument!\n");
+                hasError = true;
+            }
+            else
+            {
+                screenWidth = atoi(argv[++i]);
+                screenHeight = atoi(argv[++i]);
+                if(screenWidth < 320)
+                    printf("Screen width must be at least 320!\n"), hasError = true;
+                if(screenHeight < 200)
+                    printf("Screen height must be at least 200!\n"), hasError = true;
+            }
+        }
+        else IFARG("--bits")
+        {
+            if(++i >= argc)
+            {
+                printf("The bits option is missing the color depth argument!\n");
+                hasError = true;
+            }
+            else
+            {
+                screenBits = atoi(argv[i]);
+                switch(screenBits)
+                {
+                    case 8:
+                    case 16:
+                    case 24:
+                    case 32:
+                        break;
+
+                    default:
+                        printf("Screen color depth must be 8, 16, 24, or 32!\n");
+                        hasError = true;
+                        break;
+                }
+            }
+        }
+        else IFARG("--nodblbuf")
+            usedoublebuffering = false;
+        else IFARG("--extravbls")
+        {
+            if(++i >= argc)
+            {
+                printf("The extravbls option is missing the vbls argument!\n");
+                hasError = true;
+            }
+            else
+            {
+                extravbls = atoi(argv[i]);
+                if(extravbls < 0)
+                {
+                    printf("Extravbls must be positive!\n");
+                    hasError = true;
+                }
+            }
+        }
+        else IFARG("--joystick")
         {
             if(++i >= argc)
             {
@@ -1470,7 +1823,7 @@ static void CheckParameters(int argc, char *argv[])
             }
             else param_joystickindex = atoi(argv[i]);   // index is checked in InitGame
         }
-        else if(!strcmp(arg, ("--joystickhat")))
+        else IFARG("--joystickhat")
         {
             if(++i >= argc)
             {
@@ -1479,7 +1832,27 @@ static void CheckParameters(int argc, char *argv[])
             }
             else param_joystickhat = atoi(argv[i]);
         }
-        else if(!strcmp(arg, ("--mission")))
+        else IFARG("--samplerate")
+        {
+            if(++i >= argc)
+            {
+                printf("The samplerate option is missing the rate argument!\n");
+                hasError = true;
+            }
+            else param_samplerate = atoi(argv[i]);
+            sampleRateGiven = true;
+        }
+        else IFARG("--audiobuffer")
+        {
+            if(++i >= argc)
+            {
+                printf("The audiobuffer option is missing the size argument!\n");
+                hasError = true;
+            }
+            else param_audiobuffer = atoi(argv[i]);
+            audioBufferGiven = true;
+        }
+        else IFARG("--mission")
         {
             if(++i >= argc)
             {
@@ -1496,7 +1869,7 @@ static void CheckParameters(int argc, char *argv[])
                 }
             }
         }
-        else if(!strcmp(arg, ("--configdir")))
+        else IFARG("--configdir")
         {
             if(++i >= argc)
             {
@@ -1519,11 +1892,11 @@ static void CheckParameters(int argc, char *argv[])
                 }
             }
         }
-        else if(!strcmp(arg, ("--goodtimes")))
+        else IFARG("--goodtimes")
             param_goodtimes = true;
-        else if(!strcmp(arg, ("--ignorenumchunks")))
+        else IFARG("--ignorenumchunks")
             param_ignorenumchunks = true;
-        else if(!strcmp(arg, ("--help")))
+        else IFARG("--help")
             showHelp = true;
         else hasError = true;
     }
@@ -1531,9 +1904,10 @@ static void CheckParameters(int argc, char *argv[])
     {
         if(hasError) printf("\n");
         printf(
-            "Chocolate Wolfenstein 3D\n" //TODO: add version #? author credit? site link?
-            "Based on Wolf4SDL, by Moritz \"Ripper\" Kroll (http://www.chaos-software.de.vu)\n"
+            "SDL4Wolf v2.2\n"
+            "Ported by Wolf3s, addtions by the retroarch developers\n"
             "Original Wolfenstein 3D by id Software\n\n"
+            "Usage: Wolf4SDL [options]\n"
             "Options:\n"
             " --help                 This help page\n"
             " --tedlevel <level>     Starts the game in the given level\n"
@@ -1545,16 +1919,27 @@ static void CheckParameters(int argc, char *argv[])
             " --windowed[-mouse]     Starts the game in a window [and grabs mouse]\n"
             " --res <width> <height> Sets the screen resolution\n"
             "                        (must be multiple of 320x200 or 320x240)\n"
+            " --resf <w> <h>         Sets any screen resolution >= 320x200\n"
+            "                        (which may result in graphic errors)\n"
+            " --bits <b>             Sets the screen color depth\n"
+            "                        (use this when you have palette/fading problems\n"
+            "                        allowed: 8, 16, 24, 32, default: \"best\" depth)\n"
+            " --nodblbuf             Don't use SDL's double buffering\n"
+            " --extravbls <vbls>     Sets a delay after each frame, which may help to\n"
+            "                        reduce flickering (unit is currently 8 ms, default: 0)\n"
             " --joystick <index>     Use the index-th joystick if available\n"
             "                        (-1 to disable joystick, default: 0)\n"
             " --joystickhat <index>  Enables movement with the given coolie hat\n"
+            " --samplerate <rate>    Sets the sound sample rate (given in Hz, default: %i)\n"
+            " --audiobuffer <size>   Sets the size of the audio buffer (-> sound latency)\n"
+            "                        (given in bytes, default: 2048 / (44100 / samplerate))\n"
             " --ignorenumchunks      Ignores the number of chunks in VGAHEAD.*\n"
             "                        (may be useful for some broken mods)\n"
             " --configdir <dir>      Directory where config file and save games are stored\n"
-#if defined(_WIN32)
+#if defined(_arch_dreamcast) || defined(_WIN32)
             "                        (default: current directory)\n"
 #else
-            "                        (default: $HOME/.chocolate_wolfenstein_3d)\n"
+            "                        (default: $HOME/.wolf4sdl)\n"
 #endif
 #if defined(SPEAR) && !defined(SPEARDEMO)
             " --mission <mission>    Mission number to play (0-3)\n"
@@ -1565,40 +1950,9 @@ static void CheckParameters(int argc, char *argv[])
         );
         exit(1);
     }
-}
 
-#ifndef __LIBRETRO__
-static void retro_init(void)
-{
-}
-
-static void retro_load_game(int argc, char *argv[])
-{
-   CheckParameters(argc, argv);
-
-   CheckForEpisodes();
-
-   InitGame();
-}
-
-static void retro_run(void)
-{
-   int ret = JE_NONE;
-
-   for (;;)
-   {
-      ret = DemoLoop(ret);
-
-      if (ret == JE_QUIT)
-         break;
-   }
-}
-
-static void retro_unload_game(void) { }
-
-static void retro_deinit(void)
-{
-   Quit("Demo loop exited???");
+    if(sampleRateGiven && !audioBufferGiven)
+        param_audiobuffer = 2048 / (44100 / param_samplerate);
 }
 
 /*
@@ -1611,12 +1965,26 @@ static void retro_deinit(void)
 
 int main (int argc, char *argv[])
 {
-   retro_init();
-   retro_load_game(argc, argv);
-   retro_run();
-   retro_unload_game();
-   retro_deinit();
-
-   return 1;
-}
+#if defined(_arch_dreamcast)
+    DC_Init();
+#else
+    CheckParameters(argc, argv);
 #endif
+#if defined(SWITCH) || defined (N3DS)  
+    printf("CheckParameters() DONE\n");
+#endif    
+    CheckForEpisodes();
+#if defined(SWITCH) || defined (N3DS)  
+    printf("CheckForEpisodes() DONE\n");
+#endif    
+    InitGame();
+#if defined(SWITCH) || defined (N3DS)
+    printf("InitGame() DONE\n");
+#endif    
+    DemoLoop();
+#if defined(SWITCH) || defined (N3DS)  
+    printf("DemoLoop() DONE\n");
+#endif    
+    Quit("Demo loop exited???");
+    return 1;
+}

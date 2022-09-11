@@ -5,37 +5,38 @@
 //      By Jason Blochowiak
 //
 
-#ifndef __ID_SD__
-#define __ID_SD__
+#ifndef __ID_SD_H_
+#define __ID_SD_H_
 
-#include "surface.h"
-
+#ifdef USE_DOSBOX
+static const int oplChip;
+//extern struct CChip chip;
+#define alOut(n,b) YM3812Write(chip, n, b)
+#else
+#define alOut(n,b) YM3812Write(oplChip, n, b)
+#endif
 #define TickBase        70      // 70Hz per tick - used as a base for timer 0
 
 typedef enum
 {
-   SDM_OFF = 0,
-   SDM_PC,
-   SDM_ADLIB
+    sdm_Off,
+    sdm_PC,sdm_AdLib,
 } SDMode;
 
 typedef enum
 {
-   SMM_OFF = 0,
-   SMM_ADLIB
+    smm_Off,smm_AdLib
 } SMMode;
 
 typedef enum
 {
-   SDS_OFF = 0,
-   SDS_PC,
-   SDS_SOUNDBLASTER
+    sds_Off,sds_PC,sds_SoundBlaster
 } SDSMode;
 
 typedef struct
 {
-   longword        length;
-   word            priority;
+    longword        length;
+    word            priority;
 } SoundCommon;
 
 #define ORIG_SOUNDCOMMON_SIZE 6
@@ -49,8 +50,8 @@ typedef struct
 
 typedef struct
 {
-   SoundCommon     common;
-   byte            data[1];
+    SoundCommon     common;
+    byte            data[1];
 } PCSound;
 
 //      Register addresses
@@ -69,85 +70,87 @@ typedef struct
 
 typedef struct
 {
-   byte mChar;
-   byte cChar;
-   byte mScale;
-   byte cScale;
-   byte mAttack;
-   byte cAttack;
-   byte mSus;
-   byte cSus;
-   byte mWave;
-   byte cWave;
-   byte nConn;
-   // These are only for Muse - these bytes are really unused
-   byte voice;
-   byte mode;
-   byte    unused[3];
+    byte    mChar,cChar,
+            mScale,cScale,
+            mAttack,cAttack,
+            mSus,cSus,
+            mWave,cWave,
+            nConn,
+
+            // These are only for Muse - these bytes are really unused
+            voice,
+            mode;
+    byte    unused[3];
 } Instrument;
 
 #define ORIG_INSTRUMENT_SIZE 16
 
 typedef struct
 {
-   SoundCommon     common;
-   Instrument      inst;
-   byte            block;
-   byte            data[1];
+    SoundCommon     common;
+    Instrument      inst;
+    byte            block;
+    byte            data[1];
 } AdLibSound;
 
 #define ORIG_ADLIBSOUND_SIZE (ORIG_SOUNDCOMMON_SIZE + ORIG_INSTRUMENT_SIZE + 2)
 
-// Sequencing stuff
+//
+//      Sequencing stuff
+//
 #define sqMaxTracks     10
 
 typedef struct
 {
-   word    length;
-   word    values[1];
+    word    length;
+    word    values[1];
 } MusicGroup;
 
 typedef struct
 {
-   int valid;
-   fixed globalsoundx, globalsoundy;
+    int valid;
+    fixed globalsoundx, globalsoundy;
 } globalsoundpos;
+
+typedef struct
+{
+    uint32_t startpage;
+    uint32_t length;
+} digiinfo;
 
 extern globalsoundpos channelSoundPos[];
 
 // Global variables
 extern  boolean         AdLibPresent,
-        SoundBlasterPresent,
-        SoundPositioned;
+                        SoundBlasterPresent,
+                        SoundPositioned;
 extern  SDMode          SoundMode;
 extern  SDSMode         DigiMode;
 extern  SMMode          MusicMode;
+extern  word            NumDigi;
+extern  digiinfo        *DigiList;
 extern  int             DigiMap[];
 extern  int             DigiChannel[];
 
-#define GetTimeCount()  ((LR_GetTicks()*7)/100)
-
-static inline void Delay(int wolfticks)
-{
-   if(wolfticks>0)
-      rarch_sleep(wolfticks * 100 / 7);
-}
+#define GetTimeCount()  ((SDL_GetTicks()*7)/100)
 
 // Function prototypes
+void            Delay (int32_t wolfticks);
+
 extern  void    SD_Startup(void),
-        SD_Shutdown(void);
+                SD_Shutdown(void);
 
 extern  int     SD_GetChannelForDigi(int which);
 extern  void    SD_PositionSound(int leftvol,int rightvol);
 extern  boolean SD_PlaySound(soundnames sound);
 extern  void    SD_SetPosition(int channel, int leftvol,int rightvol);
 extern  void    SD_StopSound(void),
-        SD_WaitSoundDone(void);
+                SD_WaitSoundDone(void);
 
 extern  void    SD_StartMusic(int chunk);
 extern  void    SD_ContinueMusic(int chunk, int startoffs);
 extern  void    SD_MusicOn(void),
-        SD_FadeOutMusic(void);
+                SD_FadeOutMusic(void);
 extern  int     SD_MusicOff(void);
 
 extern  boolean SD_MusicPlaying(void);
@@ -156,7 +159,7 @@ extern  boolean SD_SetMusicMode(SMMode mode);
 extern  word    SD_SoundPlaying(void);
 
 extern  void    SD_SetDigiDevice(SDSMode);
-extern  void    SD_PrepareSound(int which);
+extern  void	SD_PrepareSound(int which);
 extern  int     SD_PlayDigitized(word which,int leftpos,int rightpos);
 extern  void    SD_StopDigitized(void);
 

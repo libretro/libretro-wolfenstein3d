@@ -5,6 +5,9 @@
 //
 //////////////////////////////////////
 
+#ifndef __GFXV_APO_H_
+#define __GFXV_APO_H_
+
 typedef enum {
     // Lump Start
     H_BJPIC=3,
@@ -179,11 +182,13 @@ typedef enum {
     T_DEMO3,                     // 154
 #ifndef APOGEE_1_0
     T_ENDART1,                   // 155
+#ifndef UPLOAD
     T_ENDART2,                   // 156
     T_ENDART3,                   // 157
     T_ENDART4,                   // 158
     T_ENDART5,                   // 159
     T_ENDART6,                   // 160
+#endif
 #endif
 
     ENUMEND
@@ -214,7 +219,7 @@ typedef enum {
 #define NUMPICS      (GETPSYCHEDPIC - NUMFONT)
 #define NUMPICM      0
 #define NUMSPRITES   0
-#define NUMTILE8     72
+#define NUMTILE8     35
 #define NUMTILE8M    0
 #define NUMTILE16    0
 #define NUMTILE16M   0
@@ -242,3 +247,5 @@ typedef enum {
 //
 // Thank you for using IGRAB!
 //
+
+#endif

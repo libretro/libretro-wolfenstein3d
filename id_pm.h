@@ -1,56 +1,26 @@
-#ifndef __ID_PM__
-#define __ID_PM__
+// ID_PM.H
 
-#include "boolean.h"
+#ifndef __ID_PM_H_
+#define __ID_PM_H_
 
-#define PMPageSize 4096
+#define PMPageSize             (TEXTURESIZE * TEXTURESIZE)
 
-extern int ChunksInFile;
-extern int PMSpriteStart;
-extern int PMSoundStart;
+#define PM_GetSpritePage(v)    PM_GetPage (PMSpriteStart + (v))
+#define PM_GetSoundPage(v)     PM_GetPage (PMSoundStart + (v))
 
-extern bool PMSoundInfoPagePadded;
+extern word ChunksInFile;
+extern word PMSpriteStart;
+extern word PMSoundStart;
 
-// ChunksInFile+1 pointers to page starts.
-// The last pointer points one byte after the last page.
-extern uint8_t **PMPages;
+extern boolean PMSoundInfoPagePadded;
 
-void PM_Startup(void);
-void PM_Shutdown(void);
+extern word *pageLengths;
+extern byte **PMPages;
 
-static inline uint32_t PM_GetPageSize(int page)
-{
-    if(page < 0 || page >= ChunksInFile)
-        Quit("PM_GetPageSize: Tried to access illegal page: %i", page);
-    return (uint32_t) (PMPages[page + 1] - PMPages[page]);
-}
-
-static inline uint8_t *PM_GetPage(int page)
-{
-    if(page < 0 || page >= ChunksInFile)
-        Quit("PM_GetPage: Tried to access illegal page: %i", page);
-    return PMPages[page];
-}
-
-static inline uint8_t *PM_GetEnd(void)
-{
-    return PMPages[ChunksInFile];
-}
-
-static inline byte *PM_GetTexture(int wallpic)
-{
-    return PM_GetPage(wallpic);
-}
-
-static inline uint16_t *PM_GetSprite(int shapenum)
-{
-    /* correct alignment is enforced by PM_Startup() */
-    return (uint16_t *) (void *) PM_GetPage(PMSpriteStart + shapenum);
-}
-
-static inline byte *PM_GetSound(int soundpagenum)
-{
-    return PM_GetPage(PMSoundStart + soundpagenum);
-}
+void     PM_Startup (void);
+void     PM_Shutdown (void);
+uint32_t PM_GetPageSize (int page);
+byte     *PM_GetPage (int page);
+byte     *PM_GetPageEnd (void);
 
 #endif

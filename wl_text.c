@@ -74,10 +74,10 @@ static boolean layoutdone;
 =====================
 */
 
-static void RipToEOL (void)
+void RipToEOL (void)
 {
-   /* scan to end of line */
-   while (*text++ != '\n');
+    while (*text++ != '\n')         // scan to end of line
+        ;
 }
 
 
@@ -89,19 +89,23 @@ static void RipToEOL (void)
 =====================
 */
 
-static int ParseNumber (void)
+int ParseNumber (void)
 {
+    char  ch;
     char  num[80];
     char *numptr;
 
-    /* scan until a number is found */
-    char ch = *text;
+    //
+    // scan until a number is found
+    //
+    ch = *text;
     while (ch < '0' || ch >'9')
         ch = *++text;
 
-    /* copy the number out */
+    //
+    // copy the number out
+    //
     numptr = num;
-
     do
     {
         *numptr++ = ch;
@@ -125,21 +129,22 @@ static int ParseNumber (void)
 =====================
 */
 
-static void ParsePicCommand (void)
+void ParsePicCommand (void)
 {
-   picy=ParseNumber();
-   picx=ParseNumber();
-   picnum=ParseNumber();
-   RipToEOL ();
+    picy=ParseNumber();
+    picx=ParseNumber();
+    picnum=ParseNumber();
+    RipToEOL ();
 }
 
-static void ParseTimedCommand (void)
+
+void ParseTimedCommand (void)
 {
-   picy=ParseNumber();
-   picx=ParseNumber();
-   picnum=ParseNumber();
-   picdelay=ParseNumber();
-   RipToEOL ();
+    picy=ParseNumber();
+    picx=ParseNumber();
+    picnum=ParseNumber();
+    picdelay=ParseNumber();
+    RipToEOL ();
 }
 
 
@@ -154,18 +159,24 @@ static void ParseTimedCommand (void)
 =====================
 */
 
-static void TimedPicCommand (void)
+void TimedPicCommand (void)
 {
-   ParseTimedCommand ();
+    ParseTimedCommand ();
 
-   /* update the screen, and wait for time delay */
-   VW_UpdateScreen ();
+    //
+    // update the screen, and wait for time delay
+    //
+    VW_UpdateScreen ();
 
-   /* wait for time */
-   Delay(picdelay);
+    //
+    // wait for time
+    //
+    Delay(picdelay);
 
-   /* draw pic */
-   VWB_DrawPic (picx&~7,picy,picnum);
+    //
+    // draw pic
+    //
+    VWB_DrawPic (picx&~7,picy,picnum);
 }
 
 
@@ -177,96 +188,98 @@ static void TimedPicCommand (void)
 =====================
 */
 
-static void HandleCommand(void)
+void HandleCommand (void)
 {
-   int     i,margin,top,bottom;
-   int     picwidth,picheight,picmid;
+    int     i,margin,top,bottom;
+    int     picwidth,picheight,picmid;
 
-   switch (toupper(*++text))
-   {
-      case 'B':
-         picy=ParseNumber();
-         picx=ParseNumber();
-         picwidth=ParseNumber();
-         picheight=ParseNumber();
-         VWB_Bar(picx,picy,picwidth,picheight,BACKCOLOR);
-         RipToEOL();
-         break;
-      case ';':               // comment
-         RipToEOL();
-         break;
-      case 'P':               // ^P is start of next page, ^E is end of file
-      case 'E':
-         layoutdone = true;
-         text--;             // back up to the '^'
-         break;
+    switch (toupper(*++text))
+    {
+        case 'B':
+            picy=ParseNumber();
+            picx=ParseNumber();
+            picwidth=ParseNumber();
+            picheight=ParseNumber();
+            VWB_Bar(picx,picy,picwidth,picheight,BACKCOLOR);
+            RipToEOL();
+            break;
+        case ';':               // comment
+            RipToEOL();
+            break;
+        case 'P':               // ^P is start of next page, ^E is end of file
+        case 'E':
+            layoutdone = true;
+            text--;             // back up to the '^'
+            break;
 
-      case 'C':               // ^c<hex digit> changes text color
-         i = toupper(*++text);
-         if (i>='0' && i<='9')
-            fontcolor = i-'0';
-         else if (i>='A' && i<='F')
-            fontcolor = i-'A'+10;
+        case 'C':               // ^c<hex digit> changes text color
+            i = toupper(*++text);
+            if (i>='0' && i<='9')
+                fontcolor = i-'0';
+            else if (i>='A' && i<='F')
+                fontcolor = i-'A'+10;
 
-         fontcolor *= 16;
-         i = toupper(*++text);
-         if (i>='0' && i<='9')
-            fontcolor += i-'0';
-         else if (i>='A' && i<='F')
-            fontcolor += i-'A'+10;
-         text++;
-         break;
+            fontcolor *= 16;
+            i = toupper(*++text);
+            if (i>='0' && i<='9')
+                fontcolor += i-'0';
+            else if (i>='A' && i<='F')
+                fontcolor += i-'A'+10;
+            text++;
+            break;
 
-      case '>':
-         px = 160;
-         text++;
-         break;
+        case '>':
+            px = 160;
+            text++;
+            break;
 
-      case 'L':
-         py=ParseNumber();
-         rowon = (py-TOPMARGIN)/FONTHEIGHT;
-         py = TOPMARGIN+rowon*FONTHEIGHT;
-         px=ParseNumber();
-         while (*text++ != '\n')         // scan to end of line
-            ;
-         break;
+        case 'L':
+            py=ParseNumber();
+            rowon = (py-TOPMARGIN)/FONTHEIGHT;
+            py = TOPMARGIN+rowon*FONTHEIGHT;
+            px=ParseNumber();
+            while (*text++ != '\n')         // scan to end of line
+                ;
+            break;
 
-      case 'T':               // ^Tyyy,xxx,ppp,ttt waits ttt tics, then draws pic
-         TimedPicCommand ();
-         break;
+        case 'T':               // ^Tyyy,xxx,ppp,ttt waits ttt tics, then draws pic
+            TimedPicCommand ();
+            break;
 
-      case 'G':               // ^Gyyy,xxx,ppp draws graphic
-         ParsePicCommand ();
-         VWB_DrawPic (picx&~7,picy,picnum);
-         picwidth = pictable[picnum-STARTPICS].width;
-         picheight = pictable[picnum-STARTPICS].height;
-         //
-         // adjust margins
-         //
-         picmid = picx + picwidth/2;
-         if (picmid > SCREENMID)
-            margin = picx-PICMARGIN;                        // new right margin
-         else
-            margin = picx+picwidth+PICMARGIN;       // new left margin
-
-         top = (picy-TOPMARGIN)/FONTHEIGHT;
-         if (top<0)
-            top = 0;
-         bottom = (picy+picheight-TOPMARGIN)/FONTHEIGHT;
-         if (bottom>=TEXTROWS)
-            bottom = TEXTROWS-1;
-
-         for (i=top;i<=bottom;i++)
+        case 'G':               // ^Gyyy,xxx,ppp draws graphic
+            ParsePicCommand ();
+            VWB_DrawPic (picx&~7,picy,picnum);
+            picwidth = pictable[picnum-STARTPICS].width;
+            picheight = pictable[picnum-STARTPICS].height;
+            //
+            // adjust margins
+            //
+            picmid = picx + picwidth/2;
             if (picmid > SCREENMID)
-               rightmargin[i] = margin;
+                margin = picx-PICMARGIN;                        // new right margin
             else
-               leftmargin[i] = margin;
+                margin = picx+picwidth+PICMARGIN;       // new left margin
 
-         /* adjust this line if needed */
-         if (px < (int) leftmargin[rowon])
-            px = leftmargin[rowon];
-         break;
-   }
+            top = (picy-TOPMARGIN)/FONTHEIGHT;
+            if (top<0)
+                top = 0;
+            bottom = (picy+picheight-TOPMARGIN)/FONTHEIGHT;
+            if (bottom>=TEXTROWS)
+                bottom = TEXTROWS-1;
+
+            for (i=top;i<=bottom;i++)
+                if (picmid > SCREENMID)
+                    rightmargin[i] = margin;
+                else
+                    leftmargin[i] = margin;
+
+            //
+            // adjust this line if needed
+            //
+            if (px < (int) leftmargin[rowon])
+                px = leftmargin[rowon];
+            break;
+    }
 }
 
 
@@ -278,32 +291,32 @@ static void HandleCommand(void)
 =====================
 */
 
-static void NewLine(void)
+void NewLine (void)
 {
-   char    ch;
+    char    ch;
 
-   if (++rowon == TEXTROWS)
-   {
-      /* overflowed the page, so 
-       * skip until next page break */
-      layoutdone = true;
-
-      do
-      {
-         if (*text == '^')
-         {
-            ch = toupper(*(text+1));
-            if (ch == 'E' || ch == 'P')
+    if (++rowon == TEXTROWS)
+    {
+        //
+        // overflowed the page, so skip until next page break
+        //
+        layoutdone = true;
+        do
+        {
+            if (*text == '^')
             {
-               layoutdone = true;
-               return;
+                ch = toupper(*(text+1));
+                if (ch == 'E' || ch == 'P')
+                {
+                    layoutdone = true;
+                    return;
+                }
             }
-         }
-         text++;
-      } while (1);
-   }
-   px = leftmargin[rowon];
-   py+= FONTHEIGHT;
+            text++;
+        } while (1);
+    }
+    px = leftmargin[rowon];
+    py+= FONTHEIGHT;
 }
 
 
@@ -316,16 +329,17 @@ static void NewLine(void)
 =====================
 */
 
-static void HandleCtrls(void)
+void HandleCtrls (void)
 {
-   /* get the character and advance */
-   char ch = *text++;                   
+    char    ch;
 
-   if (ch == '\n')
-   {
-      NewLine ();
-      return;
-   }
+    ch = *text++;                   // get the character and advance
+
+    if (ch == '\n')
+    {
+        NewLine ();
+        return;
+    }
 }
 
 
@@ -337,46 +351,53 @@ static void HandleCtrls(void)
 =====================
 */
 
-static void HandleWord(void)
+void HandleWord (void)
 {
-   char    wword[WORDLIMIT];
-   int     wordindex;
-   word    wwidth,wheight,newpos;
+    char    wword[WORDLIMIT];
+    int     wordindex;
+    word    wwidth,wheight,newpos;
 
 
-   /* copy the next word into [word] */
-   wword[0]  = *text++;
-   wordindex = 1;
+    //
+    // copy the next word into [word]
+    //
+    wword[0] = *text++;
+    wordindex = 1;
+    while (*text>32)
+    {
+        wword[wordindex] = *text++;
+        if (++wordindex == WORDLIMIT)
+            Quit ("PageLayout: Word limit exceeded");
+    }
+    wword[wordindex] = 0;            // stick a null at end for C
 
-   while (*text>32)
-   {
-      wword[wordindex] = *text++;
-      if (++wordindex == WORDLIMIT)
-         Quit ("PageLayout: Word limit exceeded");
-   }
-   wword[wordindex] = 0;            // stick a null at end for C
+    //
+    // see if it fits on this line
+    //
+    VW_MeasurePropString (wword,&wwidth,&wheight);
 
-   /* see if it fits on this line */
-   VW_MeasurePropString (wword,&wwidth,&wheight);
+    while (px+wwidth > (int) rightmargin[rowon])
+    {
+        NewLine ();
+        if (layoutdone)
+            return;         // overflowed page
+    }
 
-   while (px+wwidth > (int) rightmargin[rowon])
-   {
-      NewLine ();
-      if (layoutdone)
-         return;         /* overflowed page */
-   }
+    //
+    // print it
+    //
+    newpos = px+wwidth;
+    VWB_DrawPropString (wword);
+    px = newpos;
 
-   /* print it */
-   newpos = px+wwidth;
-   VWB_DrawPropString (wword);
-   px = newpos;
-
-   /* suck up any extra spaces */
-   while (*text == ' ')
-   {
-      px += SPACEWIDTH;
-      text++;
-   }
+    //
+    // suck up any extra spaces
+    //
+    while (*text == ' ')
+    {
+        px += SPACEWIDTH;
+        text++;
+    }
 }
 
 /*
@@ -390,80 +411,89 @@ static void HandleWord(void)
 =====================
 */
 
-static void PageLayout(boolean shownumber)
+void PageLayout (boolean shownumber)
 {
-   int     i;
-   char    ch;
-   int oldfontcolor = fontcolor;
+    int     i,oldfontcolor;
+    char    ch;
 
-   fontcolor = 0;
+    oldfontcolor = fontcolor;
 
-   /* clear the screen */
-   VWB_Bar (0,0,320,200,BACKCOLOR);
-   VWB_DrawPic (0,0,H_TOPWINDOWPIC);
-   VWB_DrawPic (0,8,H_LEFTWINDOWPIC);
-   VWB_DrawPic (312,8,H_RIGHTWINDOWPIC);
-   VWB_DrawPic (8,176,H_BOTTOMINFOPIC);
+    fontcolor = 0;
 
-   for (i=0; i<TEXTROWS; i++)
-   {
-      leftmargin[i] = LEFTMARGIN;
-      rightmargin[i] = SCREENPIXWIDTH-RIGHTMARGIN;
-   }
+    //
+    // clear the screen
+    //
+    VWB_Bar (0,0,320,200,BACKCOLOR);
+    VWB_DrawPic (0,0,H_TOPWINDOWPIC);
+    VWB_DrawPic (0,8,H_LEFTWINDOWPIC);
+    VWB_DrawPic (312,8,H_RIGHTWINDOWPIC);
+    VWB_DrawPic (8,176,H_BOTTOMINFOPIC);
 
-   px = LEFTMARGIN;
-   py = TOPMARGIN;
-   rowon = 0;
-   layoutdone = false;
 
-   /* make sure we are starting layout text (^P first command) */
-   while (*text <= 32)
-      text++;
+    for (i=0; i<TEXTROWS; i++)
+    {
+        leftmargin[i] = LEFTMARGIN;
+        rightmargin[i] = SCREENPIXWIDTH-RIGHTMARGIN;
+    }
 
-   if (*text != '^' || toupper(*++text) != 'P')
-      Quit ("PageLayout: Text not headed with ^P");
+    px = LEFTMARGIN;
+    py = TOPMARGIN;
+    rowon = 0;
+    layoutdone = false;
 
-   while (*text++ != '\n')
-      ;
+    //
+    // make sure we are starting layout text (^P first command)
+    //
+    while (*text <= 32)
+        text++;
 
-   /* process text stream */
-   do
-   {
-      ch = *text;
+    if (*text != '^' || toupper(*++text) != 'P')
+        Quit ("PageLayout: Text not headed with ^P");
 
-      if (ch == '^')
-         HandleCommand ();
-      else
-         if (ch == 9)
-         {
-            px = (px+8)&0xf8;
-            text++;
-         }
-         else if (ch <= 32)
-            HandleCtrls ();
-         else
-            HandleWord ();
+    while (*text++ != '\n')
+        ;
 
-   } while (!layoutdone);
 
-   pagenum++;
+    //
+    // process text stream
+    //
+    do
+    {
+        ch = *text;
 
-   if (shownumber)
-   {
+        if (ch == '^')
+            HandleCommand ();
+        else
+            if (ch == 9)
+            {
+                px = (px+8)&0xf8;
+                text++;
+            }
+            else if (ch <= 32)
+                HandleCtrls ();
+            else
+                HandleWord ();
+
+    } while (!layoutdone);
+
+    pagenum++;
+
+    if (shownumber)
+    {
 #ifdef SPANISH
-      sprintf(str, "Hoja %d de %d", pagenum, numpages);
-      px = 208;
+        sprintf(str, "Hoja %d de %d", pagenum, numpages);
+        px = 208;
 #else
-      sprintf(str, "pg %d of %d", pagenum, numpages);
-      px = 213;
+        sprintf(str, "pg %d of %d", pagenum, numpages);
+        px = 213;
 #endif
-      py = 183;
-      fontcolor = 0x4f;                          //12^BACKCOLOR;
+        py = 183;
+        fontcolor = 0x4f;                          //12^BACKCOLOR;
 
-      VWB_DrawPropString (str);
-   }
+        VWB_DrawPropString (str);
+    }
 
-   fontcolor = oldfontcolor;
+    fontcolor = oldfontcolor;
 }
 
 //===========================================================================
@@ -478,15 +508,15 @@ static void PageLayout(boolean shownumber)
 =====================
 */
 
-static void BackPage(void)
+void BackPage (void)
 {
-   pagenum--;
-   do
-   {
-      text--;
-      if (*text == '^' && toupper(*(text+1)) == 'P')
-         return;
-   } while (1);
+    pagenum--;
+    do
+    {
+        text--;
+        if (*text == '^' && toupper(*(text+1)) == 'P')
+            return;
+    } while (1);
 }
 
 
@@ -496,57 +526,47 @@ static void BackPage(void)
 /*
 =====================
 =
-= CacheLayoutGraphics
+= CacheLayout
 =
-= Scans an entire layout file (until a ^E) marking all graphics used, and
-= counting pages, then caches the graphics in
+= Scans an entire layout file (until a ^E), counting pages
 =
 =====================
 */
-static void CacheLayoutGraphics(void)
+
+void CacheLayout (void)
 {
-   char    *bombpoint, *textstart;
-   char    ch;
+    char    *bombpoint, *textstart;
+    char    ch;
 
-   textstart = text;
-   bombpoint = text+30000;
-   numpages = pagenum = 0;
+    textstart = text;
+    bombpoint = text+30000;
+    numpages = pagenum = 0;
 
-   do
-   {
-      if (*text == '^')
-      {
-         ch = toupper(*++text);
-         if (ch == 'P')          /* start of a page */
-            numpages++;
-         if (ch == 'E')          /* end of file, so load graphics and return */
-         {
-#ifndef SPEAR
-            CA_CacheGrChunk(H_TOPWINDOWPIC);
-            CA_CacheGrChunk(H_LEFTWINDOWPIC);
-            CA_CacheGrChunk(H_RIGHTWINDOWPIC);
-            CA_CacheGrChunk(H_BOTTOMINFOPIC);
-#endif
-            text = textstart;
-            return;
-         }
-         if (ch == 'G')          /* draw graphic command, so mark graphics */
-         {
-            ParsePicCommand ();
-            CA_CacheGrChunk (picnum);
-         }
-         if (ch == 'T')          /* timed draw graphic command, so mark graphics */
-         {
-            ParseTimedCommand ();
-            CA_CacheGrChunk (picnum);
-         }
-      }
-      else
-         text++;
+    do
+    {
+        if (*text == '^')
+        {
+            ch = toupper(*++text);
+            if (ch == 'P')          // start of a page
+                numpages++;
+            if (ch == 'E')          // end of file, so return
+            {
+                text = textstart;
+                return;
+            }
 
-   } while (text<bombpoint);
+            if (ch == 'G')          // draw graphic command
+                ParsePicCommand ();
 
-   Quit ("CacheLayoutGraphics: No ^E to terminate file!");
+            if (ch == 'T')          // timed draw graphic command
+                ParseTimedCommand ();
+        }
+        else
+            text++;
+
+    } while (text<bombpoint);
+
+    Quit ("CacheLayout: No ^E to terminate file!");
 }
 #endif
 
@@ -560,149 +580,146 @@ static void CacheLayoutGraphics(void)
 */
 
 #ifdef JAPAN
-static void ShowArticle (int which)
+void ShowArticle (int which)
 #else
-static void ShowArticle (char *article)
+void ShowArticle (char *article)
 #endif
 {
 #ifdef JAPAN
-   int snames[10] = {
-      H_HELP1PIC,
-      H_HELP2PIC,
-      H_HELP3PIC,
-      H_HELP4PIC,
-      H_HELP5PIC,
-      H_HELP6PIC,
-      H_HELP7PIC,
-      H_HELP8PIC,
-      H_HELP9PIC,
-      H_HELP10PIC};
-   int enames[14] = {
-      0,0,
+    int snames[10] = {
+        H_HELP1PIC,
+        H_HELP2PIC,
+        H_HELP3PIC,
+        H_HELP4PIC,
+        H_HELP5PIC,
+        H_HELP6PIC,
+        H_HELP7PIC,
+        H_HELP8PIC,
+        H_HELP9PIC,
+        H_HELP10PIC};
+    int enames[14] = {
+        0,0,
 #ifndef JAPDEMO
-      C_ENDGAME1APIC,
-      C_ENDGAME1BPIC,
-      C_ENDGAME2APIC,
-      C_ENDGAME2BPIC,
-      C_ENDGAME3APIC,
-      C_ENDGAME3BPIC,
-      C_ENDGAME4APIC,
-      C_ENDGAME4BPIC,
-      C_ENDGAME5APIC,
-      C_ENDGAME5BPIC,
-      C_ENDGAME6APIC,
-      C_ENDGAME6BPIC
+        C_ENDGAME1APIC,
+        C_ENDGAME1BPIC,
+        C_ENDGAME2APIC,
+        C_ENDGAME2BPIC,
+        C_ENDGAME3APIC,
+        C_ENDGAME3BPIC,
+        C_ENDGAME4APIC,
+        C_ENDGAME4BPIC,
+        C_ENDGAME5APIC,
+        C_ENDGAME5BPIC,
+        C_ENDGAME6APIC,
+        C_ENDGAME6BPIC
 #endif
-   };
+    };
 #endif
-   unsigned    oldfontnumber;
-   boolean     newpage,firstpage;
-   ControlInfo ci;
+    unsigned    oldfontnumber;
+    boolean     newpage,firstpage;
+    ControlInfo ci;
 
 #ifdef JAPAN
-   pagenum = 1;
-   if (!which)
-      numpages = 10;
-   else
-      numpages = 2;
+    pagenum = 1;
+    if (!which)
+        numpages = 10;
+    else
+        numpages = 2;
 #else
-   text = article;
-   oldfontnumber = fontnumber;
-   fontnumber = 0;
-   CA_CacheGrChunk(STARTFONT);
-   VWB_Bar (0,0,320,200,BACKCOLOR);
-   CacheLayoutGraphics ();
+    text = article;
+    oldfontnumber = fontnumber;
+    fontnumber = 0;
+    VWB_Bar (0,0,320,200,BACKCOLOR);
+    CacheLayout ();
 #endif
 
-   newpage = true;
-   firstpage = true;
+    newpage = true;
+    firstpage = true;
 
-   do
-   {
-      if (newpage)
-      {
-         newpage = false;
+    do
+    {
+        if (newpage)
+        {
+            newpage = false;
 #ifdef JAPAN
-         if (!which)
-            CA_CacheScreen(snames[pagenum - 1]);
-         else
-            CA_CacheScreen(enames[which*2 + pagenum - 1]);
+            if (!which)
+                VWB_DrawPic (0,0,snames[pagenum - 1]);
+            else
+                VWB_DrawPic (0,0,enames[which*2 + pagenum - 1]);
 #else
-         PageLayout (true);
+            PageLayout (true);
 #endif
-         VW_UpdateScreen ();
-         if (firstpage)
-         {
-            VL_FadeIn(0,255,gamepal,10);
-            firstpage = false;
-         }
-      }
-      rarch_sleep(5);
-
-      LastScan = 0;
-      ReadAnyControl(&ci);
-      Direction dir = ci.dir;
-      switch(dir)
-      {
-         case dir_North:
-         case dir_South:
-            break;
-
-         default:
-            if(ci.button0)
-               dir = dir_South;
-
-            switch(LastScan)
+            VW_UpdateScreen ();
+            if (firstpage)
             {
-               case sc_UpArrow:
-               case sc_PgUp:
-               case sc_LeftArrow:
-                  dir = dir_North;
-                  break;
-
-               case sc_Enter:
-               case sc_DownArrow:
-               case sc_PgDn:
-               case sc_RightArrow:
-                  dir = dir_South;
-                  break;
+                VL_FadeIn(0,255,gamepal,10);
+                firstpage = false;
             }
-            break;
-      }
+        }
+        SDL_Delay(5);
 
-      switch(dir)
-      {
-         case dir_North:
-         case dir_West:
-            if (pagenum>1)
-            {
+        LastScan = 0;
+        ReadAnyControl(&ci);
+        Direction dir = ci.dir;
+        switch(dir)
+        {
+            case dir_North:
+            case dir_South:
+                break;
+
+            default:
+                if(ci.button0) dir = dir_South;
+                switch(LastScan)
+                {
+                    case sc_UpArrow:
+                    case sc_PgUp:
+                    case sc_LeftArrow:
+                        dir = dir_North;
+                        break;
+
+                    case sc_Enter:
+                    case sc_DownArrow:
+                    case sc_PgDn:
+                    case sc_RightArrow:
+                        dir = dir_South;
+                        break;
+                }
+                break;
+        }
+
+        switch(dir)
+        {
+            case dir_North:
+            case dir_West:
+                if (pagenum>1)
+                {
 #ifndef JAPAN
-               BackPage ();
-               BackPage ();
+                    BackPage ();
+                    BackPage ();
 #else
-               pagenum--;
+                  pagenum--;
 #endif
-               newpage = true;
-            }
-            TicDelay(20);
-            break;
+                    newpage = true;
+                }
+                TicDelay(20);
+                break;
 
-         case dir_South:
-         case dir_East:
-            if (pagenum<numpages)
-            {
-               newpage = true;
+            case dir_South:
+            case dir_East:
+                if (pagenum<numpages)
+                {
+                    newpage = true;
 #ifdef JAPAN
-               pagenum++;
+                    pagenum++;
 #endif
-            }
-            TicDelay(20);
-            break;
-      }
-   } while (LastScan != sc_Escape && !ci.button1);
+                }
+                TicDelay(20);
+                break;
+        }
+    } while (LastScan != sc_Escape && !ci.button1);
 
-   IN_ClearKeysDown ();
-   fontnumber = oldfontnumber;
+    IN_ClearKeysDown ();
+    fontnumber = oldfontnumber;
 }
 
 
@@ -729,96 +746,91 @@ char helpfilename[13] = "HELPART.",
 #ifndef SPEAR
 void HelpScreens (void)
 {
-   int     artnum;
-   char    *text;
+    int     artnum;
+    char    *text;
 #ifndef ARTSEXTERN
-   memptr  layout;
+    void    *layout;
 #endif
+
 
 #ifdef JAPAN
-   ShowArticle (0);
-   VW_FadeOut();
-   FreeMusic ();
-   CA_DownLevel ();
-   MM_SortMem ();
+    ShowArticle (0);
+    VW_FadeOut();
+    FreeMusic ();
 #else
 
 #ifdef ARTSEXTERN
-   artnum = helpextern;
-   CA_CacheGrChunk (artnum);
-   text = (char *)grsegs[artnum];
+    artnum = helpextern;
+    text = (char *)grsegs[artnum];
 #else
-   CA_LoadFile (helpfilename,&layout);
-   text = (char *)layout;
+    CA_LoadFile (helpfilename,&layout);
+    text = (char *)layout;
 #endif
 
-   ShowArticle (text);
+    ShowArticle (text);
 
-#ifdef ARTSEXTERN
-   UNCACHEGRCHUNK(artnum);
-#else
-   free(layout);
+#ifndef ARTSEXTERN
+    free(layout);
 #endif
 
-   VW_FadeOut();
+    VW_FadeOut();
 
-   FreeMusic ();
+    FreeMusic ();
 #endif
 }
 #endif
 
-/* END ARTICLES */
+//
+// END ARTICLES
+//
 void EndText (void)
 {
-   int     artnum;
-   char    *text;
+    int     artnum;
+    char    *text;
 #ifndef ARTSEXTERN
-   memptr  layout;
+    void    *layout;
 #endif
 
-   SD_StopDigitized();
+    ClearMemory ();
 
 #ifdef JAPAN
-   ShowArticle(gamestate.episode + 1);
+    ShowArticle(gamestate.episode + 1);
 
-   VW_FadeOut();
+    VW_FadeOut();
 
-   SETFONTCOLOR(0,15);
-   IN_ClearKeysDown();
-   if (MousePresent && IN_IsInputGrabbed())
-      IN_CenterMouse();  // Clear accumulated mouse movement
+    SETFONTCOLOR(0,15);
+    IN_ClearKeysDown();
+    if (MousePresent && IN_IsInputGrabbed())
+        IN_CenterMouse();  // Clear accumulated mouse movement
 
-   FreeMusic ();
+    FreeMusic ();
 #else
 
 
 
 #ifdef ARTSEXTERN
-   artnum = endextern+gamestate.episode;
-   CA_CacheGrChunk (artnum);
-   text = (char *)grsegs[artnum];
+    artnum = endextern+gamestate.episode;
+    text = (char *)grsegs[artnum];
 #else
-   endfilename[6] = '1'+gamestate.episode;
-   CA_LoadFile (endfilename,&layout);
-   text = (char *)layout;
+    endfilename[6] = '1'+gamestate.episode;
+    CA_LoadFile (endfilename,&layout);
+    text = (char *)layout;
 #endif
 
-   ShowArticle (text);
+    ShowArticle (text);
 
-#ifdef ARTSEXTERN
-   UNCACHEGRCHUNK(artnum);
-#else
-   free(layout);
+#ifndef ARTSEXTERN
+    free(layout);
 #endif
 
 
-   VW_FadeOut();
-   SETFONTCOLOR(0,15);
-   IN_ClearKeysDown();
-   if (MousePresent && IN_IsInputGrabbed())
-      IN_CenterMouse();  // Clear accumulated mouse movement
+    VW_FadeOut();
+    SETFONTCOLOR(0,15);
+    IN_ClearKeysDown();
+    if (MousePresent && IN_IsInputGrabbed())
+        IN_CenterMouse();  // Clear accumulated mouse movement
 
-   FreeMusic ();
+    FreeMusic ();
 #endif
 }
 #endif

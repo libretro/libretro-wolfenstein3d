@@ -88,15 +88,14 @@ void SpawnNewObj (unsigned tilex, unsigned tiley, statetype *state)
     else
         newobj->ticcount = 0;
 
-    newobj->tilex = (int16_t) tilex;
-    newobj->tiley = (int16_t) tiley;
-    newobj->x     = ((int32_t)tilex<<TILESHIFT)+TILEGLOBAL/2;
-    newobj->y     = ((int32_t)tiley<<TILESHIFT)+TILEGLOBAL/2;
-    newobj->dir   = nodir;
+    newobj->tilex = (short) tilex;
+    newobj->tiley = (short) tiley;
+    newobj->x = ((int32_t)tilex<<TILESHIFT)+TILEGLOBAL/2;
+    newobj->y = ((int32_t)tiley<<TILESHIFT)+TILEGLOBAL/2;
+    newobj->dir = nodir;
 
     actorat[tilex][tiley] = newobj;
-    newobj->areanumber =
-        *(mapsegs[0] + (newobj->tiley<<mapshift)+newobj->tilex) - AREATILE;
+    newobj->areanumber = MAPSPOT(tilex,tiley,0) - AREATILE;
 }
 
 
@@ -157,7 +156,7 @@ void NewState (objtype *ob, statetype *state)
     temp=(uintptr_t)actorat[x][y];                  \
     if (temp)                                       \
     {                                               \
-        if (temp<256)                               \
+        if (temp<BIT_ALLTILES)                      \
             return false;                           \
         if (((objtype *)temp)->flags&FL_SHOOTABLE)  \
             return false;                           \
@@ -170,17 +169,25 @@ void NewState (objtype *ob, statetype *state)
                 doornum = temp&63;                      \
             else                                        \
             {                                           \
-                doornum = (int) temp & 127;             \
+                doornum = (int) temp & ~BIT_DOOR;       \
+                if (ob->obclass != ghostobj             \
+                    && ob->obclass != spectreobj)       \
+                {                                       \
+                    OpenDoor(doornum);                  \
+                    ob->distance = -doornum - 1;        \
+                    return true;                        \
+                }                                       \
+            }
+#else
+    #define DOORCHECK                                   \
+            doornum = (int) temp & ~BIT_DOOR;           \
+            if (ob->obclass != ghostobj                 \
+                && ob->obclass != spectreobj)           \
+            {                                           \
                 OpenDoor(doornum);                      \
                 ob->distance = -doornum - 1;            \
                 return true;                            \
             }
-#else
-    #define DOORCHECK                                   \
-            doornum = (int) temp & 127;                 \
-            OpenDoor(doornum);                          \
-            ob->distance = -doornum - 1;                \
-            return true;
 #endif
 
 #define CHECKSIDE(x,y)                                  \
@@ -188,9 +195,9 @@ void NewState (objtype *ob, statetype *state)
     temp=(uintptr_t)actorat[x][y];                      \
     if (temp)                                           \
     {                                                   \
-        if (temp<128)                                   \
+        if (temp<BIT_DOOR)                              \
             return false;                               \
-        if (temp<256)                                   \
+        if (temp<BIT_ALLTILES)                          \
         {                                               \
             DOORCHECK                                   \
         }                                               \
@@ -251,8 +258,7 @@ boolean TryWalk (objtype *ob)
         switch (ob->dir)
         {
             case north:
-                if (ob->obclass == dogobj || ob->obclass == fakeobj
-                    || ob->obclass == ghostobj || ob->obclass == spectreobj)
+                if (ob->obclass == dogobj || ob->obclass == fakeobj)
                 {
                     CHECKDIAG(ob->tilex,ob->tiley-1);
                 }
@@ -272,8 +278,7 @@ boolean TryWalk (objtype *ob)
                 break;
 
             case east:
-                if (ob->obclass == dogobj || ob->obclass == fakeobj
-                    || ob->obclass == ghostobj || ob->obclass == spectreobj)
+                if (ob->obclass == dogobj || ob->obclass == fakeobj)
                 {
                     CHECKDIAG(ob->tilex+1,ob->tiley);
                 }
@@ -293,8 +298,7 @@ boolean TryWalk (objtype *ob)
                 break;
 
             case south:
-                if (ob->obclass == dogobj || ob->obclass == fakeobj
-                    || ob->obclass == ghostobj || ob->obclass == spectreobj)
+                if (ob->obclass == dogobj || ob->obclass == fakeobj)
                 {
                     CHECKDIAG(ob->tilex,ob->tiley+1);
                 }
@@ -314,8 +318,7 @@ boolean TryWalk (objtype *ob)
                 break;
 
             case west:
-                if (ob->obclass == dogobj || ob->obclass == fakeobj
-                    || ob->obclass == ghostobj || ob->obclass == spectreobj)
+                if (ob->obclass == dogobj || ob->obclass == fakeobj)
                 {
                     CHECKDIAG(ob->tilex-1,ob->tiley);
                 }
@@ -343,7 +346,7 @@ boolean TryWalk (objtype *ob)
     }
 
 #ifdef PLAYDEMOLIKEORIGINAL
-    if (DEMOCOND_ORIG && doornum != -1)
+    if (doornum != -1)
     {
         OpenDoor(doornum);
         ob->distance = -doornum-1;
@@ -351,9 +354,7 @@ boolean TryWalk (objtype *ob)
     }
 #endif
 
-    ob->areanumber =
-        *(mapsegs[0] + (ob->tiley<<mapshift)+ob->tilex) - AREATILE;
-
+    ob->areanumber = MAPSPOT(ob->tilex,ob->tiley,0) - AREATILE;
     ob->distance = TILEGLOBAL;
     return true;
 }
@@ -727,7 +728,7 @@ void MoveObj (objtype *ob, int32_t move)
     //
     // check to make sure it's not on top of player
     //
-    if (areabyplayer[ob->areanumber])
+    if (ob->areanumber >= NUMAREAS || areabyplayer[ob->areanumber])
     {
         deltax = ob->x - player->x;
         if (deltax < -MINACTORDIST || deltax > MINACTORDIST)
@@ -736,8 +737,8 @@ void MoveObj (objtype *ob, int32_t move)
         if (deltay < -MINACTORDIST || deltay > MINACTORDIST)
             goto moveok;
 
-        if (ob->hidden)          // move closer until he meets CheckLine
-            goto moveok;
+        if (ob->hidden && spotvis[player->tilex][player->tiley])
+            goto moveok;         // move closer until he meets CheckLine
 
         if (ob->obclass == ghostobj || ob->obclass == spectreobj)
             TakeDamage (tics*2,ob);
@@ -849,8 +850,8 @@ void KillActor (objtype *ob)
 {
     int     tilex,tiley;
 
-    tilex = ob->tilex = (word)(ob->x >> TILESHIFT);         // drop item on center
-    tiley = ob->tiley = (word)(ob->y >> TILESHIFT);
+    tilex = ob->x >> TILESHIFT;         // drop item on center
+    tiley = ob->y >> TILESHIFT;
 
     switch (ob->obclass)
     {
@@ -1045,8 +1046,6 @@ void DamageActor (objtype *ob, unsigned damage)
                     NewState (ob,&s_sspain1);
 
                 break;
-            default:
-                break;
         }
     }
 }
@@ -1129,13 +1128,13 @@ boolean CheckLine (objtype *ob)
             if (!value)
                 continue;
 
-            if (value<128 || value>256)
+            if (value<BIT_DOOR || value>BIT_ALLTILES)
                 return false;
 
             //
             // see if the door is open enough
             //
-            value &= ~0x80;
+            value &= ~BIT_DOOR;
             intercept = yfrac-ystep/2;
 
             if (intercept>doorposition[value])
@@ -1183,13 +1182,13 @@ boolean CheckLine (objtype *ob)
             if (!value)
                 continue;
 
-            if (value<128 || value>256)
+            if (value<BIT_DOOR || value>BIT_ALLTILES)
                 return false;
 
             //
             // see if the door is open enough
             //
-            value &= ~0x80;
+            value &= ~BIT_DOOR;
             intercept = xfrac-xstep/2;
 
             if (intercept>doorposition[value])
@@ -1224,7 +1223,7 @@ boolean CheckSight (objtype *ob)
     //
     // don't bother tracing a line if the area isn't connected to the player's
     //
-    if (!areabyplayer[ob->areanumber])
+    if (ob->areanumber < NUMAREAS && !areabyplayer[ob->areanumber])
         return false;
 
     //
@@ -1471,7 +1470,7 @@ boolean SightPlayer (objtype *ob)
     }
     else
     {
-        if (!areabyplayer[ob->areanumber])
+        if (ob->areanumber < NUMAREAS && !areabyplayer[ob->areanumber])
             return false;
 
         if (ob->flags & FL_AMBUSH)

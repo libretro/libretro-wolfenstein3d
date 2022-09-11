@@ -15,12 +15,14 @@ statobj_t       statobjlist[MAXSTATS];
 statobj_t       *laststatobj;
 
 
-struct
+typedef struct
 {
     short      picnum;
     wl_stat_t  type;
     uint32_t   specialFlags;    // they are ORed to the statobj_t flags
-} statinfo[] =
+} statinfo_t;
+
+statinfo_t statinfo[] =
 {
     {SPR_STAT_0},                           // puddle          spr1v
     {SPR_STAT_1,block},                     // Green Barrel    "
@@ -111,7 +113,12 @@ struct
     #endif
 
     {SPR_STAT_26,bo_clip2},                 // Clip            "
-
+#ifdef USE_DIR3DSPR
+    // These are just two examples showing the new way of using dir 3d sprites.
+    // You can find the allowed values in the objflag_t enum in wl_def.h.
+    {SPR_STAT_47,none,FL_DIR_VERT_MID},
+    {SPR_STAT_47,block,FL_DIR_HORIZ_MID},
+#endif
     {-1}                                    // terminator
 };
 
@@ -140,51 +147,51 @@ void InitStaticList (void)
 
 void SpawnStatic (int tilex, int tiley, int type)
 {
-   laststatobj->shapenum = statinfo[type].picnum;
-   laststatobj->tilex = tilex;
-   laststatobj->tiley = tiley;
-   laststatobj->visspot = &spotvis[tilex][tiley];
+    laststatobj->shapenum = statinfo[type].picnum;
+    laststatobj->tilex = tilex;
+    laststatobj->tiley = tiley;
+    laststatobj->visspot = &spotvis[tilex][tiley];
+    laststatobj->itemnumber = statinfo[type].type;
 
-   switch (statinfo[type].type)
-   {
-      case block:
-         actorat[tilex][tiley] = (objtype *) 64;          // consider it a blocking tile
-      case none:
-         laststatobj->flags = 0;
-         break;
+    switch (statinfo[type].type)
+    {
+        case block:
+            actorat[tilex][tiley] = (objtype *) BIT_WALL;          // consider it a blocking tile
+        case none:
+            laststatobj->flags = 0;
+            break;
 
-      case    bo_cross:
-      case    bo_chalice:
-      case    bo_bible:
-      case    bo_crown:
-      case    bo_fullheal:
-         if (!loadedgame)
-            gamestate.treasuretotal++;
+        case    bo_cross:
+        case    bo_chalice:
+        case    bo_bible:
+        case    bo_crown:
+        case    bo_fullheal:
+            if (!loadedgame)
+                gamestate.treasuretotal++;
 
-      case    bo_firstaid:
-      case    bo_key1:
-      case    bo_key2:
-      case    bo_key3:
-      case    bo_key4:
-      case    bo_clip:
-      case    bo_25clip:
-      case    bo_machinegun:
-      case    bo_chaingun:
-      case    bo_food:
-      case    bo_alpo:
-      case    bo_gibs:
-      case    bo_spear:
-         laststatobj->flags = FL_BONUS;
-         laststatobj->itemnumber = statinfo[type].type;
-         break;
-   }
+        case    bo_firstaid:
+        case    bo_key1:
+        case    bo_key2:
+        case    bo_key3:
+        case    bo_key4:
+        case    bo_clip:
+        case    bo_25clip:
+        case    bo_machinegun:
+        case    bo_chaingun:
+        case    bo_food:
+        case    bo_alpo:
+        case    bo_gibs:
+        case    bo_spear:
+            laststatobj->flags = FL_BONUS;
+            break;
+    }
 
-   laststatobj->flags |= statinfo[type].specialFlags;
+    laststatobj->flags |= statinfo[type].specialFlags;
 
-   laststatobj++;
+    laststatobj++;
 
-   if (laststatobj == &statobjlist[MAXSTATS])
-      Quit ("Too many static objects!\n");
+    if (laststatobj == &statobjlist[MAXSTATS])
+        Quit ("Too many static objects!\n");
 }
 
 
@@ -202,40 +209,45 @@ void SpawnStatic (int tilex, int tiley, int type)
 
 void PlaceItemType (int itemtype, int tilex, int tiley)
 {
-   int type;
-   statobj_t *spot;
+    int type;
+    statobj_t *spot;
 
-   /* find the item number */
-   for (type=0; ; type++)
-   {
-      if (statinfo[type].picnum == -1)                    // end of list
-         Quit ("PlaceItemType: couldn't find type!");
-      if (statinfo[type].type == itemtype)
-         break;
-   }
+    //
+    // find the item number
+    //
+    for (type=0; ; type++)
+    {
+        if (statinfo[type].picnum == -1)                    // end of list
+            Quit ("PlaceItemType: couldn't find type!");
+        if (statinfo[type].type == itemtype)
+            break;
+    }
 
-   /* find a spot in statobjlist to put it in */
-   for (spot=&statobjlist[0]; ; spot++)
-   {
-      if (spot==laststatobj)
-      {
-         if (spot == &statobjlist[MAXSTATS])
-            return;                                     // no free spots
-         laststatobj++;                                  // space at end
-         break;
-      }
+    //
+    // find a spot in statobjlist to put it in
+    //
+    for (spot=&statobjlist[0]; ; spot++)
+    {
+        if (spot==laststatobj)
+        {
+            if (spot == &statobjlist[MAXSTATS])
+                return;                                     // no free spots
+            laststatobj++;                                  // space at end
+            break;
+        }
 
-      if (spot->shapenum == -1)                           // -1 is a free spot
-         break;
-   }
-
-   /* place it */
-   spot->shapenum = statinfo[type].picnum;
-   spot->tilex = tilex;
-   spot->tiley = tiley;
-   spot->visspot = &spotvis[tilex][tiley];
-   spot->flags = FL_BONUS | statinfo[type].specialFlags;
-   spot->itemnumber = statinfo[type].type;
+        if (spot->shapenum == -1)                           // -1 is a free spot
+            break;
+    }
+    //
+    // place it
+    //
+    spot->shapenum = statinfo[type].picnum;
+    spot->tilex = tilex;
+    spot->tiley = tiley;
+    spot->visspot = &spotvis[tilex][tiley];
+    spot->flags = FL_BONUS | statinfo[type].specialFlags;
+    spot->itemnumber = statinfo[type].type;
 }
 
 
@@ -361,23 +373,25 @@ void SpawnDoor (int tilex, int tiley, boolean vertical, int lock)
     lastdoorobj->lock = lock;
     lastdoorobj->action = dr_closed;
 
-    actorat[tilex][tiley] = (objtype *)(uintptr_t)(doornum | 0x80);   // consider it a solid wall
+    actorat[tilex][tiley] = (objtype *)(uintptr_t)(doornum | BIT_DOOR);   // consider it a solid wall
 
+    //
     // make the door tile a special tile, and mark the adjacent tiles
     // for door sides
-    tilemap[tilex][tiley] = doornum | 0x80;
-    map = mapsegs[0] + (tiley<<mapshift) +tilex;
+    //
+    tilemap[tilex][tiley] = doornum | BIT_DOOR;
+    map = &MAPSPOT(tilex,tiley,0);
     if (vertical)
     {
         *map = *(map-1);                        // set area number
-        tilemap[tilex][tiley-1] |= 0x40;
-        tilemap[tilex][tiley+1] |= 0x40;
+        tilemap[tilex][tiley-1] |= BIT_WALL;
+        tilemap[tilex][tiley+1] |= BIT_WALL;
     }
     else
     {
         *map = *(map-mapwidth);                                 // set area number
-        tilemap[tilex-1][tiley] |= 0x40;
-        tilemap[tilex+1][tiley] |= 0x40;
+        tilemap[tilex-1][tiley] |= BIT_WALL;
+        tilemap[tilex+1][tiley] |= BIT_WALL;
     }
 
     doornum++;
@@ -444,7 +458,7 @@ void CloseDoor (int door)
         if (ISPOINTER(check) && ((check->x-MINDIST) >> TILESHIFT) == tilex )
             return;
     }
-    else if (!doorobjlist[door].vertical)
+    else
     {
         if (player->tilex == tilex)
         {
@@ -465,8 +479,8 @@ void CloseDoor (int door)
     //
     // play door sound if in a connected area
     //
-    area = *(mapsegs[0] + (doorobjlist[door].tiley<<mapshift)
-        +doorobjlist[door].tilex)-AREATILE;
+    area = MAPSPOT(tilex,tiley,0) - AREATILE;
+
     if (areabyplayer[area])
     {
         PlaySoundLocTile(CLOSEDOORSND,doorobjlist[door].tilex,doorobjlist[door].tiley); // JAB
@@ -476,7 +490,7 @@ void CloseDoor (int door)
     //
     // make the door space solid
     //
-    actorat[tilex][tiley] = (objtype *)(uintptr_t)(door | 0x80);
+    actorat[tilex][tiley] = (objtype *)(uintptr_t)(door | BIT_DOOR);
 }
 
 
@@ -500,7 +514,7 @@ void OperateDoor (int door)
     {
         if ( ! (gamestate.keys & (1 << (lock-dr_lock1) ) ) )
         {
-            SD_PlaySound (NOWAYSND);                // locked
+            if(doorposition[door]==0)SD_PlaySound (NOWAYSND);  // ADDEDFIX 9       // locked
             return;
         }
     }
@@ -556,9 +570,10 @@ void DoorOpening (int door)
     position = doorposition[door];
     if (!position)
     {
+        //
         // door is just starting to open, so connect the areas
-        map = mapsegs[0] + (doorobjlist[door].tiley<<mapshift)
-            +doorobjlist[door].tilex;
+        //
+        map = &MAPSPOT(doorobjlist[door].tilex,doorobjlist[door].tiley,0);
 
         if (doorobjlist[door].vertical)
         {
@@ -586,11 +601,15 @@ void DoorOpening (int door)
         }
     }
 
+    //
     // slide the door by an adaptive amount
+    //
     position += tics<<10;
     if (position >= 0xffff)
     {
+        //
         // door is all the way open
+        //
         position = 0xffff;
         doorobjlist[door].ticcount = 0;
         doorobjlist[door].action = dr_open;
@@ -611,58 +630,62 @@ void DoorOpening (int door)
 
 void DoorClosing (int door)
 {
-   unsigned area1,area2;
-   word *map;
-   int32_t position;
-   int tilex,tiley;
+    unsigned area1,area2;
+    word *map;
+    int32_t position;
+    int tilex,tiley;
 
-   tilex = doorobjlist[door].tilex;
-   tiley = doorobjlist[door].tiley;
+    tilex = doorobjlist[door].tilex;
+    tiley = doorobjlist[door].tiley;
 
-   if ( ((int)(uintptr_t)actorat[tilex][tiley] != (door | 0x80))
-         || (player->tilex == tilex && player->tiley == tiley) )
-   {                       // something got inside the door
-      OpenDoor (door);
-      return;
-   };
+    if ( ((int)(uintptr_t)actorat[tilex][tiley] != (door | BIT_DOOR))
+        || (player->tilex == tilex && player->tiley == tiley) )
+    {                       // something got inside the door
+        OpenDoor (door);
+        return;
+    };
 
-   position = doorposition[door];
+    position = doorposition[door];
 
-   // slide the door by an adaptive amount
-   position -= tics<<10;
-   if (position <= 0)
-   {
-      // door is closed all the way, so disconnect the areas
-      position = 0;
+    //
+    // slide the door by an adaptive amount
+    //
+    position -= tics<<10;
+    if (position <= 0)
+    {
+        //
+        // door is closed all the way, so disconnect the areas
+        //
+        position = 0;
 
-      doorobjlist[door].action = dr_closed;
+        doorobjlist[door].action = dr_closed;
 
-      map = mapsegs[0] + (doorobjlist[door].tiley<<mapshift) + doorobjlist[door].tilex;
+        map = &MAPSPOT(tilex,tiley,0);
 
-      if (doorobjlist[door].vertical)
-      {
-         area1 = *(map+1);
-         area2 = *(map-1);
-      }
-      else
-      {
-         area1 = *(map-mapwidth);
-         area2 = *(map+mapwidth);
-      }
-      area1 -= AREATILE;
-      area2 -= AREATILE;
+        if (doorobjlist[door].vertical)
+        {
+            area1 = *(map+1);
+            area2 = *(map-1);
+        }
+        else
+        {
+            area1 = *(map-mapwidth);
+            area2 = *(map+mapwidth);
+        }
+        area1 -= AREATILE;
+        area2 -= AREATILE;
 
-      if (area1 < NUMAREAS && area2 < NUMAREAS)
-      {
-         areaconnect[area1][area2]--;
-         areaconnect[area2][area1]--;
+        if (area1 < NUMAREAS && area2 < NUMAREAS)
+        {
+            areaconnect[area1][area2]--;
+            areaconnect[area2][area1]--;
 
-         if (player->areanumber < NUMAREAS)
-            ConnectAreas ();
-      }
-   }
+            if (player->areanumber < NUMAREAS)
+                ConnectAreas ();
+        }
+    }
 
-   doorposition[door] = (word) position;
+    doorposition[door] = (word) position;
 }
 
 
@@ -680,28 +703,28 @@ void DoorClosing (int door)
 
 void MoveDoors (void)
 {
-   int door;
+    int door;
 
-   if (gamestate.victoryflag)              // don't move door during victory sequence
-      return;
+    if (gamestate.victoryflag)              // don't move door during victory sequence
+        return;
 
-   for (door = 0; door < doornum; door++)
-   {
-      switch (doorobjlist[door].action)
-      {
-         case dr_open:
-            DoorOpen (door);
-            break;
+    for (door = 0; door < doornum; door++)
+    {
+        switch (doorobjlist[door].action)
+        {
+            case dr_open:
+                DoorOpen (door);
+                break;
 
-         case dr_opening:
-            DoorOpening(door);
-            break;
+            case dr_opening:
+                DoorOpening(door);
+                break;
 
-         case dr_closing:
-            DoorClosing(door);
-            break;
-      }
-   }
+            case dr_closing:
+                DoorClosing(door);
+                break;
+        }
+    }
 }
 
 
@@ -716,7 +739,8 @@ void MoveDoors (void)
 word pwallstate;
 word pwallpos;                  // amount a pushable wall has been moved (0-63)
 word pwallx,pwally;
-byte pwalldir,pwalltile;
+byte pwalldir;
+tiletype pwalltile;
 int dirs[4][2]={{0,-1},{1,0},{0,1},{-1,0}};
 
 /*
@@ -729,38 +753,38 @@ int dirs[4][2]={{0,-1},{1,0},{0,1},{-1,0}};
 
 void PushWall (int checkx, int checky, int dir)
 {
-   int oldtile, dx, dy;
+    int oldtile, dx, dy;
 
-   if (pwallstate)
-      return;
+    if (pwallstate)
+        return;
 
-   oldtile = tilemap[checkx][checky];
-   if (!oldtile)
-      return;
+    oldtile = tilemap[checkx][checky];
+    if (!oldtile)
+        return;
 
-   dx = dirs[dir][0];
-   dy = dirs[dir][1];
+    dx = dirs[dir][0];
+    dy = dirs[dir][1];
 
-   if (actorat[checkx+dx][checky+dy])
-   {
-      SD_PlaySound (NOWAYSND);
-      return;
-   }
-   actorat[checkx+dx][checky+dy] = (objtype *)(uintptr_t) (tilemap[checkx+dx][checky+dy] = oldtile);
+    if (actorat[checkx+dx][checky+dy])
+    {
+        SD_PlaySound (NOWAYSND);
+        return;
+    }
+    actorat[checkx+dx][checky+dy] = (objtype *)(uintptr_t) (tilemap[checkx+dx][checky+dy] = oldtile);
 
-   gamestate.secretcount++;
-   pwallx = checkx;
-   pwally = checky;
-   pwalldir = dir;
-   pwallstate = 1;
-   pwallpos = 0;
-   pwalltile = tilemap[pwallx][pwally];
-   tilemap[pwallx][pwally] = 64;
-   tilemap[pwallx+dx][pwally+dy] = 64;
-   *(mapsegs[1]+(pwally<<mapshift)+pwallx) = 0;   // remove P tile info
-   *(mapsegs[0]+(pwally<<mapshift)+pwallx) = *(mapsegs[0]+(player->tiley<<mapshift)+player->tilex); // set correct floorcode (BrotherTank's fix)
+    gamestate.secretcount++;
+    pwallx = checkx;
+    pwally = checky;
+    pwalldir = dir;
+    pwallstate = 1;
+    pwallpos = 0;
+    pwalltile = tilemap[pwallx][pwally];
+    tilemap[pwallx][pwally] = BIT_WALL;
+    tilemap[pwallx+dx][pwally+dy] = BIT_WALL;
+    MAPSPOT(pwallx,pwally,1) = 0;   // remove P tile info
+    MAPSPOT(pwallx,pwally,0) = MAPSPOT(player->tilex,player->tiley,0); // set correct floorcode (BrotherTank's fix) TODO: use a better method...
 
-   SD_PlaySound (PUSHWALLSND);
+    SD_PlaySound (PUSHWALLSND);
 }
 
 
@@ -775,57 +799,62 @@ void PushWall (int checkx, int checky, int dir)
 
 void MovePWalls (void)
 {
-   int oldblock,oldtile;
+    int oldblock,oldtile;
 
-   if (!pwallstate)
-      return;
+    if (!pwallstate)
+        return;
 
-   oldblock = pwallstate/128;
+    oldblock = pwallstate/128;
 
-   pwallstate += (word)tics;
+    pwallstate += (word)tics;
 
-   if (pwallstate/128 != oldblock)
-   {
-      // block crossed into a new block
-      oldtile = pwalltile;
+    if (pwallstate/128 != oldblock)
+    {
+        // block crossed into a new block
+        oldtile = pwalltile;
 
-      // the tile can now be walked into
-      tilemap[pwallx][pwally] = 0;
-      actorat[pwallx][pwally] = 0;
-      *(mapsegs[0]+(pwally<<mapshift)+pwallx) = player->areanumber+AREATILE;
+        //
+        // the tile can now be walked into
+        //
+        tilemap[pwallx][pwally] = 0;
+        actorat[pwallx][pwally] = 0;
+        MAPSPOT(pwallx,pwally,0) = player->areanumber+AREATILE;    // TODO: this is unnecessary, and makes a mess of mapsegs
 
-      int dx=dirs[pwalldir][0], dy=dirs[pwalldir][1];
-
-      // see if it should be pushed farther
-      if (pwallstate>=256)            // only move two tiles fix
-      {
-         // the block has been pushed two tiles
-         pwallstate = 0;
-         tilemap[pwallx+dx][pwally+dy] = oldtile;
-         return;
-      }
-      else
-      {
-         int xl,yl,xh,yh;
-         xl = (player->x-PLAYERSIZE) >> TILESHIFT;
-         yl = (player->y-PLAYERSIZE) >> TILESHIFT;
-         xh = (player->x+PLAYERSIZE) >> TILESHIFT;
-         yh = (player->y+PLAYERSIZE) >> TILESHIFT;
-
-         pwallx += dx;
-         pwally += dy;
-
-         if (actorat[pwallx+dx][pwally+dy]
-               || xl<=pwallx+dx && pwallx+dx<=xh && yl<=pwally+dy && pwally+dy<=yh)
-         {
+        int dx=dirs[pwalldir][0], dy=dirs[pwalldir][1];
+        //
+        // see if it should be pushed farther
+        //
+        if (pwallstate>=256)            // only move two tiles fix
+        {
+            //
+            // the block has been pushed two tiles
+            //
             pwallstate = 0;
-            tilemap[pwallx][pwally] = oldtile;
+            tilemap[pwallx+dx][pwally+dy] = oldtile;
             return;
-         }
-         actorat[pwallx+dx][pwally+dy] = (objtype *)(uintptr_t) (tilemap[pwallx+dx][pwally+dy] = oldtile);
-         tilemap[pwallx+dx][pwally+dy] = 64;
-      }
-   }
+        }
+        else
+        {
+            int xl,yl,xh,yh;
+            xl = (player->x-PLAYERSIZE) >> TILESHIFT;
+            yl = (player->y-PLAYERSIZE) >> TILESHIFT;
+            xh = (player->x+PLAYERSIZE) >> TILESHIFT;
+            yh = (player->y+PLAYERSIZE) >> TILESHIFT;
 
-   pwallpos = (pwallstate/2)&63;
+            pwallx += dx;
+            pwally += dy;
+
+            if (actorat[pwallx+dx][pwally+dy]
+                || xl<=pwallx+dx && pwallx+dx<=xh && yl<=pwally+dy && pwally+dy<=yh)
+            {
+                pwallstate = 0;
+                tilemap[pwallx][pwally] = oldtile;
+                return;
+            }
+            actorat[pwallx+dx][pwally+dy] = (objtype *)(uintptr_t) (tilemap[pwallx+dx][pwally+dy] = oldtile);
+            tilemap[pwallx+dx][pwally+dy] = BIT_WALL;
+        }
+    }
+
+    pwallpos = (pwallstate/2)&63;
 }
